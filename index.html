@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CFC Youth Academy</title>
     
-    <!-- 样式与图标 (Cloudflare CDN) -->
+    <!-- 样式与图标 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
@@ -107,7 +107,7 @@
                 attPlaceholder: "例如：今日出席：Arthur, Stella, Money...",
                 attConfirm: "提交考勤记录",
                 attShare: "分享出席表",
-                attExcel: "导出 Excel", // 新增
+                attExcel: "导出 Excel", 
                 attTotal: "总场次",
                 attPresent: "出席",
                 stats: { pace: "速度", shooting: "射门", passing: "传球", dribbling: "盘带", defending: "防守", physical: "体能" },
@@ -173,7 +173,7 @@
                 attPlaceholder: "e.g. Present: Arthur, Stella, Money...",
                 attConfirm: "Submit Attendance",
                 attShare: "Share List",
-                attExcel: "Export Excel", // New
+                attExcel: "Export Excel", 
                 attTotal: "Sessions",
                 attPresent: "Present",
                 stats: { pace: "PAC", shooting: "SHO", passing: "PAS", dribbling: "DRI", defending: "DEF", physical: "PHY" },
@@ -239,7 +239,7 @@
                 attPlaceholder: "Contoh: Hadir: Arthur, Stella...",
                 attConfirm: "Hantar Kehadiran",
                 attShare: "Kongsi Senarai",
-                attExcel: "Eksport Excel", // New
+                attExcel: "Eksport Excel", 
                 attTotal: "Sesi",
                 attPresent: "Hadir",
                 stats: { pace: "Laju", shooting: "Tembak", passing: "Hantar", dribbling: "Gelecek", defending: "Pertahan", physical: "Fizikal" },
@@ -275,9 +275,9 @@
 
         // 初始数据
         const INITIAL_TRAINEES = [
-            { id: '1', name: 'Arthur Pendragon', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', age: '17', height: '182', weight: '76', attendance: 98, nationality: '英国', team: '皇家书院', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop', stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 } },
-            { id: '2', name: 'Stella Chen', primaryPosition: '左边锋 (LW)', secondaryPosition: '前锋 (FW)', age: '16', height: '168', weight: '58', attendance: 92, nationality: '新加坡', team: '星耀中学', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop', stats: { pace: 92, shooting: 85, passing: 78, dribbling: 94, defending: 35, physical: 60 } },
-            { id: '3', name: 'Thor Odinson', primaryPosition: '中后卫 (CB)', secondaryPosition: '后腰 (CDM)', age: '18', height: '190', weight: '88', attendance: 85, nationality: '瑞典', team: '雷霆体校', image: 'https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?w=400&h=400&fit=crop', stats: { pace: 88, shooting: 95, passing: 65, dribbling: 75, defending: 45, physical: 98 } },
+            { id: '1', name: 'Arthur Pendragon', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', age: '17', category: 'U18', height: '182', weight: '76', attendance: 98, nationality: '英国', team: '皇家书院', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop', stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 } },
+            { id: '2', name: 'Stella Chen', primaryPosition: '左边锋 (LW)', secondaryPosition: '前锋 (FW)', age: '16', category: 'U15', height: '168', weight: '58', attendance: 92, nationality: '新加坡', team: '星耀中学', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop', stats: { pace: 92, shooting: 85, passing: 78, dribbling: 94, defending: 35, physical: 60 } },
+            { id: '3', name: 'Thor Odinson', primaryPosition: '中后卫 (CB)', secondaryPosition: '后腰 (CDM)', age: '18', category: 'U18', height: '190', weight: '88', attendance: 85, nationality: '瑞典', team: '雷霆体校', image: 'https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?w=400&h=400&fit=crop', stats: { pace: 88, shooting: 95, passing: 65, dribbling: 75, defending: 45, physical: 98 } },
         ];
 
         const App = () => {
@@ -623,11 +623,31 @@
                 }
             };
 
-            // --- 考勤功能 (防重逻辑) ---
+            // --- 列表筛选逻辑 ---
+            // 注意：这里我们区分了 "列表显示的筛选" 和 "考勤计算的基数"
+            const filtered = useMemo(() => trainees.filter(trainee => {
+                const matchSearch = trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) || trainee.team.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
+                const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
+                return matchSearch && matchPos && matchTeam;
+            }), [trainees, searchTerm, selectedPosition, selectedTeam]);
+
+            // 🔥 新增：纯净的报告名单 (不受搜索框影响，只受梯队/位置影响)
+            // 用于生成考勤表和 Excel，确保名单完整
+            const reportList = useMemo(() => trainees.filter(trainee => {
+                const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
+                const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
+                return matchPos && matchTeam;
+            }), [trainees, selectedPosition, selectedTeam]);
+
+
+            // --- 考勤功能 (修复逻辑) ---
             const openAttendanceModal = () => {
                 const today = new Date().toISOString().slice(0, 10);
                 setAttendanceDate(today);
-                setAttendanceList(filtered.map(t => t.id)); // 默认全选
+                // 默认选中所有符合条件的人 (基于 reportList，而不是 filtered)
+                // 如果用户想用搜索来勾选，他可以在弹窗里操作，但初始状态应该是全员
+                setAttendanceList(filtered.map(t => t.id)); 
                 setImportText("");
                 setIsAttendanceOpen(true);
             };
@@ -640,6 +660,7 @@
             const parseImportText = () => {
                 if (!importText) return;
                 const text = importText.toLowerCase();
+                // 此时我们在弹窗里，使用 filtered (受弹窗内可能存在的搜索影响，或者这里直接用 filtered 即可，因为用户想在当前列表里匹配)
                 const matchedIds = filtered.filter(t => text.includes(t.name.toLowerCase())).map(t => t.id);
                 if (matchedIds.length > 0) {
                     setAttendanceList(matchedIds);
@@ -650,18 +671,21 @@
             };
 
             const submitAttendance = () => {
-                // 确认信息中包含日期
-                if (!confirm(`确认提交 [${attendanceDate}] 的考勤？\n\n总人数: ${filtered.length}\n出席: ${attendanceList.length}\n缺席: ${filtered.length - attendanceList.length}`)) return;
+                // 使用 reportList 作为基数来计算缺席人数，这样更准确
+                const totalCount = reportList.length;
+                // 注意：attendanceList 可能包含了 reportList 以外的人(如果用户切换了筛选)，取交集更安全
+                const presentCount = attendanceList.filter(id => reportList.some(r => r.id === id)).length;
+                
+                if (!confirm(`确认提交 [${attendanceDate}] 的考勤？\n\n总人数: ${totalCount}\n出席: ${presentCount}\n缺席: ${totalCount - presentCount}`)) return;
 
                 let skippedCount = 0;
                 const newTrainees = trainees.map(t => {
-                    if (filtered.some(f => f.id === t.id)) {
+                    // 只处理当前报告列表中的球员
+                    if (reportList.some(r => r.id === t.id)) {
                         const history = t.attendanceHistory || [];
-                        
-                        // 🔥 核心逻辑：检查该日期是否已存在
                         if (history.includes(attendanceDate)) {
                             skippedCount++;
-                            return t; // 已经记过，跳过
+                            return t; 
                         }
 
                         const isPresent = attendanceList.includes(t.id);
@@ -685,7 +709,7 @@
                 setIsAttendanceOpen(false);
                 
                 if (skippedCount > 0) {
-                    alert(`✅ 考勤更新完毕！\n⚠️ 有 ${skippedCount} 名球员在 [${attendanceDate}] 已有记录，系统自动跳过避免重复。`);
+                    alert(`✅ 考勤更新完毕！\n⚠️ 有 ${skippedCount} 名球员在 [${attendanceDate}] 已有记录，系统自动跳过。`);
                 } else {
                     alert("✅ 考勤已成功记录！");
                 }
@@ -693,8 +717,9 @@
 
             const shareAttendanceList = async () => {
                 const date = attendanceDate || new Date().toISOString().slice(0, 10);
-                const presentNames = filtered.filter(t => attendanceList.includes(t.id)).map(t => t.name);
-                const absentNames = filtered.filter(t => !attendanceList.includes(t.id)).map(t => t.name);
+                // 🔥 关键修复：使用 reportList (完整名单) 生成报告，而不是 filtered (可能被搜索词截断)
+                const presentNames = reportList.filter(t => attendanceList.includes(t.id)).map(t => t.name);
+                const absentNames = reportList.filter(t => !attendanceList.includes(t.id)).map(t => t.name);
 
                 const text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${presentNames.length}):*\n${presentNames.join(', ')}\n\n❌ *Absent (${absentNames.length}):*\n${absentNames.join(', ')}`;
                 
@@ -711,14 +736,13 @@
             // 🔥 新增：导出 Excel (CSV)
             const handleExportAttendanceExcel = () => {
                 const date = attendanceDate || new Date().toISOString().slice(0, 10);
-                // 添加 BOM 以支持中文
                 let csvContent = "\uFEFF"; 
                 csvContent += "Name,Team,Category,Status,Date\n";
                 
-                filtered.forEach(t => {
+                // 🔥 关键修复：使用 reportList 导出，确保缺席人员也在表中
+                reportList.forEach(t => {
                     const isPresent = attendanceList.includes(t.id);
                     const status = isPresent ? "Present" : "Absent";
-                    // 处理逗号
                     const safeName = t.name.replace(/,/g, " ");
                     const safeTeam = t.team.replace(/,/g, " ");
                     const safeCat = (t.category || "").replace(/,/g, " ");
@@ -735,13 +759,6 @@
                 link.click();
                 document.body.removeChild(link);
             };
-
-            const filtered = useMemo(() => trainees.filter(trainee => {
-                const matchSearch = trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) || trainee.team.toLowerCase().includes(searchTerm.toLowerCase());
-                const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
-                const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
-                return matchSearch && matchPos && matchTeam;
-            }), [trainees, searchTerm, selectedPosition, selectedTeam]);
 
             return (
                 <div className="max-w-7xl mx-auto p-4 md:p-8 pb-20 fade-in">
@@ -768,7 +785,6 @@
                             </div>
                         </div>
                         
-                        {/* 语言切换 & 功能按钮 */}
                         <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto items-end">
                             <div className="flex bg-zinc-800 rounded-lg p-1 border border-zinc-700">
                                 <button onClick={() => setLang('zh')} className={`px-2 py-1 rounded text-lg ${lang==='zh'?'bg-zinc-600':'hover:bg-zinc-700'}`}>🇨🇳</button>
@@ -785,7 +801,7 @@
                         </div>
                     </header>
 
-                    {/* AI Result Area */}
+                    {/* 教练分析结果展示区域 */}
                     {aiResult && (
                         <div className="mb-8 bg-zinc-900 border border-zinc-700 rounded-xl p-4 relative fade-in">
                             <div className="flex justify-between items-center mb-3">
@@ -1025,69 +1041,6 @@
                         </div>
                     )}
 
-                    {isAttendanceOpen && (
-                        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
-                            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-calendar-check text-emerald-500"></i> {t('attTitle')}</h2>
-                                    
-                                    {/* 考勤日期选择器 (Dark Mode) */}
-                                    <input 
-                                        type="date" 
-                                        className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-emerald-500 outline-none"
-                                        value={attendanceDate}
-                                        onChange={(e) => setAttendanceDate(e.target.value)}
-                                    />
-                                    
-                                    <button onClick={() => setIsAttendanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button>
-                                </div>
-                                
-                                <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4">
-                                    <label className="text-zinc-400 text-xs font-bold block mb-2">{t('attPaste')}</label>
-                                    <textarea 
-                                        className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-xs text-white h-20 mb-2 focus:border-emerald-500 outline-none"
-                                        placeholder={t('attPlaceholder')}
-                                        value={importText}
-                                        onChange={e => setImportText(e.target.value)}
-                                    ></textarea>
-                                    <button onClick={parseImportText} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-900/30 rounded-lg text-xs font-bold">{t('attPasteDesc')}</button>
-                                </div>
-
-                                <div className="flex justify-between items-center mb-2 px-1">
-                                    <span className="text-xs text-zinc-500">Selected {attendanceList.length} / {filtered.length}</span>
-                                    <button onClick={() => setAttendanceList(attendanceList.length === filtered.length ? [] : filtered.map(t => t.id))} className="text-xs text-indigo-400 hover:text-indigo-300">Select All</button>
-                                </div>
-
-                                <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">
-                                    {filtered.map(t => (
-                                        <div key={t.id} onClick={() => toggleAttendance(t.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${attendanceList.includes(t.id) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}>
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${attendanceList.includes(t.id) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>
-                                                    {attendanceList.includes(t.id) && <i className="fa-solid fa-check text-black text-xs"></i>}
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-white">{t.name}</p>
-                                                    <p className="text-[10px] text-zinc-500">{t.team}</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-xs text-zinc-400">
-                                                {t.attendance}%
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="flex gap-2">
-                                    <button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button>
-                                    {/* 导出 Excel 按钮 */}
-                                    <button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}>
-                                        <i className="fa-solid fa-file-csv"></i> Excel
-                                    </button>
-                                    <button onClick={shareAttendanceList} className="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg" title={t('attShare')}><i className="fa-solid fa-share-nodes"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {isSchoolManagerOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
                             <div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6">
@@ -1119,19 +1072,66 @@
                             </div>
                         </div>
                     )}
-                    
-                    {/* 裁剪模态框 */}
-                    {isCropperOpen && (
-                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
-                            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4">
-                                <h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3>
-                                <div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700">
-                                    <img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} />
+
+                    {isAttendanceOpen && (
+                        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
+                            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-calendar-check text-emerald-500"></i> {t('attTitle')}</h2>
+                                    
+                                    {/* 考勤日期选择器 (Dark Mode) */}
+                                    <input 
+                                        type="date" 
+                                        className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-emerald-500 outline-none"
+                                        value={attendanceDate}
+                                        onChange={(e) => setAttendanceDate(e.target.value)}
+                                    />
+                                    
+                                    <button onClick={() => setIsAttendanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button>
+                                </div>
+                                
+                                <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4">
+                                    <label className="text-zinc-400 text-xs font-bold block mb-2">{t('attPaste')}</label>
+                                    <textarea 
+                                        className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-xs text-white h-20 mb-2 focus:border-emerald-500 outline-none"
+                                        placeholder={t('attPlaceholder')}
+                                        value={importText}
+                                        onChange={e => setImportText(e.target.value)}
+                                    ></textarea>
+                                    <button onClick={parseImportText} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-900/30 rounded-lg text-xs font-bold">{t('attPasteDesc')}</button>
+                                </div>
+                                
+                                <div className="flex justify-between items-center mb-2 px-1">
+                                    {/* 修复：使用 reportList.length 而不是 filtered.length */}
+                                    <span className="text-xs text-zinc-500">Selected {attendanceList.length} / {reportList.length}</span>
+                                    <button onClick={() => setAttendanceList(attendanceList.length === reportList.length ? [] : reportList.map(t => t.id))} className="text-xs text-indigo-400 hover:text-indigo-300">Select All</button>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">
+                                    {/* 修复：使用 filtered 进行展示，方便搜索，但展示基数是完整的梯队 */}
+                                    {filtered.map(t => (
+                                        <div key={t.id} onClick={() => toggleAttendance(t.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${attendanceList.includes(t.id) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${attendanceList.includes(t.id) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>
+                                                    {attendanceList.includes(t.id) && <i className="fa-solid fa-check text-black text-xs"></i>}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-white">{t.name}</p>
+                                                    <p className="text-[10px] text-zinc-500">{t.team}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-xs text-zinc-400">
+                                                {t.attendance}%
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button>
-                                    <button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button>
-                                    <button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button>
+                                    <button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button>
+                                    <button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}>
+                                        <i className="fa-solid fa-file-csv"></i> Excel
+                                    </button>
+                                    <button onClick={shareAttendanceList} className="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg" title={t('attShare')}><i className="fa-solid fa-share-nodes"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -1177,6 +1177,23 @@
                                 </div>
                                 
                                 <p className="text-center text-zinc-600 text-xs mt-6">{t('dataSafe')}</p>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* 裁剪模态框 */}
+                    {isCropperOpen && (
+                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
+                            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4">
+                                <h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3>
+                                <div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700">
+                                    <img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} />
+                                </div>
+                                <div className="flex gap-2">
+                                    <button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button>
+                                    <button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button>
+                                    <button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button>
+                                </div>
                             </div>
                         </div>
                     )}
