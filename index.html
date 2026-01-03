@@ -35,12 +35,13 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p class="text-zinc-500 text-sm mt-2">Recalculating Stats...</p>
+        <p class="text-zinc-500 text-sm mt-2">Checking System...</p>
     </div>
 
     <div id="root"></div>
 
     <script type="text/babel">
+        // --- 0. 安全检查 ---
         if (!window.React || !window.ReactDOM) {
             document.getElementById('static-loading').innerHTML = '<p class="text-red-500 p-4">错误：React 加载失败。请检查网络连接。</p>';
             throw new Error("React 未加载");
@@ -48,6 +49,7 @@
 
         const { useState, useEffect, useRef, useMemo } = React;
 
+        // 移除加载动画
         setTimeout(() => {
             const loader = document.getElementById('static-loading');
             if(loader) loader.classList.add('hidden');
@@ -102,7 +104,7 @@
                 attPaste: "📄 粘贴名单导入 (WhatsApp/Excel)",
                 attPasteDesc: "直接粘贴文字，系统会自动识别名单中的名字并勾选。",
                 attPlaceholder: "例如：今日出席：Arthur, Stella, Money...",
-                attConfirm: "提交考勤记录",
+                attConfirm: "提交 / 更新考勤",
                 attShare: "分享出席表",
                 attWhatsapp: "WhatsApp",
                 attExcel: "导出 Excel", 
@@ -258,6 +260,7 @@
             }
         };
 
+        // --- 1. 默认数据 ---
         const INITIAL_TEAMS = ['皇家书院', '星耀中学', '雷霆体校', '蓝鹰国际', '北境一中', '南洋公学', '光辉中学', '风暴竞技', '银河实验', '泰坦中学'];
         const CATEGORIES = ['U8', 'U10', 'U12', 'U15', 'U18'];
         const POSITIONS = ['前锋 (FW)', '左边锋 (LW)', '右边锋 (RW)', '前腰 (CAM)', '中场 (CM)', '左中场 (LM)', '右中场 (RM)', '后腰 (CDM)', '后卫 (DF)', '中后卫 (CB)', '左后卫 (LB)', '右后卫 (RB)', '门将 (GK)'];
@@ -293,18 +296,13 @@
             const [editingTrainee, setEditingTrainee] = useState(null);
             const [isEditingTitle, setIsEditingTitle] = useState(false);
             
-            // 🔥 关键修改：默认 totalSessions 改为 0
-            const [formData, setFormData] = useState({ 
-                name:'', primaryPosition:'前锋 (FW)', secondaryPosition:'无', 
-                age:'16', category: 'U18', height: '', weight: '', attendance: 100, nationality:'', team:'', image:'', 
-                totalSessions: 0, attendedSessions: 0, // 初始为0，第一次出席就是 1/1 = 100%，缺席就是 0/1 = 0%
-                stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50} 
-            });
+            const [formData, setFormData] = useState({ name:'', primaryPosition:'前锋 (FW)', secondaryPosition:'无', age:'16', category: 'U18', height: '', weight: '', attendance: 100, nationality:'', team:'', image:'', stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50} });
             
             const [renamingTeam, setRenamingTeam] = useState({ original: '', current: '' });
             const [aiResult, setAiResult] = useState(null);
             const [aiLoading, setAiLoading] = useState(false);
             
+            // 考勤状态
             const [attendanceList, setAttendanceList] = useState([]); 
             const [importText, setImportText] = useState("");
             const [attendanceDate, setAttendanceDate] = useState(""); 
@@ -321,32 +319,14 @@
             useEffect(() => {
                 const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
                 if (localData.trainees) {
-                    // 🔥 数据清洗：移除虚高的默认基数 (如果是 20, 10 这种默认值，且没有历史记录，则重置)
-                    const sanitizedTrainees = localData.trainees.map(t => {
-                        let total = t.totalSessions || 0;
-                        let attended = t.attendedSessions || 0;
-                        let history = t.attendanceHistory || [];
-                        
-                        // 如果有历史记录，以历史记录为准重新计算，确保绝对准确
-                        if (Array.isArray(history) && history.length > 0) {
-                            total = history.length;
-                            attended = history.filter(h => (typeof h === 'string' ? 'present' : h.status) === 'present').length;
-                        } else if (total === 0 && attended === 0 && t.attendance > 0) {
-                             // 如果是旧数据只有百分比，没有场次，暂时保留估算，或者重置为0
-                             // 这里为了不破坏旧数据，如果 total 是 0 但 attendance 不是 0，保持不变或给予最小基数 1
-                        }
-
-                        const rate = total === 0 ? 0 : Math.round((attended / total) * 100);
-
-                        return {
-                            ...t,
-                            totalSessions: total,
-                            attendedSessions: attended,
-                            attendance: rate,
-                            attendanceHistory: history,
-                            stats: t.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 }
-                        };
-                    });
+                    const sanitizedTrainees = localData.trainees.map(t => ({
+                        ...t,
+                        totalSessions: t.totalSessions || 10,
+                        attendedSessions: t.attendedSessions || Math.round((t.attendance || 100) / 10),
+                        attendance: t.attendance || 100,
+                        attendanceHistory: Array.isArray(t.attendanceHistory) ? t.attendanceHistory : [], // 强健性修复
+                        stats: t.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 }
+                    }));
                     setTrainees(sanitizedTrainees);
                 } else {
                     setTrainees(INITIAL_TRAINEES);
@@ -378,26 +358,18 @@
             const handleSave = () => {
                 if(!formData.name) return;
                 const data = { ...formData, image: formData.image || DEFAULT_IMAGE };
-                
-                // 如果在编辑模式手动改了出席率滑块，这里做个特殊处理
-                // 我们不建议手动改滑块，而是用考勤系统。但如果改了，我们反推
-                let newTotal = data.totalSessions;
-                let newAttended = data.attendedSessions;
-
-                if (editingTrainee && data.attendance !== editingTrainee.attendance) {
-                     // 用户手动拖动了滑块，强制调整 attendedSessions 以匹配百分比
-                     // 保持 total 不变 (除非 total 是 0，那就设为 10)
-                     const base = newTotal || 10;
-                     newTotal = base;
-                     newAttended = Math.round(base * (data.attendance / 100));
-                }
-
-                const finalData = { ...data, totalSessions: newTotal, attendedSessions: newAttended };
-
                 let newTrainees;
-                if(editingTrainee) newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...finalData, id: t.id } : t);
-                else newTrainees = [{ ...finalData, id: Date.now().toString() }, ...trainees];
-                
+                if(editingTrainee) {
+                    // 编辑时，保留原有出席数据，除非手动滑动了条
+                    const oldT = trainees.find(t => t.id === editingTrainee.id);
+                    const isAttChanged = data.attendance !== oldT.attendance;
+                    const baseTotal = oldT.totalSessions || 20;
+                    const newAttended = isAttChanged ? Math.round(baseTotal * (data.attendance / 100)) : oldT.attendedSessions;
+                    
+                    newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...data, totalSessions: baseTotal, attendedSessions: newAttended, attendanceHistory: oldT.attendanceHistory, id: t.id } : t);
+                } else {
+                    newTrainees = [{ ...data, id: Date.now().toString() }, ...trainees];
+                }
                 saveToLocal({ trainees: newTrainees });
                 setIsModalOpen(false);
             };
@@ -417,39 +389,43 @@
             const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("Copied!"); } } catch(e){} };
             const handleSystemShare = async (t) => { try{await navigator.share({title:t.name, text:generateShareText(t)})}catch(e){alert("Use WhatsApp Button");} };
 
-            // 智能列表：只受 Team/Position 影响，不受 Search 影响 (用于考勤和导出)
+            // 智能列表：只受 Team/Position 影响
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
                 const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
                 return matchPos && matchTeam;
             }), [trainees, selectedPosition, selectedTeam]);
 
-            // UI 列表：受 Search 影响 (用于界面展示)
+            // UI 列表：受 Search 影响
             const uiFiltered = useMemo(() => reportFiltered.filter(t => 
                 t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.team.toLowerCase().includes(searchTerm.toLowerCase())
             ), [reportFiltered, searchTerm]);
 
-            // --- 考勤功能 ---
+            // --- 考勤功能 (防崩修复) ---
             const openAttendanceModal = () => {
-                const today = new Date().toISOString().slice(0, 10);
-                setAttendanceDate(today);
-                
-                // 默认选中：今天已出席的，或者如果是新的一天，默认全选 (或者全不选，看习惯)
-                const alreadyRecorded = reportFiltered.some(t => t.attendanceHistory && t.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today));
-                
-                if (alreadyRecorded) {
-                    const presentIds = reportFiltered.filter(t => t.attendanceHistory.some(h => {
-                         const hDate = typeof h === 'string' ? h : h.date;
-                         const hStatus = typeof h === 'string' ? 'present' : h.status; 
-                         return hDate === today && hStatus === 'present';
-                    })).map(t => t.id);
-                    setAttendanceList(presentIds);
-                } else {
-                    setAttendanceList(reportFiltered.map(t => t.id)); // 默认全选
+                try {
+                    const today = new Date().toISOString().slice(0, 10);
+                    setAttendanceDate(today);
+                    
+                    const alreadyRecorded = reportFiltered.some(t => t.attendanceHistory && t.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today));
+                    
+                    if (alreadyRecorded) {
+                        const presentIds = reportFiltered.filter(t => t.attendanceHistory.some(h => {
+                            const hDate = typeof h === 'string' ? h : h.date;
+                            const hStatus = typeof h === 'string' ? 'present' : h.status; 
+                            return hDate === today && hStatus === 'present';
+                        })).map(t => t.id);
+                        setAttendanceList(presentIds);
+                    } else {
+                        setAttendanceList(reportFiltered.map(t => t.id)); // 默认全选
+                    }
+                    
+                    setImportText("");
+                    setIsAttendanceOpen(true);
+                } catch(e) {
+                    console.error("Open Attendance Error:", e);
+                    alert("⚠️ 考勤数据初始化失败，请先刷新页面。");
                 }
-                
-                setImportText("");
-                setIsAttendanceOpen(true);
             };
 
             const toggleAttendance = (id) => {
@@ -477,13 +453,15 @@
                 let skippedCount = 0;
                 const newTrainees = trainees.map(t => {
                     if (reportFiltered.some(r => r.id === t.id)) {
-                        const history = t.attendanceHistory || [];
+                        let history = t.attendanceHistory || []; // 确保 history 存在
+                        if(!Array.isArray(history)) history = [];
+
                         const isPresent = attendanceList.includes(t.id);
                         const newStatus = isPresent ? 'present' : 'absent';
                         
                         const todayIndex = history.findIndex(h => (typeof h === 'string' ? h : h.date) === attendanceDate);
                         
-                        let newTotal = t.totalSessions || 0; // 🔥 使用真实数据，如果为0就为0
+                        let newTotal = t.totalSessions || 0;
                         let newAttended = t.attendedSessions || 0;
                         let newHistory = [...history];
 
@@ -502,7 +480,13 @@
                         }
 
                         const newRate = newTotal === 0 ? 0 : Math.round((newAttended / newTotal) * 100);
-                        return { ...t, totalSessions: newTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: newHistory };
+                        return { 
+                            ...t, 
+                            totalSessions: newTotal, 
+                            attendedSessions: newAttended, 
+                            attendance: newRate,
+                            attendanceHistory: newHistory
+                        };
                     }
                     return t;
                 });
@@ -575,7 +559,6 @@
                                 <button onClick={() => setLang('en')} className={`px-2 py-1 rounded text-lg ${lang==='en'?'bg-zinc-600':'hover:bg-zinc-700'}`}>🇬🇧</button>
                                 <button onClick={() => setLang('ms')} className={`px-2 py-1 rounded text-lg ${lang==='ms'?'bg-zinc-600':'hover:bg-zinc-700'}`}>🇲🇾</button>
                             </div>
-
                             <div className="flex gap-2 w-full">
                                 <button onClick={openAttendanceModal} className="bg-emerald-900 text-emerald-100 px-4 py-3 rounded-xl font-bold border border-emerald-700 whitespace-nowrap"><i className="fa-solid fa-calendar-check mr-2"></i>{t('attendanceTool')}</button>
                                 <button onClick={() => setIsDataToolsOpen(true)} className="bg-indigo-900 text-indigo-100 px-4 py-3 rounded-xl font-bold border border-indigo-700 whitespace-nowrap"><i className="fa-solid fa-cloud-arrow-up"></i></button>
@@ -645,7 +628,6 @@
                                     <span className="absolute top-2 left-2 bg-yellow-500 text-black text-[10px] font-black px-2 py-0.5 rounded shadow z-10">
                                         {getPositionCode(trainee.primaryPosition)}
                                     </span>
-                                    {/* 组别标签 */}
                                     {trainee.category && (
                                         <span className="absolute top-2 right-2 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow z-10">
                                             {trainee.category}
@@ -857,65 +839,47 @@
                         </div>
                     )}
 
-                    {isDataToolsOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
-                            <div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6">
+                    {isAttendanceOpen && (
+                        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
+                            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-lg font-bold text-white flex items-center gap-2"><i className="fa-solid fa-cloud-arrow-up text-indigo-500"></i> {t('backupTools')}</h2>
-                                    <button onClick={() => setIsDataToolsOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button>
+                                    <h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-calendar-check text-emerald-500"></i> {t('attTitle')}</h2>
+                                    <div className="flex items-center gap-2">
+                                        <input type="date" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-emerald-500 outline-none" value={attendanceDate} onChange={(e) => setAttendanceDate(e.target.value)} />
+                                        <button onClick={() => setIsAttendanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button>
+                                    </div>
+                                </div>
+                                <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4"><label className="text-zinc-400 text-xs font-bold block mb-2">{t('attPaste')}</label><textarea className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-xs text-white h-20 mb-2 focus:border-emerald-500 outline-none" placeholder={t('attPlaceholder')} value={importText} onChange={e => setImportText(e.target.value)}></textarea><button onClick={parseImportText} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-900/30 rounded-lg text-xs font-bold">{t('attPasteDesc')}</button></div>
+                                
+                                <div className="flex justify-between items-center mb-2 px-1">
+                                    <span className="text-xs text-zinc-500">Selected {attendanceList.length} / {reportFiltered.length}</span>
+                                    <button onClick={() => setAttendanceList(attendanceList.length === reportFiltered.length ? [] : reportFiltered.map(t => t.id))} className="text-xs text-indigo-400 hover:text-indigo-300">Select All</button>
                                 </div>
                                 
-                                <div className="space-y-4">
-                                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 relative group overflow-hidden">
-                                        <div className="absolute top-0 right-0 p-2 opacity-20"><i className="fab fa-google-drive text-6xl text-white"></i></div>
-                                        <h3 className="text-white font-bold mb-2 flex items-center gap-2 z-10 relative">
-                                            <i className="fa-solid fa-cloud-upload-alt text-emerald-500"></i> {t('backupToDrive')}
-                                        </h3>
-                                        <p className="text-zinc-500 text-xs mb-3 relative z-10">{t('exportDesc')}</p>
-                                        <button onClick={handleBackupToDrive} className="w-full py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 relative z-10 border border-emerald-500">
-                                            <i className="fab fa-google-drive"></i> {t('save')}
-                                        </button>
-                                    </div>
-
-                                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800">
-                                        <h3 className="text-zinc-300 font-bold mb-2 flex items-center gap-2"><i className="fa-solid fa-file-import text-indigo-500"></i> {t('restoreData')}</h3>
-                                        <p className="text-zinc-500 text-xs mb-3">{t('restoreDesc')}</p>
-                                        
-                                        <div className="relative group">
-                                            <button className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-indigo-400 border border-indigo-900/50 rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 cursor-pointer" onClick={() => backupInputRef.current.click()}>
-                                                <i className="fa-solid fa-folder-open"></i> {t('selectFile')}</button>
-                                            <input 
-                                                type="file" 
-                                                ref={backupInputRef}
-                                                className="hidden" 
-                                                accept=".json"
-                                                onChange={handleImportFile}
-                                            />
+                                <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">
+                                    {reportFiltered.map(t => (
+                                        <div key={t.id} onClick={() => toggleAttendance(t.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${attendanceList.includes(t.id) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${attendanceList.includes(t.id) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>{attendanceList.includes(t.id) && <i className="fa-solid fa-check text-black text-xs"></i>}</div>
+                                                <div><p className="text-sm font-bold text-white">{t.name}</p><p className="text-[10px] text-zinc-500">{t.team}</p></div>
+                                            </div>
+                                            <div className="text-xs text-zinc-400">{t.attendance}%</div>
                                         </div>
-                                    </div>
+                                    ))}
                                 </div>
-                                
-                                <p className="text-center text-zinc-600 text-xs mt-6">{t('dataSafe')}</p>
+                                <div className="flex gap-2">
+                                    <button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button>
+                                    <button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button>
+                                    <button onClick={handleWhatsappShare} className="px-4 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl shadow-lg" title={t('attWhatsapp')}><i className="fa-brands fa-whatsapp text-xl"></i></button>
+                                </div>
                             </div>
                         </div>
                     )}
                     
-                    {/* 裁剪模态框 */}
-                    {isCropperOpen && (
-                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
-                            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4">
-                                <h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3>
-                                <div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700">
-                                    <img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} />
-                                </div>
-                                <div className="flex gap-2">
-                                    <button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button>
-                                    <button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button>
-                                    <button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {/* (Other modals shareTarget, isDataToolsOpen, isCropperOpen are identical to previous version, omitted for brevity but should be included) */}
+                    {shareTarget && (<div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in" onClick={() => setShareTarget(null)}><div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}><div className="text-center mb-6"><div className="w-20 h-20 mx-auto rounded-full overflow-hidden border-4 border-zinc-800 mb-3"><img src={shareTarget.image} className="w-full h-full object-cover" onError={e => e.target.src = DEFAULT_IMAGE} /></div><h3 className="text-xl font-bold text-white">{shareTarget.name}</h3><p className="text-sm text-zinc-500">{shareTarget.team}</p></div><div className="space-y-3"><button onClick={() => handleSystemShare(shareTarget)} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95"><i className="fa-solid fa-share-nodes"></i> {t('share', 'sendToParents')}</button><div className="relative flex py-2 items-center"><div className="flex-grow border-t border-zinc-700"></div><span className="flex-shrink-0 mx-4 text-xs text-zinc-500">{t('share', 'textOnly')}</span><div className="flex-grow border-t border-zinc-700"></div></div><div className="grid grid-cols-2 gap-3"><a href={`https://wa.me/?text=${encodeURIComponent(generateShareText(shareTarget))}`} target="_blank" className="py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-brands fa-whatsapp text-lg"></i> WhatsApp</a><a href={`mailto:?subject=CFC Player: ${shareTarget.name}&body=${encodeURIComponent(generateShareText(shareTarget))}`} className="py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-solid fa-envelope"></i> Email</a></div></div></div></div>)}
+                    {isDataToolsOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-lg font-bold text-white flex items-center gap-2"><i className="fa-solid fa-cloud-arrow-up text-indigo-500"></i> {t('backupTools')}</h2><button onClick={() => setIsDataToolsOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4"><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 relative group overflow-hidden"><div className="absolute top-0 right-0 p-2 opacity-20"><i className="fab fa-google-drive text-6xl text-white"></i></div><h3 className="text-white font-bold mb-2 flex items-center gap-2 z-10 relative"><i className="fa-solid fa-cloud-upload-alt text-emerald-500"></i> {t('backupToDrive')}</h3><p className="text-zinc-500 text-xs mb-3 relative z-10">{t('exportDesc')}</p><button onClick={handleBackupToDrive} className="w-full py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 relative z-10 border border-emerald-500"><i className="fab fa-google-drive"></i> {t('save')}</button></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800"><h3 className="text-zinc-300 font-bold mb-2 flex items-center gap-2"><i className="fa-solid fa-file-import text-indigo-500"></i> {t('restoreData')}</h3><p className="text-zinc-500 text-xs mb-3">{t('restoreDesc')}</p><div className="relative group"><button className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-indigo-400 border border-indigo-900/50 rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 cursor-pointer" onClick={() => backupInputRef.current.click()}><i className="fa-solid fa-folder-open"></i> {t('selectFile')}</button><input type="file" ref={backupInputRef} className="hidden" accept=".json" onChange={handleImportFile} /></div></div></div><p className="text-center text-zinc-600 text-xs mt-6">{t('dataSafe')}</p></div></div>)}
+                    {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
                 </div>
             );
         };
