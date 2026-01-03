@@ -35,7 +35,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p class="text-zinc-500 text-sm mt-2">System Restored...</p>
+        <p class="text-zinc-500 text-sm mt-2">Fixing Data...</p>
     </div>
 
     <div id="root"></div>
@@ -105,8 +105,7 @@
                 attPasteDesc: "直接粘贴文字，系统会自动识别名单中的名字并勾选。",
                 attPlaceholder: "例如：今日出席：Arthur, Stella, Money...",
                 attConfirm: "提交考勤记录",
-                attShare: "分享",
-                attWhatsapp: "WhatsApp",
+                attShare: "分享出席表",
                 attExcel: "导出 Excel", 
                 attTotal: "总场次",
                 attPresent: "出席",
@@ -172,8 +171,7 @@
                 attPasteDesc: "Auto-check names",
                 attPlaceholder: "e.g. Present: Arthur, Stella, Money...",
                 attConfirm: "Submit Attendance",
-                attShare: "Share",
-                attWhatsapp: "WhatsApp",
+                attShare: "Share List",
                 attExcel: "Export Excel", 
                 attTotal: "Sessions",
                 attPresent: "Present",
@@ -239,8 +237,7 @@
                 attPasteDesc: "Tanda nama automatik",
                 attPlaceholder: "Contoh: Hadir: Arthur, Stella...",
                 attConfirm: "Hantar Kehadiran",
-                attShare: "Kongsi",
-                attWhatsapp: "WhatsApp",
+                attShare: "Kongsi Senarai",
                 attExcel: "Eksport Excel", 
                 attTotal: "Sesi",
                 attPresent: "Hadir",
@@ -260,12 +257,14 @@
             }
         };
 
+        // --- 1. 默认数据 ---
         const INITIAL_TEAMS = ['皇家书院', '星耀中学', '雷霆体校', '蓝鹰国际', '北境一中', '南洋公学', '光辉中学', '风暴竞技', '银河实验', '泰坦中学'];
         const CATEGORIES = ['U8', 'U10', 'U12', 'U15', 'U18'];
         const POSITIONS = ['前锋 (FW)', '左边锋 (LW)', '右边锋 (RW)', '前腰 (CAM)', '中场 (CM)', '左中场 (LM)', '右中场 (RM)', '后腰 (CDM)', '后卫 (DF)', '中后卫 (CB)', '左后卫 (LB)', '右后卫 (RB)', '门将 (GK)'];
         const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=400&h=400&fit=crop';
         const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
 
+        // 初始数据 - 强制添加 totalSessions
         const INITIAL_TRAINEES = [
             { id: '1', name: 'Arthur Pendragon', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', age: '17', category: 'U18', height: '182', weight: '76', attendance: 98, totalSessions: 50, attendedSessions: 49, attendanceHistory: [], nationality: '英国', team: '皇家书院', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop', stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 } },
             { id: '2', name: 'Stella Chen', primaryPosition: '左边锋 (LW)', secondaryPosition: '前锋 (FW)', age: '16', category: 'U15', height: '168', weight: '58', attendance: 92, totalSessions: 50, attendedSessions: 46, attendanceHistory: [], nationality: '新加坡', team: '星耀中学', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop', stats: { pace: 92, shooting: 85, passing: 78, dribbling: 94, defending: 35, physical: 60 } },
@@ -295,38 +294,51 @@
             const [editingTrainee, setEditingTrainee] = useState(null);
             const [isEditingTitle, setIsEditingTitle] = useState(false);
             
-            const [formData, setFormData] = useState({ name:'', primaryPosition:'前锋 (FW)', secondaryPosition:'无', age:'16', category: 'U18', height: '', weight: '', attendance: 100, nationality:'', team:'', image:'', stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50} });
+            // 初始化 formData 时，添加 totalSessions 和 attendedSessions 默认值
+            const [formData, setFormData] = useState({ 
+                name:'', primaryPosition:'前锋 (FW)', secondaryPosition:'无', 
+                age:'16', category: 'U18', height: '', weight: '', attendance: 100, nationality:'', team:'', image:'', 
+                totalSessions: 10, attendedSessions: 10, // 🔥 关键修复：新球员默认 10/10，保证数学基数
+                stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50} 
+            });
             
             const [renamingTeam, setRenamingTeam] = useState({ original: '', current: '' });
             const [aiResult, setAiResult] = useState(null);
             const [aiLoading, setAiLoading] = useState(false);
             
-            // 考勤状态
             const [attendanceList, setAttendanceList] = useState([]); 
             const [importText, setImportText] = useState("");
             const [attendanceDate, setAttendanceDate] = useState(""); 
 
-            // 裁剪器状态 (补回)
             const [tempImage, setTempImage] = useState(null);
             const [isLogoCrop, setIsLogoCrop] = useState(false);
+            const cropperRef = useRef(null);
+            const cropperImageRef = useRef(null);
 
             const fileInputRef = useRef(null);
             const logoInputRef = useRef(null);
             const backupInputRef = useRef(null);
-            const cropperRef = useRef(null);
-            const cropperImageRef = useRef(null);
 
+            // --- 核心：本地数据加载与数据清洗 ---
             useEffect(() => {
                 const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
                 if (localData.trainees) {
-                    const sanitizedTrainees = localData.trainees.map(t => ({
-                        ...t,
-                        totalSessions: t.totalSessions || 10,
-                        attendedSessions: t.attendedSessions || Math.round((t.attendance || 100) / 10),
-                        attendance: t.attendance || 100,
-                        attendanceHistory: t.attendanceHistory || [],
-                        stats: t.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 }
-                    }));
+                    const sanitizedTrainees = localData.trainees.map(t => {
+                        // 🔥 关键修复：确保旧数据也有基数
+                        const attRate = t.attendance || 100;
+                        // 如果 totalSessions 不存在或为 0，我们假设一个基数（比如 20），并反推出席次数
+                        const fixedTotal = (t.totalSessions && t.totalSessions > 0) ? t.totalSessions : 20;
+                        const fixedAttended = (t.attendedSessions !== undefined) ? t.attendedSessions : Math.round(fixedTotal * (attRate / 100));
+
+                        return {
+                            ...t,
+                            totalSessions: fixedTotal,
+                            attendedSessions: fixedAttended,
+                            attendance: attRate, // 保持用户看到的百分比不变
+                            attendanceHistory: t.attendanceHistory || [],
+                            stats: t.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 }
+                        };
+                    });
                     setTrainees(sanitizedTrainees);
                 } else {
                     setTrainees(INITIAL_TRAINEES);
@@ -350,6 +362,53 @@
                 localStorage.setItem('cfc_local_db', JSON.stringify(currentData));
             };
 
+            // ... (Backup, Import, File logic remains same) ...
+            const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(`✅ 备份已生成！前往 Google Drive？`)) window.open(DRIVE_LINK, '_blank'); }, 500); };
+            const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(`⚠️ 覆盖当前数据？`)) { saveToLocal(p); alert(`✅ 成功恢复！`); setIsDataToolsOpen(false); } } catch (e) { alert("❌ 文件错误"); } e.target.value=null; }; r.readAsText(f); };
+            const handleFile = (e, isLogo) => { const f = e.target.files?.[0]; if(!f) return; const r = new FileReader(); r.onloadend = () => { setTempImage(r.result); setIsLogoCrop(isLogo); setIsCropperOpen(true); }; r.readAsDataURL(f); };
+            useEffect(() => { if (isCropperOpen && cropperImageRef.current) { if (cropperRef.current) cropperRef.current.destroy(); cropperRef.current = new Cropper(cropperImageRef.current, { aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8 }); } }, [isCropperOpen, tempImage]);
+            const handleCropConfirm = () => { if (cropperRef.current) { const c = cropperRef.current.getCroppedCanvas({ width: 400, height: 400 }); const u = c.toDataURL('image/jpeg', 0.8); if (isLogoCrop) { setAppLogo(u); saveToLocal({ appLogo: u }); } else { setFormData(p => ({ ...p, image: u })); } setIsCropperOpen(false); setTempImage(null); if(fileInputRef.current) fileInputRef.current.value=''; if(logoInputRef.current) logoInputRef.current.value=''; } };
+            const handleRotate = () => { if (cropperRef.current) cropperRef.current.rotate(90); };
+            const deleteTrainee = (id) => { if(confirm("删除此球员？")) { const newT = trainees.filter(t => t.id !== id); saveToLocal({ trainees: newT }); } };
+            const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const newTeams = teams.map(t=>t===old?n:t); const newT = trainees.map(t=>t.team===old?{...t,team:n}:t); saveToLocal({teams:newTeams, trainees:newT}); setRenamingTeam({original:'',current:''}); };
+            const handleAddTeam = () => { const n=`New School ${teams.length+1}`; saveToLocal({teams:[...teams,n]}); };
+            const handleDeleteTeam = (n) => { if(!confirm(`Delete ${n}?`)) return; const newTeams=teams.filter(t=>t!==n); const newT=trainees.map(t=>t.team===n?{...t,team:'Free Agent'}:t); saveToLocal({teams:newTeams,trainees:newT}); };
+
+            // --- 核心业务修复：Handle Save (包含出席率同步) ---
+            const handleSave = () => {
+                if(!formData.name) return;
+                
+                // 🔥 关键修复：当手动拖动滑块时，同步更新背后的基数
+                // 逻辑：假设基数是 20 场 (足以平滑百分比)，然后反推出席场次
+                const attPercent = formData.attendance || 0;
+                // 如果是从编辑模式进来，保留原有总场次，否则给个默认值
+                const baseTotal = editingTrainee ? (editingTrainee.totalSessions || 20) : 10; 
+                // 重新计算 attendedSessions 以匹配新的百分比
+                const newAttended = Math.round(baseTotal * (attPercent / 100));
+
+                const data = { 
+                    ...formData, 
+                    image: formData.image || DEFAULT_IMAGE,
+                    totalSessions: baseTotal,
+                    attendedSessions: newAttended
+                };
+
+                let newTrainees;
+                if(editingTrainee) newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...data, id: t.id } : t);
+                else newTrainees = [{ ...data, id: Date.now().toString() }, ...trainees];
+                
+                saveToLocal({ trainees: newTrainees });
+                setIsModalOpen(false);
+            };
+
+            // AI / Share logic
+            const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
+            const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
+            const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
+            const generateShareText = (t) => { const L = TRANSLATIONS[lang]; const c = t.category ? `[${t.category}] ` : ''; return `【${L.appTitle}】\n\n${L.name}：${t.name}\n${L.school}：${c}${t.team}\n${L.mainPos}：${t.primaryPosition}\n${L.age}：${t.age} | ${L.height}：${t.height||'-'}cm | ${L.weight}：${t.weight||'-'}kg\n${L.attendance}：${t.attendance||0}%\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}`; };
+            const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("Copied!"); } } catch(e){} };
+            const handleSystemShare = async (t) => { try{await navigator.share({title:t.name, text:generateShareText(t)})}catch(e){alert("Use WhatsApp Button");} };
+
             // 智能列表：只受 Team/Position 影响，不受 Search 影响
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
@@ -361,40 +420,6 @@
             const uiFiltered = useMemo(() => reportFiltered.filter(t => 
                 t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.team.toLowerCase().includes(searchTerm.toLowerCase())
             ), [reportFiltered, searchTerm]);
-
-            // --- 裁剪功能 ---
-            const handleFile = (e, isLogo) => { 
-                const f = e.target.files?.[0]; 
-                if(!f) return; 
-                const r = new FileReader(); 
-                r.onloadend = () => { 
-                    setTempImage(r.result); 
-                    setIsLogoCrop(isLogo); 
-                    setIsCropperOpen(true); 
-                }; 
-                r.readAsDataURL(f); 
-            };
-            
-            useEffect(() => { 
-                if (isCropperOpen && cropperImageRef.current) { 
-                    if (cropperRef.current) cropperRef.current.destroy(); 
-                    cropperRef.current = new Cropper(cropperImageRef.current, { aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8 }); 
-                } 
-            }, [isCropperOpen, tempImage]);
-
-            const handleCropConfirm = () => { 
-                if (cropperRef.current) { 
-                    const c = cropperRef.current.getCroppedCanvas({ width: 400, height: 400 }); 
-                    const u = c.toDataURL('image/jpeg', 0.8); 
-                    if (isLogoCrop) { setAppLogo(u); saveToLocal({ appLogo: u }); } 
-                    else { setFormData(p => ({ ...p, image: u })); } 
-                    setIsCropperOpen(false); 
-                    setTempImage(null); 
-                    if(fileInputRef.current) fileInputRef.current.value=''; 
-                    if(logoInputRef.current) logoInputRef.current.value=''; 
-                } 
-            };
-            const handleRotate = () => { if (cropperRef.current) cropperRef.current.rotate(90); };
 
             // --- 考勤功能 (使用 reportFiltered) ---
             const openAttendanceModal = () => {
@@ -413,7 +438,6 @@
             const parseImportText = () => {
                 if (!importText) return;
                 const text = importText.toLowerCase();
-                // 搜索时仅在 reportFiltered 中匹配
                 const matchedIds = reportFiltered.filter(t => text.includes(t.name.toLowerCase())).map(t => t.id);
                 if (matchedIds.length > 0) {
                     setAttendanceList(matchedIds);
@@ -424,36 +448,44 @@
             };
 
             const submitAttendance = () => {
-                if (!confirm(`确认提交 [${attendanceDate}] 考勤？`)) return;
+                const totalCount = reportFiltered.length;
+                const presentCount = attendanceList.filter(id => reportFiltered.some(r => r.id === id)).length;
+                if (!confirm(`确认提交 [${attendanceDate}] 的考勤？\n\n总人数: ${totalCount}\n出席: ${presentCount}\n缺席: ${totalCount - presentCount}`)) return;
+
                 let skippedCount = 0;
                 const newTrainees = trainees.map(t => {
                     if (reportFiltered.some(r => r.id === t.id)) {
                         const history = t.attendanceHistory || [];
                         if (history.includes(attendanceDate)) { skippedCount++; return t; }
+                        
                         const isPresent = attendanceList.includes(t.id);
-                        const newTotal = (t.totalSessions || 0) + 1;
-                        const newAttended = (t.attendedSessions || 0) + (isPresent ? 1 : 0);
+                        // 🔥 修复：确保 totalSessions 有值，避免 除以 0 或 NaN
+                        const currentTotal = t.totalSessions || 20; 
+                        const currentAttended = t.attendedSessions || Math.round(currentTotal * (t.attendance || 0) / 100);
+                        
+                        const newTotal = currentTotal + 1;
+                        const newAttended = currentAttended + (isPresent ? 1 : 0);
                         const newRate = Math.round((newAttended / newTotal) * 100);
                         const newHistory = [...history, attendanceDate];
+
                         return { ...t, totalSessions: newTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: newHistory };
                     }
                     return t;
                 });
+
                 saveToLocal({ trainees: newTrainees });
                 setIsAttendanceOpen(false);
-                if (skippedCount > 0) alert(`✅ 考勤更新！(跳过 ${skippedCount} 条重复记录)`);
-                else alert("✅ 考勤成功！");
+                if (skippedCount > 0) alert(`✅ 考勤更新完毕！(跳过 ${skippedCount} 条重复记录)`);
+                else alert("✅ 考勤已成功记录！");
             };
 
             const handleWhatsappShare = () => {
                 const date = attendanceDate || new Date().toISOString().slice(0, 10);
                 const presentNames = reportFiltered.filter(t => attendanceList.includes(t.id)).map(t => t.name);
                 const absentNames = reportFiltered.filter(t => !attendanceList.includes(t.id)).map(t => t.name);
-
                 let text = `📅 *CFC Attendance - ${date}*\n\n`;
                 text += `✅ *Present (${presentNames.length})*:\n${presentNames.join('\n')}\n\n`;
                 text += `❌ *Absent (${absentNames.length})*:\n${absentNames.join('\n')}`;
-
                 const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
                 window.open(url, '_blank');
             };
@@ -475,21 +507,7 @@
                 document.body.removeChild(link);
             };
 
-            // ... (Backup, Import, Save logic)
-            const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(`✅ 备份已生成！前往 Google Drive？`)) window.open(DRIVE_LINK, '_blank'); }, 500); };
-            const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(`⚠️ 覆盖当前数据？`)) { saveToLocal(p); alert(`✅ 成功恢复！`); setIsDataToolsOpen(false); } } catch (e) { alert("❌ 文件错误"); } e.target.value=null; }; r.readAsText(f); };
-            const handleSave = () => { if(!formData.name) return; const data = { ...formData, image: formData.image || DEFAULT_IMAGE }; let newTrainees; if(editingTrainee) newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...data, id: t.id } : t); else newTrainees = [{ ...data, id: Date.now().toString() }, ...trainees]; saveToLocal({ trainees: newTrainees }); setIsModalOpen(false); };
-            const deleteTrainee = (id) => { if(confirm("删除此球员？")) { const newT = trainees.filter(t => t.id !== id); saveToLocal({ trainees: newT }); } };
-            const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const newTeams = teams.map(t=>t===old?n:t); const newT = trainees.map(t=>t.team===old?{...t,team:n}:t); saveToLocal({teams:newTeams, trainees:newT}); setRenamingTeam({original:'',current:''}); };
-            const handleAddTeam = () => { const n=`New School ${teams.length+1}`; saveToLocal({teams:[...teams,n]}); };
-            const handleDeleteTeam = (n) => { if(!confirm(`Delete ${n}?`)) return; const newTeams=teams.filter(t=>t!==n); const newT=trainees.map(t=>t.team===n?{...t,team:'Free Agent'}:t); saveToLocal({teams:newTeams,trainees:newT}); };
-            const handleRandomPhoto = () => { const arr=['https://images.unsplash.com/photo-1511886929837-354d827aae26?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1504257365157-1496a50d48f2?w=400&h=400&fit=crop']; setFormData(p=>({...p, image:arr[Math.floor(Math.random()*arr.length)]})); };
-            const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
-            const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
-            const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
-            const generateShareText = (t) => { const L = TRANSLATIONS[lang]; const c = t.category ? `[${t.category}] ` : ''; return `【${L.appTitle}】\n\n${L.name}：${t.name}\n${L.school}：${c}${t.team}\n${L.mainPos}：${t.primaryPosition}\n${L.age}：${t.age} | ${L.height}：${t.height||'-'}cm | ${L.weight}：${t.weight||'-'}kg\n${L.attendance}：${t.attendance||0}%\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}`; };
-            const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("Copied!"); } } catch(e){} };
-            const handleSystemShare = async (t) => { try{await navigator.share({title:t.name, text:generateShareText(t)})}catch(e){alert("Use WhatsApp Button");} };
+            useEffect(() => { if (!formData.team && teams.length > 0) setFormData(p => ({ ...p, team: teams[0] })); }, [teams]);
 
             return (
                 <div className="max-w-7xl mx-auto p-4 md:p-8 pb-20 fade-in">
@@ -537,8 +555,8 @@
                             <div className="flex justify-between items-center mb-3">
                                 <h3 className="font-bold text-white flex items-center gap-2"><span className="bg-indigo-600 text-white w-6 h-6 rounded flex items-center justify-center text-xs"><i className="fa-solid fa-clipboard-user"></i></span>{t('coachReport')}: <span className="text-indigo-400">{aiResult.name}</span></h3>
                                 <div className="flex gap-2">
-                                    <button onClick={handleReportShare} className="text-zinc-400 hover:text-white transition-colors"><i className="fa-solid fa-share-nodes"></i></button>
-                                    <button onClick={() => setIsEditingReport(!isEditingReport)} className="text-zinc-400 hover:text-white transition-colors"><i className={`fa-solid ${isEditingReport ? 'fa-floppy-disk text-emerald-500' : 'fa-pen-to-square'}`}></i></button>
+                                    <button onClick={handleReportShare} className="text-zinc-400 hover:text-white transition-colors" title={t('shareProfile')}><i className="fa-solid fa-share-nodes"></i></button>
+                                    <button onClick={() => setIsEditingReport(!isEditingReport)} className="text-zinc-400 hover:text-white transition-colors" title={t('editReport')}><i className={`fa-solid ${isEditingReport ? 'fa-floppy-disk text-emerald-500' : 'fa-pen-to-square'}`}></i></button>
                                     <button onClick={() => setAiResult(null)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button>
                                 </div>
                             </div>
@@ -591,20 +609,9 @@
                                 </div>
                                 <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4"><label className="text-zinc-400 text-xs font-bold block mb-2">{t('attPaste')}</label><textarea className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-xs text-white h-20 mb-2 focus:border-emerald-500 outline-none" placeholder={t('attPlaceholder')} value={importText} onChange={e => setImportText(e.target.value)}></textarea><button onClick={parseImportText} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-900/30 rounded-lg text-xs font-bold">{t('attPasteDesc')}</button></div>
                                 
-                                {/* 修复点：显示完整的 reportFiltered，但支持搜索高亮 */}
+                                {/* 考勤列表：使用 reportFiltered (完整名单) */}
                                 <div className="flex justify-between items-center mb-2 px-1"><span className="text-xs text-zinc-500">Selected {attendanceList.length} / {reportFiltered.length}</span><button onClick={() => setAttendanceList(attendanceList.length === reportFiltered.length ? [] : reportFiltered.map(t => t.id))} className="text-xs text-indigo-400 hover:text-indigo-300">Select All</button></div>
-                                
-                                <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">
-                                    {reportFiltered.map(t => (
-                                        <div key={t.id} onClick={() => toggleAttendance(t.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${attendanceList.includes(t.id) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}>
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${attendanceList.includes(t.id) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>{attendanceList.includes(t.id) && <i className="fa-solid fa-check text-black text-xs"></i>}</div>
-                                                <div><p className="text-sm font-bold text-white">{t.name}</p><p className="text-[10px] text-zinc-500">{t.team}</p></div>
-                                            </div>
-                                            <div className="text-xs text-zinc-400">{t.attendance}%</div>
-                                        </div>
-                                    ))}
-                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">{reportFiltered.map(t => (<div key={t.id} onClick={() => toggleAttendance(t.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${attendanceList.includes(t.id) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}><div className="flex items-center gap-3"><div className={`w-5 h-5 rounded-full flex items-center justify-center border ${attendanceList.includes(t.id) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>{attendanceList.includes(t.id) && <i className="fa-solid fa-check text-black text-xs"></i>}</div><div><p className="text-sm font-bold text-white">{t.name}</p><p className="text-[10px] text-zinc-500">{t.team}</p></div></div><div className="text-xs text-zinc-400">{t.attendance}%</div></div>))}</div>
                                 <div className="flex gap-2">
                                     <button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button>
                                     <button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button>
@@ -614,11 +621,12 @@
                         </div>
                     )}
                     
-                    {/* (其他模态框代码保持不变，已包含在上面逻辑中) */}
+                    {/* (Other modals: Edit Player, School Manager, Data Tools, Cropper remain largely same, just updated logic embedded above) */}
                     {isModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-white">{editingTrainee ? t('updateProfile') : t('newPlayer')}</h2><button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4 mb-6"><div className="flex items-center gap-4"><div className="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center overflow-hidden border border-zinc-700 shrink-0 cursor-pointer relative" onClick={() => fileInputRef.current.click()}>{formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <i className="fa-solid fa-camera text-zinc-600"></i>}<input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFile} /></div><div className="flex-1 space-y-2"><input className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('name')} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} /><div className="flex gap-2"><input type="number" className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('age')} value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('nationality')} value={formData.nationality} onChange={e => setFormData({...formData, nationality: e.target.value})} /></div><div className="flex gap-2"><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('height')} value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">cm</span></div><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('weight')} value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">kg</span></div><div className="w-1/3"><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.category || 'U18'} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div></div></div></div><div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800"><div className="flex justify-between text-xs font-bold text-zinc-400 mb-2"><span>{t('attendance')}</span><span className={formData.attendance >= 90 ? 'text-emerald-500' : 'text-white'}>{formData.attendance || 0}%</span></div><input type="range" min="0" max="100" className="w-full accent-emerald-500 h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer" value={formData.attendance || 0} onChange={e => setFormData({...formData, attendance: parseInt(e.target.value)})} /></div><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}>{teams.map(t => <option key={t} value={t}>{t}</option>)}</select><div className="grid grid-cols-2 gap-2"><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.primaryPosition} onChange={e => setFormData({...formData, primaryPosition: e.target.value})}>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.secondaryPosition} onChange={e => setFormData({...formData, secondaryPosition: e.target.value})}><option value="无">无</option>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-800 p-4 rounded-xl mb-4">{Object.keys(formData.stats).map(s => (<div key={s}><div className="flex justify-between text-[10px] text-zinc-400 uppercase mb-1"><span>{t('stats', s)}</span> <span>{formData.stats[s]}</span></div><input type="range" min="0" max="99" className="w-full accent-white h-1 bg-zinc-600 rounded-lg appearance-none" value={formData.stats[s]} onChange={e => setFormData({...formData, stats: {...formData.stats, [s]: parseInt(e.target.value)}})} /></div>))}</div></div><div className="flex gap-2"><button onClick={handleSave} className="flex-1 py-3 bg-zinc-100 hover:bg-white text-zinc-900 font-bold rounded-xl transition-colors">{t('save')}</button><button onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-colors">{t('cancel')}</button></div></div></div>)}
                     {isSchoolManagerOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-lg font-bold text-white">{t('manageSchools')}</h2><button onClick={() => setIsSchoolManagerOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="max-h-[50vh] overflow-y-auto space-y-2 mb-4">{teams.map(team => (<div key={team} className="flex items-center justify-between bg-zinc-800 p-3 rounded-lg border border-zinc-700">{renamingTeam.original === team ? (<div className="flex gap-2 flex-1"><input autoFocus className="flex-1 bg-zinc-950 px-2 py-1 text-sm text-white rounded outline-none border border-emerald-500" value={renamingTeam.current} onChange={e => setRenamingTeam({...renamingTeam, current: e.target.value})} /><button onClick={() => handleRenameTeam(team)} className="text-emerald-500"><i className="fa-solid fa-check"></i></button></div>) : (<><span className="text-sm text-zinc-300">{team}</span><div className="flex gap-2"><button onClick={() => setRenamingTeam({original: team, current: team})} className="text-zinc-500 hover:text-white"><i className="fa-solid fa-pen"></i></button><button onClick={() => handleDeleteTeam(team)} className="text-zinc-500 hover:text-red-500"><i className="fa-solid fa-trash"></i></button></div></>)}</div>))}</div><button onClick={handleAddTeam} className="w-full py-2 bg-zinc-800 text-zinc-300 text-sm font-bold rounded border border-zinc-700 hover:bg-zinc-700 transition-colors">{t('addSchool')}</button></div></div>)}
                     {isDataToolsOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-lg font-bold text-white flex items-center gap-2"><i className="fa-solid fa-cloud-arrow-up text-indigo-500"></i> {t('backupTools')}</h2><button onClick={() => setIsDataToolsOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4"><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 relative group overflow-hidden"><div className="absolute top-0 right-0 p-2 opacity-20"><i className="fab fa-google-drive text-6xl text-white"></i></div><h3 className="text-white font-bold mb-2 flex items-center gap-2 z-10 relative"><i className="fa-solid fa-cloud-upload-alt text-emerald-500"></i> {t('backupToDrive')}</h3><p className="text-zinc-500 text-xs mb-3 relative z-10">{t('exportDesc')}</p><button onClick={handleBackupToDrive} className="w-full py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 relative z-10 border border-emerald-500"><i className="fab fa-google-drive"></i> {t('save')}</button></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800"><h3 className="text-zinc-300 font-bold mb-2 flex items-center gap-2"><i className="fa-solid fa-file-import text-indigo-500"></i> {t('restoreData')}</h3><p className="text-zinc-500 text-xs mb-3">{t('restoreDesc')}</p><div className="relative group"><button className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-indigo-400 border border-indigo-900/50 rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 cursor-pointer" onClick={() => backupInputRef.current.click()}><i className="fa-solid fa-folder-open"></i> {t('selectFile')}</button><input type="file" ref={backupInputRef} className="hidden" accept=".json" onChange={handleImportFile} /></div></div></div><p className="text-center text-zinc-600 text-xs mt-6">{t('dataSafe')}</p></div></div>)}
                     {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
+                    {shareTarget && (<div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in" onClick={() => setShareTarget(null)}><div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}><div className="text-center mb-6"><div className="w-20 h-20 mx-auto rounded-full overflow-hidden border-4 border-zinc-800 mb-3"><img src={shareTarget.image} className="w-full h-full object-cover" onError={e => e.target.src = DEFAULT_IMAGE} /></div><h3 className="text-xl font-bold text-white">{shareTarget.name}</h3><p className="text-sm text-zinc-500">{shareTarget.team}</p></div><div className="space-y-3"><button onClick={() => handleSystemShare(shareTarget)} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95"><i className="fa-solid fa-share-nodes"></i> {t('share', 'sendToParents')}</button><div className="relative flex py-2 items-center"><div className="flex-grow border-t border-zinc-700"></div><span className="flex-shrink-0 mx-4 text-xs text-zinc-500">{t('share', 'textOnly')}</span><div className="flex-grow border-t border-zinc-700"></div></div><div className="grid grid-cols-2 gap-3"><a href={`https://wa.me/?text=${encodeURIComponent(generateShareText(shareTarget))}`} target="_blank" className="py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-brands fa-whatsapp text-lg"></i> WhatsApp</a><a href={`mailto:?subject=CFC Player: ${shareTarget.name}&body=${encodeURIComponent(generateShareText(shareTarget))}`} className="py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-solid fa-envelope"></i> Email</a></div></div></div></div>)}
                 </div>
             );
         };
