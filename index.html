@@ -35,7 +35,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p class="text-zinc-500 text-sm mt-2">Upgrading Report Engine...</p>
+        <p class="text-zinc-500 text-sm mt-2">Recalibrating Attendance...</p>
     </div>
 
     <div id="root"></div>
@@ -47,7 +47,7 @@
         const MY_MASTER_KEY = "$2a$10$JuGSKsBRirNG95vYP0fbSuotikgzUSy8nphUaCtjGq0qsdCalvBo2"; 
         const JSONBIN_URL = "https://api.jsonbin.io/v3/b";
         
-        // 🔥 年度固定目标
+        // 🔥 年度固定目标：52次
         const PRESET_YEARLY_TOTAL = 52;
         // =================================================================
 
@@ -118,7 +118,7 @@
                 attConfirm: "提交 / 更新记录",
                 attShare: "分享出席表",
                 attWhatsapp: "WhatsApp",
-                attExcel: "导出专业报表", 
+                attExcel: "导出 Excel", 
                 attTotal: "总人数",
                 attPresent: "出席",
                 resetStats: "重置数据", 
@@ -155,7 +155,7 @@
                 shareProfile: "Share Profile", sendToParents: "Send to Parents (w/ Photo)", textOnly: "Text Report Only",
                 cropTitle: "Crop Photo", rotate: "Rotate", confirmCrop: "Confirm", attTitle: "Smart Attendance",
                 attDate: "Date", attPaste: "Paste List", attPasteDesc: "Auto-check names", attPlaceholder: "Names...", attConfirm: "Submit",
-                attShare: "Share List", attWhatsapp: "WhatsApp", attExcel: "Export Report", attTotal: "Total", attPresent: "Present",
+                attShare: "Share List", attWhatsapp: "WhatsApp", attExcel: "Export Excel", attTotal: "Total", attPresent: "Present",
                 resetStats: "Reset", cloudSetup: "Cloud Setup", cloudKey: "Master Key", cloudBin: "Bin ID", cloudConnect: "Connect",
                 cloudCreate: "✨ Auto Create DB", cloudDesc: "Enter Key to auto-create and sync.",
                 stats: { pace: "PAC", shooting: "SHO", passing: "PAS", dribbling: "DRI", defending: "DEF", physical: "PHY" },
@@ -170,9 +170,9 @@
                 school: "Sekolah", mainPos: "Posisi", subPos: "Posisi 2", save: "Simpan", cancel: "Batal", addSchool: "Tambah",
                 backupTools: "Alat", backupToDrive: "Sandaran Drive", exportDesc: "Jana fail .json", restoreData: "Pulihkan",
                 restoreDesc: "Pilih fail .json", selectFile: "Pilih Fail", shareProfile: "Kongsi", sendToParents: "Hantar (Foto)",
-                textOnly: "Teks Sahaja", cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Sahkan", attTitle: "Pusat Kehadiran",
+                textOnly: "Teks Sahaja", cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Sahkan", attTitle: "Kehadiran",
                 attDate: "Tarikh", attPaste: "Tampal Senarai", attPasteDesc: "Tanda nama automatik", attPlaceholder: "Contoh: Hadir: Arthur, Stella...",
-                attConfirm: "Hantar", attShare: "Kongsi", attWhatsapp: "WhatsApp", attExcel: "Eksport Laporan", attTotal: "Jumlah", attPresent: "Hadir",
+                attConfirm: "Hantar", attShare: "Kongsi", attWhatsapp: "WhatsApp", attExcel: "Eksport Excel", attTotal: "Jumlah", attPresent: "Hadir",
                 resetStats: "Tetap Semula", cloudSetup: "Tetapan Awan", cloudKey: "Master Key", cloudBin: "Bin ID", cloudConnect: "Sambung",
                 cloudCreate: "✨ Cipta DB Baru", cloudDesc: "Masukkan Key untuk auto-cipta.",
                 stats: { pace: "Laju", shooting: "Tembak", passing: "Hantar", dribbling: "Gelecek", defending: "Pertahan", physical: "Fizikal" },
@@ -250,17 +250,14 @@
                     const sanitized = localData.trainees.map(t => {
                         let history = Array.isArray(t.attendanceHistory) ? t.attendanceHistory : [];
                         let currentTotal = (t.totalSessions && t.totalSessions > 0) ? t.totalSessions : PRESET_YEARLY_TOTAL;
-                        if (currentTotal < 20) currentTotal = PRESET_YEARLY_TOTAL; 
                         
+                        // 🔥 强制重算已出席次数：完全基于历史记录
                         let currentAttended = t.attendedSessions || 0;
                         if (history.length > 0) {
                             currentAttended = history.filter(h => (typeof h === 'string' ? 'present' : h.status) === 'present').length;
-                        } else if (t.attendance > 0 && currentAttended === 0) {
-                            currentAttended = Math.round(currentTotal * (t.attendance / 100));
-                        }
+                        } 
 
-                        if (currentAttended > currentTotal) currentTotal = currentAttended;
-
+                        // 重算百分比
                         const rate = currentTotal === 0 ? 0 : Math.round((currentAttended / currentTotal) * 100);
 
                         return {
@@ -282,16 +279,13 @@
 
                 let activeKey = MY_MASTER_KEY || savedCloud.key;
                 let activeBin = savedCloud.binId;
-                
                 if (activeKey) {
                     setCloudConfig({ key: activeKey, binId: activeBin || '' });
-                    if (activeBin) {
-                        syncFromCloud(activeKey, activeBin);
-                    }
+                    if (activeBin) syncFromCloud(activeKey, activeBin);
                 }
             }, []);
 
-            // --- Cloud Logic (Omitted for brevity, logic exists) ---
+            // --- Cloud Logic ---
             const stripImages = (data) => {
                 const cleanData = JSON.parse(JSON.stringify(data));
                 if (cleanData.trainees) {
@@ -384,27 +378,15 @@
                 if (isCloudConnected) { syncToCloud({ trainees: currentData.trainees, teams: currentData.teams, leagueName: currentData.leagueName }); }
             };
 
-            // ... (Backup/Import/File/Cropper/Team logic unchanged) ...
+            // ... (Backup/Import/File/Cropper - Unchanged) ...
             const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(`✅ 备份已下载！`)) window.open(DRIVE_LINK, '_blank'); }, 500); };
             const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(`⚠️ 覆盖当前数据？`)) { saveToLocal(p); alert(`✅ 成功恢复！`); setIsDataToolsOpen(false); } } catch (e) { alert("❌ 文件错误"); } e.target.value=null; }; r.readAsText(f); };
             const handleFile = (e, isLogo) => { const f = e.target.files?.[0]; if(!f) return; const r = new FileReader(); r.onloadend = () => { setTempImage(r.result); setIsLogoCrop(isLogo); setIsCropperOpen(true); }; r.readAsDataURL(f); };
             useEffect(() => { if (isCropperOpen && cropperImageRef.current) { if (cropperRef.current) cropperRef.current.destroy(); cropperRef.current = new Cropper(cropperImageRef.current, { aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8 }); } }, [isCropperOpen, tempImage]);
             const handleCropConfirm = () => { if (cropperRef.current) { const c = cropperRef.current.getCroppedCanvas({ width: 400, height: 400 }); const u = c.toDataURL('image/jpeg', 0.8); if (isLogoCrop) { setAppLogo(u); saveToLocal({ appLogo: u }); } else { setFormData(p => ({ ...p, image: u })); } setIsCropperOpen(false); setTempImage(null); if(fileInputRef.current) fileInputRef.current.value=''; if(logoInputRef.current) logoInputRef.current.value=''; } };
             const handleRotate = () => { if (cropperRef.current) cropperRef.current.rotate(90); };
-            const deleteTrainee = (id) => { if(confirm("删除此球员？")) { const newT = trainees.filter(t => t.id !== id); saveToLocal({ trainees: newT }); } };
-            const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const newTeams = teams.map(t=>t===old?n:t); const newT = trainees.map(t=>t.team===old?{...t,team:n}:t); saveToLocal({teams:newTeams, trainees:newT}); setRenamingTeam({original:'',current:''}); };
-            const handleAddTeam = () => { const n=`New School ${teams.length+1}`; saveToLocal({teams:[...teams,n]}); };
-            const handleDeleteTeam = (n) => { if(!confirm(`Delete ${n}?`)) return; const newTeams=teams.filter(t=>t!==n); const newT=trainees.map(t=>t.team===n?{...t,team:'Free Agent'}:t); saveToLocal({teams:newTeams,trainees:newT}); };
-            const handleRandomPhoto = () => { const arr=['https://images.unsplash.com/photo-1511886929837-354d827aae26?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1504257365157-1496a50d48f2?w=400&h=400&fit=crop']; setFormData(p=>({...p, image:arr[Math.floor(Math.random()*arr.length)]})); };
             
-            const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
-            const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
-            const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
-            const generateShareText = (t) => { const L = TRANSLATIONS[lang]; const c = t.category ? `[${t.category}] ` : ''; return `【${L.appTitle}】\n\n${L.name}：${t.name}\n${L.school}：${c}${t.team}\n${L.mainPos}：${t.primaryPosition}\n${L.age}：${t.age} | ${L.height}：${t.height||'-'}cm | ${L.weight}：${t.weight||'-'}kg\n${L.attendance}：${t.attendance||0}%\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}`; };
-            const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("Copied!"); } } catch(e){} };
-            const handleSystemShare = async (t) => { try{await navigator.share({title:t.name, text:generateShareText(t)})}catch(e){alert("Use WhatsApp Button");} };
-            const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(t => attendanceList.includes(t.id)).map(t => t.name); const aNames = reportFiltered.filter(t => !attendanceList.includes(t.id)).map(t => t.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
-            
+            // --- 考勤手动修改 ---
             const handleAttendanceChange = (field, value) => {
                 const val = parseInt(value) || 0;
                 let newData = { ...formData, [field]: val };
@@ -431,60 +413,41 @@
                 const finalData = { ...data };
                 let newTrainees;
                 if(editingTrainee) {
+                     // ⚠️ 编辑模式：如果手动修改了 attendedSessions，我们需要保留这个修改，并可能需要清空 history 以免冲突
+                     // 或者，更安全的做法是：手动修改仅影响数字，history 保持原样（但这样会导致下次重算时数字又变回去）
+                     // 最佳实践：手动修改数字 = 强制覆盖。为了简单起见，我们假设手动修改是权威的。
+                     // 但为了保持逻辑一致，如果手动修改了数字，我们应该清空 history，因为 history 和数字不匹配了。
+                     
                      const oldT = trainees.find(t => t.id === editingTrainee.id);
-                     newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...finalData, attendanceHistory: oldT.attendanceHistory, id: t.id } : t);
+                     let newHistory = oldT.attendanceHistory;
+
+                     // 只有当数字被人为改变时，才清空历史，避免冲突
+                     if (data.attendedSessions !== oldT.attendedSessions) {
+                         newHistory = []; // 清空历史，以新数字为准
+                     }
+
+                     newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...finalData, attendanceHistory: newHistory, id: t.id } : t);
                 } else {
                      newTrainees = [{ ...finalData, id: Date.now().toString(), attendanceHistory: [] }, ...trainees]; 
                 }
                 saveToLocal({ trainees: newTrainees }); 
                 setIsModalOpen(false); 
             };
-
-            // 🔥 核心升级：智能分校排序 Excel
-            const handleExportAttendanceExcel = () => {
-                const date = attendanceDate || new Date().toISOString().slice(0, 10);
-                const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
-                
-                // 1. 智能排序：学校 -> 组别 -> 姓名
-                const sortedList = [...reportFiltered].sort((a, b) => {
-                    if (a.team !== b.team) return a.team.localeCompare(b.team);
-                    if (a.category !== b.category) return (a.category || '').localeCompare(b.category || '');
-                    return a.name.localeCompare(b.name);
-                });
-
-                // 2. 生成 CSV 内容 (带 BOM 解决中文乱码)
-                let csvContent = "\uFEFF";
-                
-                // 3. 漂亮的表头信息
-                csvContent += `CFC ATTENDANCE REPORT - ${targetSchool}\n`;
-                csvContent += `Date:,${date}\n`;
-                csvContent += `Total:,${sortedList.length},Present:,${attendanceList.filter(id => sortedList.some(t => t.id === id)).length}\n\n`;
-                
-                // 4. 数据列头
-                csvContent += "School,Category,Player Name,Status,Current Rate\n";
-                
-                // 5. 填充数据
-                sortedList.forEach(t => {
-                    const status = attendanceList.includes(t.id) ? "Present" : "Absent";
-                    const rate = `${t.attendance}% (${t.attendedSessions}/${t.totalSessions})`;
-                    
-                    // 清理逗号防止 CSV 错位
-                    const safeSchool = t.team.replace(/,/g, " ").split(' (')[0];
-                    const safeCat = (t.category || "-").replace(/,/g, " ");
-                    const safeName = t.name.replace(/,/g, " ");
-                    
-                    csvContent += `${safeSchool},${safeCat},${safeName},${status},${rate}\n`;
-                });
-
-                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = `CFC_Att_${targetSchool}_${date}.csv`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            };
+            
+            const deleteTrainee = (id) => { if(confirm("删除此球员？")) { const newT = trainees.filter(t => t.id !== id); saveToLocal({ trainees: newT }); } };
+            const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const newTeams = teams.map(t=>t===old?n:t); const newT = trainees.map(t=>t.team===old?{...t,team:n}:t); saveToLocal({teams:newTeams, trainees:newT}); setRenamingTeam({original:'',current:''}); };
+            const handleAddTeam = () => { const n=`New School ${teams.length+1}`; saveToLocal({teams:[...teams,n]}); };
+            const handleDeleteTeam = (n) => { if(!confirm(`Delete ${n}?`)) return; const newTeams=teams.filter(t=>t!==n); const newT=trainees.map(t=>t.team===n?{...t,team:'Free Agent'}:t); saveToLocal({teams:newTeams,trainees:newT}); };
+            const handleRandomPhoto = () => { const arr=['https://images.unsplash.com/photo-1511886929837-354d827aae26?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1504257365157-1496a50d48f2?w=400&h=400&fit=crop']; setFormData(p=>({...p, image:arr[Math.floor(Math.random()*arr.length)]})); };
+            
+            const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
+            const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
+            const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
+            const generateShareText = (t) => { const L = TRANSLATIONS[lang]; const c = t.category ? `[${t.category}] ` : ''; return `【${L.appTitle}】\n\n${L.name}：${t.name}\n${L.school}：${c}${t.team}\n${L.mainPos}：${t.primaryPosition}\n${L.age}：${t.age} | ${L.height}：${t.height||'-'}cm | ${L.weight}：${t.weight||'-'}kg\n${L.attendance}：${t.attendance||0}%\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}`; };
+            const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("Copied!"); } } catch(e){} };
+            const handleSystemShare = async (t) => { try{await navigator.share({title:t.name, text:generateShareText(t)})}catch(e){alert("Use WhatsApp Button");} };
+            const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(t => attendanceList.includes(t.id)).map(t => t.name); const aNames = reportFiltered.filter(t => !attendanceList.includes(t.id)).map(t => t.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
+            const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(t => { const status = attendanceList.includes(t.id) ? "Present" : "Absent"; csvContent += `${t.name.replace(/,/g," ")},${t.team.replace(/,/g," ")},${t.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
 
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
@@ -496,68 +459,64 @@
                 t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.team.toLowerCase().includes(searchTerm.toLowerCase())
             ), [reportFiltered, searchTerm]);
 
-            // 考勤逻辑
+            // 🔥 核心：考勤提交逻辑 - 重算模式 (Recalculate Mode)
             const openAttendanceModal = () => {
                 const today = new Date().toISOString().slice(0, 10);
                 setAttendanceDate(today);
-                const alreadyRecorded = reportFiltered.some(t => t.attendanceHistory && t.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today));
-                if (alreadyRecorded) {
-                    const presentIds = reportFiltered.filter(t => t.attendanceHistory.some(h => {
-                         const hDate = typeof h === 'string' ? h : h.date;
-                         const hStatus = typeof h === 'string' ? 'present' : h.status; 
-                         return hDate === today && hStatus === 'present';
-                    })).map(t => t.id);
+                
+                // 预选：如果今天有记录，就加载记录；如果没有，加载全员
+                const hasRecord = reportFiltered.some(t => t.attendanceHistory && t.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today));
+                
+                if (hasRecord) {
+                    const presentIds = reportFiltered.filter(t => {
+                        const history = t.attendanceHistory || [];
+                        const todayEntry = history.find(h => (typeof h === 'string' ? h : h.date) === today);
+                        // 如果找到了记录，且状态是 present
+                        return todayEntry && (typeof todayEntry === 'string' ? true : todayEntry.status === 'present');
+                    }).map(t => t.id);
                     setAttendanceList(presentIds);
                 } else {
-                    setAttendanceList(reportFiltered.map(t => t.id)); 
+                    setAttendanceList(reportFiltered.map(t => t.id)); // 默认全选
                 }
+                
                 setImportText("");
                 setIsAttendanceOpen(true);
             };
             const toggleAttendance = (id) => { if (attendanceList.includes(id)) setAttendanceList(attendanceList.filter(pid => pid !== id)); else setAttendanceList([...attendanceList, id]); };
             const parseImportText = () => { if (!importText) return; const text = importText.toLowerCase(); const matchedIds = reportFiltered.filter(t => text.includes(t.name.toLowerCase())).map(t => t.id); if (matchedIds.length > 0) { setAttendanceList(matchedIds); alert(`✅ ID: ${matchedIds.length}`); } else { alert("⚠️ No match"); } };
+            
             const submitAttendance = () => {
                 const totalCount = reportFiltered.length;
                 const presentCount = attendanceList.filter(id => reportFiltered.some(r => r.id === id)).length;
-                if (!confirm(`Confirm [${attendanceDate}]?`)) return;
+                if (!confirm(`${TRANSLATIONS[lang].attConfirm} [${attendanceDate}]?`)) return;
                 
                 const newTrainees = trainees.map(t => {
+                    // 仅处理当前列表中的球员
                     if (reportFiltered.some(r => r.id === t.id)) {
-                        let history = t.attendanceHistory || []; if(!Array.isArray(history)) history = [];
+                        let history = Array.isArray(t.attendanceHistory) ? [...t.attendanceHistory] : [];
                         const isPresent = attendanceList.includes(t.id);
                         const newStatus = isPresent ? 'present' : 'absent';
                         
-                        const todayIndex = history.findIndex(h => (typeof h === 'string' ? h : h.date) === attendanceDate);
+                        // 1. 移除今天的旧记录 (如果有)
+                        history = history.filter(h => (typeof h === 'string' ? h : h.date) !== attendanceDate);
                         
-                        // 使用当前保存的 totalSessions，不自动 +1
-                        let newTotal = t.totalSessions || PRESET_YEARLY_TOTAL; 
-                        let newAttended = t.attendedSessions || 0;
-                        let newHistory = [...history];
+                        // 2. 添加新记录
+                        history.push({ date: attendanceDate, status: newStatus });
 
-                        if (todayIndex !== -1) {
-                            const oldEntry = history[todayIndex];
-                            const oldStatus = typeof oldEntry === 'string' ? 'present' : oldEntry.status;
-                            if (oldStatus !== newStatus) {
-                                if (newStatus === 'present') newAttended++; 
-                                else newAttended--; 
-                            }
-                            newHistory[todayIndex] = { date: attendanceDate, status: newStatus };
-                        } else {
-                            if (isPresent) newAttended++;
-                            newHistory.push({ date: attendanceDate, status: newStatus });
-                        }
+                        // 3. 强制重算：数一数 history 里有多少个 'present'
+                        const newAttended = history.filter(h => (typeof h === 'string' ? 'present' : h.status) === 'present').length;
+                        
+                        // 4. 使用当前的总场次 (如果为0则用默认)
+                        const currentTotal = (t.totalSessions && t.totalSessions > 0) ? t.totalSessions : PRESET_YEARLY_TOTAL;
+                        
+                        const newRate = Math.round((newAttended / currentTotal) * 100);
 
-                        // 简单防错
-                        if (newAttended < 0) newAttended = 0;
-                        if (newAttended > newTotal) newTotal = newAttended; // 动态扩大基数
-
-                        const newRate = newTotal === 0 ? 0 : Math.round((newAttended / newTotal) * 100);
                         return { 
                             ...t, 
-                            totalSessions: newTotal, 
+                            totalSessions: currentTotal, 
                             attendedSessions: newAttended, 
                             attendance: newRate,
-                            attendanceHistory: newHistory 
+                            attendanceHistory: history
                         };
                     }
                     return t;
