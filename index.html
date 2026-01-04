@@ -21,37 +21,30 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* 裁剪器容器样式 */
         .cropper-container { max-height: 60vh; background-color: #000; }
         #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 50; }
         .hidden { display: none !important; }
-        /* 日期选择器深色模式适配 */
         input[type="date"], input[type="month"] { color-scheme: dark; }
-        input[type="date"]::-webkit-calendar-picker-indicator, input[type="month"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; opacity: 0.8; }
     </style>
 </head>
 <body>
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p class="text-zinc-500 text-sm mt-2">Updating Languages...</p>
+        <p class="text-zinc-500 text-sm mt-2">System Ready...</p>
     </div>
 
     <div id="root"></div>
 
     <script type="text/babel">
         // =================================================================
-        // 🔑 你的专属钥匙
+        // 🔑 你的专属配置
         // =================================================================
         const MY_MASTER_KEY = "$2a$10$JuGSKsBRirNG95vYP0fbSuotikgzUSy8nphUaCtjGq0qsdCalvBo2"; 
         const JSONBIN_URL = "https://api.jsonbin.io/v3/b";
-        
-        // 🔥 年度固定目标
         const PRESET_YEARLY_TOTAL = 52;
-        // 💰 默认月费
         const DEFAULT_MONTHLY_FEE = 150;
 
-        // 🏦 银行信息
         const BANK_INFO = {
             bankName: "OCBC BANK",
             accNum: "7091258844",
@@ -60,16 +53,17 @@
         // =================================================================
 
         if (!window.React || !window.ReactDOM) {
-            document.getElementById('static-loading').innerHTML = '<p class="text-red-500 p-4">错误：React 加载失败。请检查网络连接。</p>';
+            document.getElementById('static-loading').innerHTML = '<p class="text-red-500 p-4">错误：React 加载失败。请刷新。</p>';
             throw new Error("React 未加载");
         }
 
         const { useState, useEffect, useRef, useMemo } = React;
 
+        // 移除加载动画
         setTimeout(() => {
             const loader = document.getElementById('static-loading');
             if(loader) loader.classList.add('hidden');
-        }, 1000); 
+        }, 1500); 
 
         // --- 多语言字典 ---
         const TRANSLATIONS = {
@@ -88,46 +82,42 @@
                 textOnly: "仅发送文字报告", cropTitle: "裁剪头像", rotate: "旋转", confirmCrop: "确认裁剪",
                 attTitle: "智能出席库", attDate: "记录日期", attPaste: "📄 粘贴名单导入 (WhatsApp/Excel)",
                 attPasteDesc: "直接粘贴文字，系统会自动识别名单中的名字并勾选。",
-                attPlaceholder: "例如：今日出席：Arthur, Stella, Money...", attConfirm: "提交 / 更新记录",
-                attShare: "分享出席表", attWhatsapp: "WhatsApp", attExcel: "导出 Excel", attTotal: "总人数", attPresent: "出席",
-                resetStats: "重置数据", cloudSetup: "云端同步设置 (JSONBin)", cloudKey: "Master Key", cloudBin: "Bin ID",
-                cloudConnect: "连接云端", cloudCreate: "✨ 自动创建新数据库", cloudDesc: "输入 Key 即可自动创建并连接云数据库，实现多设备同步。",
+                attPlaceholder: "例如：今日出席：Arthur, Stella, Money...",
+                attConfirm: "提交 / 更新记录",
+                attShare: "分享出席表",
+                attWhatsapp: "WhatsApp",
+                attExcel: "导出 Excel", 
+                attTotal: "总人数",
+                attPresent: "出席",
+                resetStats: "重置数据", 
+                cloudSetup: "云端同步设置 (JSONBin)", cloudKey: "Master Key", cloudBin: "Bin ID",
+                cloudConnect: "连接云端", cloudCreate: "✨ 自动创建新数据库", 
+                cloudDesc: "输入 Key 即可自动创建并连接云数据库，实现多设备同步。",
                 finTitle: "财务中心", finMonth: "月份", finFee: "月费标准 (RM)", finPaid: "已交", finUnpaid: "未交",
                 finTotal: "总收入", finPending: "待收", finRemind: "催费", finExport: "导出财务表",
                 finBank: "银行户口", finCopy: "复制", finCopied: "已复制！",
                 
-                // 🔥 新增：msgTemplates & msgs
-                msgTemplates: {
-                    gentle: "🌸 温柔提醒",
-                    friendly: "🤝 朋友语气",
-                    soft: "🍃 婉转提醒", // New
-                    formal: "👔 正式通知"
-                },
+                msgTemplates: { gentle: "🌸 温柔提醒", friendly: "🤝 朋友语气", soft: "🍃 婉转提醒", formal: "👔 正式通知" },
                 msgs: {
                     gentle: "Hi 家长好 👋，温馨提醒一下，{name} {month} 月份的学费 (RM{amount}) 尚未缴交。方便的话请安排汇款，谢谢您的支持！🙏🏻",
                     friendly: "Hello! 👋 这是一个关于 {name} {month} 月学费 (RM{amount}) 的小小提醒。如果已经转账请忽略哦，谢谢！⚽️",
-                    soft: "家长好 😊，最近比较忙吧？只是想确认一下 {name} {month} 月的学费 (RM{amount})。有空麻烦处理一下哦，感谢！✨", // New
+                    soft: "家长好 😊，最近比较忙吧？只是想确认一下 {name} {month} 月的学费 (RM{amount})。有空麻烦处理一下哦，感谢！✨",
                     formal: "【CFC 财务通知】您好，请查收 {name} {month} 月份的学费单 (RM{amount})。请在近期内完成缴费，感谢配合。"
                 },
                 bankDetails: "\n\n🏦 汇款资料:\n{bankName}\n{accNum}\n{holder}\n\n汇款后请发收据，谢谢！",
                 stats: { pace: "速度", shooting: "射门", passing: "传球", dribbling: "盘带", defending: "防守", physical: "体能" },
-                ai: { analyzing: "教练组正在分析...", reportTitle: "教练深度评估报告", position: "球员定位", rating: "综合评级", strength: "核心竞争力", suggestion: "战术建议", comment: "教练评语", template: "均衡型球员", advice: "需进一步观察。", commentText: "潜力不错，建议继续观察。" },
+                ai: { analyzing: "分析中...", reportTitle: "教练深度评估报告", position: "球员定位", rating: "综合评级", strength: "核心竞争力", suggestion: "战术建议", comment: "教练评语", template: "均衡型球员", advice: "需进一步观察。", commentText: "潜力不错，建议继续观察。" },
                 status: { syncing: "⏳ 同步中...", ready: "✅ 就绪", fail: "❌ 失败", netError: "❌ 网络错误", saving: "☁️ 保存中...", saved: "✅ 已保存", saveFail: "❌ 保存失败", creating: "创建中...", created: "✅ 已创建", error: "❌ 错误" },
                 alerts: {
                     fillImgConfig: "请填写 Cloud Name 和 Upload Preset", imgCloudConnected: "✅ 图片云已连接！",
-                    fillMasterKey: "请先填入 Master Key",
-                    cloudCreated: "✅ 云端数据库创建成功！\n\nBin ID: {binId}\n\n请务必复制这个 ID，在其他手机填入即可同步数据。",
-                    fillCloudConfig: "请填写 Master Key 和 Bin ID",
-                    backupDownloaded: "✅ 备份已下载！\n(包含所有图片)\n\n点击“确定”将跳转到 Google Drive。",
-                    overwriteConfirm: "⚠️ 覆盖当前数据？\n这将恢复所有内容(含图片)。",
-                    fileError: "❌ 文件错误", deleteConfirm: "删除此项？",
-                    resetConfirm: "⚠️ 确定要重置此球员的考勤数据吗？\n这将清空历史，出席率归零。",
-                    updated: "✅ 数据已更新！", shareNotSupported: "您的浏览器不支持直接分享",
-                    copied: "已复制！", useWhatsapp: "请使用 WhatsApp 按钮",
+                    fillMasterKey: "请先填入 Master Key", cloudCreated: "✅ 云端数据库创建成功！\n\nBin ID: {binId}\n\n请务必复制这个 ID。",
+                    fillCloudConfig: "请填写 Master Key 和 Bin ID", backupDownloaded: "✅ 备份已下载！",
+                    overwriteConfirm: "⚠️ 覆盖当前数据？", fileError: "❌ 文件错误", deleteConfirm: "删除此项？",
+                    resetConfirm: "⚠️ 确定要重置此球员的考勤数据吗？", updated: "✅ 数据已更新！", copied: "已复制！", useWhatsapp: "请使用 WhatsApp 按钮",
                     attConfirmMsg: "确认提交 / 更新 [{date}] 的考勤？\n\n总人数: {total}\n出席: {present}\n缺席: {absent}"
                 }
             },
-             en: {
+            en: {
                 appTitle: "CFC YOUTH ACADEMY", systemName: "ACADEMY SYSTEM", localMode: "Local", cloudMode: "Cloud Sync",
                 backupRestore: "Backup", manageSchools: "Schools", attendanceTool: "Attendance", financeTool: "Finance",
                 register: "Register", searchPlaceholder: "Search...", noData: "No Data",
@@ -149,28 +139,21 @@
                 finTotal: "Revenue", finPending: "Pending", finRemind: "Remind", finExport: "Export Excel",
                 finBank: "Bank Info", finCopy: "Copy", finCopied: "Copied!",
 
-                // 🔥 Enhanced English
                 msgTemplates: { gentle: "Gentle", friendly: "Friendly", soft: "Soft Nudge", formal: "Formal" },
                 msgs: {
-                    gentle: "Hi parents 👋, gentle reminder: {name}'s fee for {month} (RM{amount}) is pending. Thanks for your support! 🙏🏻",
+                    gentle: "Hi parents 👋, gentle reminder: {name}'s fee for {month} (RM{amount}) is pending. Thanks! 🙏🏻",
                     friendly: "Hey! 👋 Quick heads up on {name}'s fee for {month} (RM{amount}). Thanks! ⚽️",
-                    soft: "Hi there! 👋 Hope you're having a good week. Just a soft nudge regarding {name}'s fee for {month} (RM{amount}). No rush! ✨", // New
+                    soft: "Hi there! 👋 Hope you're having a good week. Just a soft nudge regarding {name}'s fee for {month} (RM{amount}). No rush! ✨",
                     formal: "Dear Parent, reminder regarding {name}'s fee for {month} (RM{amount}). Please arrange payment. Thank you."
                 },
                 bankDetails: "\n\n🏦 Bank Details:\n{bankName}\n{accNum}\n{holder}\n\nPlease share receipt. Thanks!",
-                
                 status: { syncing: "⏳ Syncing...", ready: "✅ Ready", fail: "❌ Fail", netError: "❌ Net Error", saving: "☁️ Saving...", saved: "✅ Saved", saveFail: "❌ Save Fail", creating: "Creating...", created: "✅ Created", error: "❌ Error" },
                 alerts: {
                     fillImgConfig: "Fill Cloud Name & Preset", imgCloudConnected: "✅ Image Cloud Ready!",
-                    fillMasterKey: "Enter Master Key",
-                    cloudCreated: "✅ Cloud DB Created!\n\nBin ID: {binId}\n\nCopy this ID to other devices.",
-                    fillCloudConfig: "Enter Key & Bin ID",
-                    backupDownloaded: "✅ Backup Downloaded!\n(Includes images)\n\nClick OK to open Drive.",
-                    overwriteConfirm: "⚠️ Overwrite data?\nRestores everything (incl images).",
-                    fileError: "❌ File Error", deleteConfirm: "Delete?",
-                    resetConfirm: "⚠️ Reset attendance stats?\nHistory will be cleared.",
-                    updated: "✅ Data Updated!", shareNotSupported: "Share not supported",
-                    copied: "Copied!", useWhatsapp: "Use WhatsApp Button",
+                    fillMasterKey: "Enter Master Key", cloudCreated: "✅ Cloud DB Created!\n\nBin ID: {binId}",
+                    fillCloudConfig: "Enter Key & Bin ID", backupDownloaded: "✅ Backup Downloaded!",
+                    overwriteConfirm: "⚠️ Overwrite data?", fileError: "❌ File Error", deleteConfirm: "Delete?",
+                    resetConfirm: "⚠️ Reset stats?", updated: "✅ Data Updated!", copied: "Copied!", useWhatsapp: "Use WhatsApp Button",
                     attConfirmMsg: "Confirm attendance for [{date}]?\n\nTotal: {total}\nPresent: {present}\nAbsent: {absent}"
                 },
                 stats: { pace: "PAC", shooting: "SHO", passing: "PAS", dribbling: "DRI", defending: "DEF", physical: "PHY" },
@@ -179,14 +162,16 @@
             ms: {
                 appTitle: "AKADEMI BELIA CFC", systemName: "SISTEM AKADEMI", localMode: "Tempatan", cloudMode: "Awan",
                 backupRestore: "Sandaran", manageSchools: "Sekolah", attendanceTool: "Kehadiran", financeTool: "Kewangan",
-                register: "Daftar", searchPlaceholder: "Cari...", noData: "Tiada Data", age: "Umur", category: "Kategori", height: "Tinggi", weight: "Berat",
-                attendance: "Kehadiran Thn", attCount: "Hadir", totalCount: "Sasaran", coachReport: "Laporan", editReport: "Sunting",
+                register: "Daftar", searchPlaceholder: "Cari...", noData: "Tiada Data",
+                age: "Umur", category: "Kategori", height: "Tinggi", weight: "Berat", attendance: "Kehadiran",
+                attCount: "Hadir", totalCount: "Sasaran", coachReport: "Laporan", editReport: "Sunting",
                 edit: "Sunting", delete: "Padam", aiAnalyze: "Analisis", updateProfile: "Kemaskini", newPlayer: "Pemain Baru",
                 name: "Nama", nationality: "Warganegara", school: "Sekolah", mainPos: "Posisi", subPos: "Posisi 2",
                 save: "Simpan", cancel: "Batal", addSchool: "Tambah", backupTools: "Alat",
                 backupToDrive: "Sandaran Drive", exportDesc: "Jana fail sandaran.",
-                restoreData: "Pulihkan", restoreDesc: "Pilih fail .json.", selectFile: "Pilih Fail", shareProfile: "Kongsi",
-                sendToParents: "Hantar (Foto)", textOnly: "Teks Sahaja", cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Sahkan",
+                restoreData: "Pulihkan", restoreDesc: "Pilih fail .json.", selectFile: "Pilih Fail",
+                shareProfile: "Kongsi", sendToParents: "Hantar (Foto)", textOnly: "Teks Sahaja",
+                cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Sahkan",
                 attTitle: "Pusat Kehadiran", attDate: "Tarikh", attPaste: "Tampal Senarai", attPasteDesc: "Auto-tanda",
                 attPlaceholder: "Contoh: Hadir: Arthur...", attConfirm: "Hantar",
                 attShare: "Kongsi", attWhatsapp: "WhatsApp", attExcel: "Eksport Excel", attTotal: "Jumlah", attPresent: "Hadir",
@@ -196,29 +181,22 @@
                 finTotal: "Hasil", finPending: "Tunggakan", finRemind: "Ingatkan", finExport: "Eksport Excel",
                 finBank: "Bank", finCopy: "Salin", finCopied: "Disalin!",
                 
-                // 🔥 Enhanced Malay
                 msgTemplates: { gentle: "Lembut", friendly: "Mesra", soft: "Santai", formal: "Rasmi" },
                 msgs: {
-                    gentle: "Salam ibu bapa 👋, peringatan mesra yuran {name} bulan {month} (RM{amount}) belum dijelaskan. Terima kasih atas sokongan! 🙏🏻",
+                    gentle: "Salam ibu bapa 👋, peringatan mesra yuran {name} bulan {month} (RM{amount}) belum dijelaskan. Terima kasih! 🙏🏻",
                     friendly: "Hi! 👋 Cuma nak ingatkan pasal yuran {name} bulan {month} (RM{amount}). Terima kasih! ⚽️",
-                    soft: "Salam tuan/puan 👋, maaf mengganggu. Sekadar nak follow up yuran {name} untuk bulan {month} (RM{amount}). Kalau dah bayar, boleh abaikan ya. Terima kasih! 🍃", // New
+                    soft: "Salam tuan/puan 👋, maaf mengganggu. Sekadar nak follow up yuran {name} untuk bulan {month} (RM{amount}). Kalau dah bayar, boleh abaikan ya. Terima kasih! 🍃",
                     formal: "Kepada Ibu Bapa, peringatan yuran {name} bulan {month} (RM{amount}). Sila jelaskan bayaran. Terima kasih."
                 },
                 bankDetails: "\n\n🏦 Maklumat Bank:\n{bankName}\n{accNum}\n{holder}\n\nSila hantar resit. Terima kasih!",
-                
                 status: { syncing: "⏳ Menyegerakkan...", ready: "✅ Sedia", fail: "❌ Gagal", netError: "❌ Ralat Rangkaian", saving: "☁️ Menyimpan...", saved: "✅ Disimpan", saveFail: "❌ Gagal Simpan", creating: "Mencipta...", created: "✅ Dicipta", error: "❌ Ralat" },
                 alerts: {
                     fillImgConfig: "Sila isi Cloud Name & Preset", imgCloudConnected: "✅ Awan Gambar OK!",
-                    fillMasterKey: "Masukkan Master Key",
-                    cloudCreated: "✅ Pangkalan Data Awan Dicipta!\n\nBin ID: {binId}\n\nSila salin ID ini.",
-                    fillCloudConfig: "Masukkan Key & Bin ID",
-                    backupDownloaded: "✅ Sandaran Dimuat Turun!\n(Termasuk gambar)\n\nKlik OK untuk ke Drive.",
-                    overwriteConfirm: "⚠️ Timpa data?\nIni memulihkan segalanya.",
-                    fileError: "❌ Ralat Fail", deleteConfirm: "Padam?",
-                    resetConfirm: "⚠️ Tetap semula kehadiran?\nSejarah akan dipadam.",
-                    updated: "✅ Data Dikemaskini!", shareNotSupported: "Kongsi tidak disokong",
-                    copied: "Disalin!", useWhatsapp: "Guna Butang WhatsApp",
-                    attConfirmMsg: "Sahkan kehadiran [{date}]?\n\nJumlah: {total}\nHadir: {present}\nTidak Hadir: {absent}"
+                    fillMasterKey: "Masukkan Master Key", cloudCreated: "✅ Pangkalan Data Awan Dicipta!\n\nBin ID: {binId}",
+                    fillCloudConfig: "Masukkan Key & Bin ID", backupDownloaded: "✅ Sandaran Dimuat Turun!",
+                    overwriteConfirm: "⚠️ Timpa data?", fileError: "❌ Ralat Fail", deleteConfirm: "Padam?",
+                    resetConfirm: "⚠️ Tetap semula?", updated: "✅ Data Dikemaskini!", copied: "Disalin!",
+                    useWhatsapp: "Guna Butang WhatsApp", attConfirmMsg: "Sahkan kehadiran [{date}]?\n\nJumlah: {total}\nHadir: {present}\nTidak Hadir: {absent}"
                 },
                 stats: { pace: "Laju", shooting: "Tembak", passing: "Hantar", dribbling: "Gelecek", defending: "Pertahan", physical: "Fizikal" },
                 ai: { analyzing: "Menganalisis...", reportTitle: "Laporan Jurulatih", position: "Peranan", rating: "Penilaian", strength: "Kekuatan", suggestion: "Nasihat", comment: "Komen", template: "Seimbang", advice: "Perlu pantau.", commentText: "Potensi baik." }
@@ -232,7 +210,7 @@
         const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
 
         const INITIAL_TRAINEES = [
-            { id: '1', name: 'Arthur Pendragon', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', age: '17', category: 'U18', height: '182', weight: '76', attendance: 98, totalSessions: 52, attendedSessions: 51, attendanceHistory: [], feeHistory: {}, nationality: '英国', team: '皇家书院', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop', stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 } },
+            { id: '1', name: 'Arthur Pendragon', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', age: '17', category: 'U18', height: '182', weight: '76', attendance: 0, totalSessions: 52, attendedSessions: 0, attendanceHistory: [], feeHistory: {}, nationality: '英国', team: '皇家书院', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop', stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 } },
         ];
 
         const App = () => {
@@ -334,13 +312,14 @@
                 }
             }, []);
 
-            // ... (Cloud Logic: stripImages, syncFromCloud, syncToCloud, createCloudBin, handleConnectCloud, saveToLocal - Unchanged) ...
+            // --- Cloud Logic ---
             const stripImages = (data) => {
                 const cleanData = JSON.parse(JSON.stringify(data));
                 if (cleanData.trainees) cleanData.trainees = cleanData.trainees.map(t => { if (t.image && t.image.startsWith('data:image')) t.image = DEFAULT_IMAGE; return t; });
                 if (cleanData.appLogo && cleanData.appLogo.startsWith('data:image')) cleanData.appLogo = null;
                 return cleanData;
             };
+
             const syncFromCloud = async (key, binId) => {
                 setCloudStatus(t('status', 'syncing'));
                 try {
@@ -355,17 +334,21 @@
                     } else { setCloudStatus(t('status', 'fail')); setIsCloudConnected(false); }
                 } catch (e) { setCloudStatus(t('status', 'netError')); setIsCloudConnected(false); }
             };
+
             const syncToCloud = async (dataOverride = null) => {
                 if (!isCloudConnected || !cloudConfig.key || !cloudConfig.binId) return;
                 setCloudStatus(t('status', 'saving'));
                 const rawData = dataOverride || { trainees, teams, leagueName }; const cleanData = stripImages(rawData);
                 try { await fetch(`${JSONBIN_URL}/${cloudConfig.binId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': cloudConfig.key }, body: JSON.stringify(cleanData) }); setCloudStatus(t('status', 'saved')); setTimeout(() => setCloudStatus(""), 2000); } catch (e) { setCloudStatus(t('status', 'saveFail')); }
             };
+
             const createCloudBin = async () => {
                 if (!cloudConfig.key) return alert(t('alerts', 'fillMasterKey')); setCloudStatus(t('status', 'creating'));
                 try { const res = await fetch(JSONBIN_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Master-Key": cloudConfig.key, "X-Bin-Name": "CFC_League_Data" }, body: JSON.stringify({ trainees, teams, leagueName, note: "Created by CFC App" }) }); if (res.ok) { const json = await res.json(); const newBinId = json.metadata.id; setCloudConfig(prev => ({ ...prev, binId: newBinId })); localStorage.setItem('cfc_jsonbin_config', JSON.stringify({ key: cloudConfig.key, binId: newBinId })); setIsCloudConnected(true); setCloudStatus(t('status', 'created')); alert(t('alerts', 'cloudCreated').replace('{binId}', newBinId)); setTimeout(() => setCloudStatus(""), 2000); } else { throw new Error("Failed"); } } catch (e) { alert(t('status', 'error')); setCloudStatus(t('status', 'error')); }
             };
+
             const handleConnectCloud = () => { if (cloudConfig.key && cloudConfig.binId) { localStorage.setItem('cfc_jsonbin_config', JSON.stringify(cloudConfig)); syncFromCloud(cloudConfig.key, cloudConfig.binId); setIsCloudModalOpen(false); } else { alert(t('alerts', 'fillCloudConfig')); } };
+
             const saveToLocal = (newData) => {
                 const currentData = { trainees: newData.trainees !== undefined ? newData.trainees : trainees, teams: newData.teams !== undefined ? newData.teams : teams, leagueName: newData.leagueName !== undefined ? newData.leagueName : leagueName, appLogo: newData.appLogo !== undefined ? newData.appLogo : appLogo };
                 if (newData.trainees !== undefined) setTrainees(newData.trainees); if (newData.teams !== undefined) setTeams(newData.teams); if (newData.leagueName !== undefined) setLeagueName(newData.leagueName); if (newData.appLogo !== undefined) setAppLogo(newData.appLogo);
@@ -373,7 +356,7 @@
                 if (isCloudConnected) { syncToCloud({ trainees: currentData.trainees, teams: currentData.teams, leagueName: currentData.leagueName }); }
             };
 
-            // ... (Backup/Import/File/Cropper - Unchanged) ...
+            // ... (Handlers) ...
             const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(t('alerts', 'backupDownloaded'))) window.open(DRIVE_LINK, '_blank'); }, 500); };
             const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(t('alerts', 'overwriteConfirm'))) { saveToLocal(p); alert(t('alerts', 'updated')); setIsDataToolsOpen(false); } } catch (e) { alert(t('alerts', 'fileError')); } e.target.value=null; }; r.readAsText(f); };
             const handleFile = (e, isLogo) => { const f = e.target.files?.[0]; if(!f) return; const r = new FileReader(); r.onloadend = () => { setTempImage(r.result); setIsLogoCrop(isLogo); setIsCropperOpen(true); }; r.readAsDataURL(f); };
@@ -384,18 +367,18 @@
             const resetPlayerStats = () => { if(!confirm(t('alerts', 'resetConfirm'))) return; const data = { ...formData, totalSessions: PRESET_YEARLY_TOTAL, attendedSessions: 0, attendance: 0, attendanceHistory: [] }; setFormData(data); };
             const handleSave = () => { if(!formData.name) return; const data = { ...formData, image: formData.image || DEFAULT_IMAGE }; const finalData = { ...data }; let newTrainees; if(editingTrainee) { const oldT = trainees.find(t => t.id === editingTrainee.id); newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...finalData, attendanceHistory: oldT.attendanceHistory, feeHistory: oldT.feeHistory, id: t.id } : t); } else { newTrainees = [{ ...finalData, id: Date.now().toString(), attendanceHistory: [], feeHistory: {} }, ...trainees]; } saveToLocal({ trainees: newTrainees }); setIsModalOpen(false); };
             const deleteTrainee = (id) => { if(confirm(t('alerts', 'deleteConfirm'))) { const newT = trainees.filter(t => t.id !== id); saveToLocal({ trainees: newT }); } };
-            const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const newTeams = teams.map(t=>t===old?n:t); const newT = trainees.map(t=>t.team===old?{...t,team:n}:t); saveToLocal({teams:newTeams, trainees:newT}); setRenamingTeam({original:'',current:''}); };
+            const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const newTeams = teams.map(teamName=>teamName===old?n:teamName); const newT = trainees.map(trainee=>trainee.team===old?{...trainee,team:n}:trainee); saveToLocal({teams:newTeams, trainees:newT}); setRenamingTeam({original:'',current:''}); };
             const handleAddTeam = () => { const n=`New School ${teams.length+1}`; saveToLocal({teams:[...teams,n]}); };
-            const handleDeleteTeam = (n) => { if(!confirm(`${t('delete')} ${n}?`)) return; const newTeams=teams.filter(t=>t!==n); const newT=trainees.map(t=>t.team===n?{...t,team:'Free Agent'}:t); saveToLocal({teams:newTeams,trainees:newT}); };
+            const handleDeleteTeam = (n) => { if(!confirm(`${t('delete')} ${n}?`)) return; const newTeams=teams.filter(teamName=>teamName!==n); const newT=trainees.map(trainee=>trainee.team===n?{...trainee,team:'Free Agent'}:trainee); saveToLocal({teams:newTeams,trainees:newT}); };
             const handleRandomPhoto = () => { const arr=['https://images.unsplash.com/photo-1511886929837-354d827aae26?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1504257365157-1496a50d48f2?w=400&h=400&fit=crop']; setFormData(p=>({...p, image:arr[Math.floor(Math.random()*arr.length)]})); };
             const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
             const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
             const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
-            const generateShareText = (t) => { const L = TRANSLATIONS[lang]; const c = t.category ? `[${t.category}] ` : ''; return `【${L.appTitle}】\n\n${L.name}：${t.name}\n${L.school}：${c}${t.team}\n${L.mainPos}：${t.primaryPosition}\n${L.age}：${t.age} | ${L.height}：${t.height||'-'}cm | ${L.weight}：${t.weight||'-'}kg\n${L.attendance}：${t.attendance||0}%\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}`; };
+            const generateShareText = (trainee) => { const L = TRANSLATIONS[lang]; const c = trainee.category ? `[${trainee.category}] ` : ''; return `【${L.appTitle}】\n\n${L.name}：${trainee.name}\n${L.school}：${c}${trainee.team}\n${L.mainPos}：${trainee.primaryPosition}\n${L.age}：${trainee.age} | ${L.height}：${trainee.height||'-'}cm | ${L.weight}：${trainee.weight||'-'}kg\n${L.attendance}：${trainee.attendance||0}%\n\n📊 ${L.stats.pace}: ${trainee.stats.pace} | ${L.stats.shooting}: ${trainee.stats.shooting}\n${L.stats.passing}: ${trainee.stats.passing} | ${L.stats.dribbling}: ${trainee.stats.dribbling}\n${L.stats.defending}: ${trainee.stats.defending} | ${L.stats.physical}: ${trainee.stats.physical}`; };
             const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('alerts', 'copied')); } } catch(e){} };
-            const handleSystemShare = async (t) => { try{await navigator.share({title:t.name, text:generateShareText(t)})}catch(e){alert(t('alerts', 'useWhatsapp'));} };
-            const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(t => attendanceList.includes(t.id)).map(t => t.name); const aNames = reportFiltered.filter(t => !attendanceList.includes(t.id)).map(t => t.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
-            const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(t => { const status = attendanceList.includes(t.id) ? "Present" : "Absent"; csvContent += `${t.name.replace(/,/g," ")},${t.team.replace(/,/g," ")},${t.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
+            const handleSystemShare = async (trainee) => { try{await navigator.share({title:trainee.name, text:generateShareText(trainee)})}catch(e){alert(t('alerts', 'useWhatsapp'));} };
+            const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(trainee => attendanceList.includes(trainee.id)).map(trainee => trainee.name); const aNames = reportFiltered.filter(trainee => !attendanceList.includes(trainee.id)).map(trainee => trainee.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
+            const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(trainee => { const status = attendanceList.includes(trainee.id) ? "Present" : "Absent"; csvContent += `${trainee.name.replace(/,/g," ")},${trainee.team.replace(/,/g," ")},${trainee.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
 
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
@@ -403,56 +386,50 @@
                 return matchPos && matchTeam;
             }), [trainees, selectedPosition, selectedTeam]);
 
-            const uiFiltered = useMemo(() => reportFiltered.filter(t => 
-                t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.team.toLowerCase().includes(searchTerm.toLowerCase())
+            const uiFiltered = useMemo(() => reportFiltered.filter(trainee => 
+                trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) || trainee.team.toLowerCase().includes(searchTerm.toLowerCase())
             ), [reportFiltered, searchTerm]);
 
-            // Attendance Logic
+            // Logic
             const openAttendanceModal = () => {
                 const today = new Date().toISOString().slice(0, 10);
                 setAttendanceDate(today);
-                const alreadyRecorded = reportFiltered.some(t => t.attendanceHistory && t.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today));
+                const alreadyRecorded = reportFiltered.some(trainee => trainee.attendanceHistory && trainee.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today));
                 if (alreadyRecorded) {
-                    const presentIds = reportFiltered.filter(t => t.attendanceHistory.some(h => {
+                    const presentIds = reportFiltered.filter(trainee => trainee.attendanceHistory.some(h => {
                          const hDate = typeof h === 'string' ? h : h.date;
                          const hStatus = typeof h === 'string' ? 'present' : h.status; 
                          return hDate === today && hStatus === 'present';
-                    })).map(t => t.id);
+                    })).map(trainee => trainee.id);
                     setAttendanceList(presentIds);
-                } else { setAttendanceList(reportFiltered.map(t => t.id)); }
+                } else { setAttendanceList(reportFiltered.map(trainee => trainee.id)); }
                 setImportText(""); setIsAttendanceOpen(true);
             };
             const toggleAttendance = (id) => { if (attendanceList.includes(id)) setAttendanceList(attendanceList.filter(pid => pid !== id)); else setAttendanceList([...attendanceList, id]); };
-            const parseImportText = () => { if (!importText) return; const text = importText.toLowerCase(); const matchedIds = reportFiltered.filter(t => text.includes(t.name.toLowerCase())).map(t => t.id); if (matchedIds.length > 0) { setAttendanceList(matchedIds); alert(`✅ ID: ${matchedIds.length}`); } else { alert("⚠️ No match"); } };
+            const parseImportText = () => { if (!importText) return; const text = importText.toLowerCase(); const matchedIds = reportFiltered.filter(trainee => text.includes(trainee.name.toLowerCase())).map(trainee => trainee.id); if (matchedIds.length > 0) { setAttendanceList(matchedIds); alert(`✅ ID: ${matchedIds.length}`); } else { alert("⚠️ No match"); } };
             const submitAttendance = () => {
                 const totalCount = reportFiltered.length; const presentCount = attendanceList.filter(id => reportFiltered.some(r => r.id === id)).length;
                 const absentCount = totalCount - presentCount;
                 const msg = t('alerts', 'attConfirmMsg').replace('{date}', attendanceDate).replace('{total}', totalCount).replace('{present}', presentCount).replace('{absent}', absentCount);
                 if (!confirm(msg)) return;
-                const newTrainees = trainees.map(t => {
-                    if (reportFiltered.some(r => r.id === t.id)) {
-                        let history = t.attendanceHistory || []; if(!Array.isArray(history)) history = [];
-                        const isPresent = attendanceList.includes(t.id);
+                const newTrainees = trainees.map(trainee => {
+                    if (reportFiltered.some(r => r.id === trainee.id)) {
+                        let history = Array.isArray(trainee.attendanceHistory) ? [...trainee.attendanceHistory] : [];
+                        const isPresent = attendanceList.includes(trainee.id);
                         const newStatus = isPresent ? 'present' : 'absent';
                         const todayIndex = history.findIndex(h => (typeof h === 'string' ? h : h.date) === attendanceDate);
-                        let newTotal = t.totalSessions || PRESET_YEARLY_TOTAL; let newAttended = t.attendedSessions || 0; let newHistory = [...history];
-                        if (todayIndex !== -1) {
-                            const oldStatus = typeof newHistory[todayIndex] === 'string' ? 'present' : newHistory[todayIndex].status;
-                            if (oldStatus !== newStatus) { if (newStatus === 'present') newAttended++; else newAttended--; }
-                            newHistory[todayIndex] = { date: attendanceDate, status: newStatus };
-                        } else {
-                            if (isPresent) newAttended++;
-                            newHistory.push({ date: attendanceDate, status: newStatus });
-                        }
-                        const newRate = newTotal === 0 ? 0 : Math.round((newAttended / newTotal) * 100);
-                        return { ...t, totalSessions: newTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: newHistory };
+                        let newHistory = [...history];
+                        if (todayIndex !== -1) { newHistory[todayIndex] = { date: attendanceDate, status: newStatus }; } else { newHistory.push({ date: attendanceDate, status: newStatus }); }
+                        const newAttended = newHistory.filter(h => (typeof h === 'string' ? 'present' : h.status) === 'present').length;
+                        const currentTotal = trainee.totalSessions > 0 ? trainee.totalSessions : PRESET_YEARLY_TOTAL;
+                        const newRate = Math.round((newAttended / currentTotal) * 100);
+                        return { ...trainee, totalSessions: currentTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: newHistory };
                     }
-                    return t;
+                    return trainee;
                 });
                 saveToLocal({ trainees: newTrainees }); setIsAttendanceOpen(false); alert(t('alerts', 'updated'));
             };
 
-            // 🔥 财务功能 (Finance Logic)
             const toggleFeeStatus = (traineeId) => {
                 const newTrainees = trainees.map(trainee => {
                     if (trainee.id === traineeId) {
@@ -482,7 +459,6 @@
 
             const exportFinanceExcel = () => {
                 let csvContent = "\uFEFFName,Team,Category,Month,Amount,Status\n";
-                // 使用 reportFiltered，只导出当前筛选的列表 (支持分校导出)
                 reportFiltered.forEach(trainee => {
                     const status = (trainee.feeHistory && trainee.feeHistory[financeMonth]) ? "Paid" : "Unpaid";
                     csvContent += `${trainee.name.replace(/,/g," ")},${trainee.team.replace(/,/g," ")},${trainee.category||""},${financeMonth},${monthlyFee},${status}\n`;
@@ -568,7 +544,7 @@
                                 </div>
                                 <div className="p-4 flex-1 flex flex-col">
                                     <div className="flex justify-between items-center bg-zinc-950 p-2 rounded-lg mb-3 border border-zinc-800"><div className="text-center flex-1 border-r border-zinc-800"><div className="text-[10px] text-zinc-500 uppercase">{t('age')}</div><div className="text-xs font-bold text-white">{trainee.age}</div></div><div className="text-center flex-1 border-r border-zinc-800"><div className="text-[10px] text-zinc-500 uppercase">{t('height')}</div><div className="text-xs font-bold text-white">{trainee.height || '-'} <span className="text-[8px] font-normal">cm</span></div></div><div className="text-center flex-1"><div className="text-[10px] text-zinc-500 uppercase">{t('weight')}</div><div className="text-xs font-bold text-white">{trainee.weight || '-'} <span className="text-[8px] font-normal">kg</span></div></div></div>
-                                    <div className="mb-3 px-1"><div className="flex justify-between text-[10px] text-zinc-500 mb-1 font-bold"><span>{t('attendance')} ({trainee.attendedSessions}/{trainee.totalSessions})</span><span className={trainee.attendance >= 90 ? 'text-emerald-500' : 'text-zinc-300'}>{trainee.attendance || 0}%</span></div><div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden"><div className={`h-full ${getAttendanceColor(trainee.attendance || 0)}`} style={{width: `${trainee.attendance || 0}%`}}></div></div></div>
+                                    <div className="mb-3 px-1"><div className="flex justify-between text-[10px] text-zinc-500 mb-1 font-bold"><span>{t('attendance')}</span><span className={trainee.attendance >= 90 ? 'text-emerald-500' : 'text-zinc-300'}>{trainee.attendance || 0}%</span></div><div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden"><div className={`h-full ${getAttendanceColor(trainee.attendance || 0)}`} style={{width: `${trainee.attendance || 0}%`}}></div></div></div>
                                     <div className="space-y-1.5 mb-4">{['pace', 'shooting', 'passing'].map(s => { const val = (trainee.stats && trainee.stats[s]) || 0; return (<div key={s} className="flex items-center gap-2"><span className="text-[9px] text-zinc-500 uppercase w-10">{t('stats', s)}</span><div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden"><div className="h-full bg-indigo-500" style={{width: `${val}%`}}></div></div><span className="text-[9px] font-bold text-zinc-400 w-4 text-right">{val}</span></div>); })}</div>
                                     <div className="flex gap-2 mt-auto pt-3 border-t border-zinc-800/50"><button onClick={() => { setEditingTrainee(trainee); setFormData(trainee); setIsModalOpen(true); }} className="p-1.5 text-zinc-500 hover:text-white transition-colors"><i className="fa-solid fa-pen-to-square"></i></button><button onClick={() => deleteTrainee(trainee.id)} className="p-1.5 text-zinc-500 hover:text-red-500 transition-colors"><i className="fa-solid fa-trash"></i></button><div className="flex-1"></div><button onClick={() => mockAI('球探', trainee)} className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-xs rounded border border-zinc-700 transition-colors flex items-center gap-1"><i className="fa-solid fa-magnifying-glass-chart"></i> {t('aiAnalyze')}</button></div>
                                 </div>
@@ -581,7 +557,7 @@
                     
                     {/* Attendance Modal */}
                     {isAttendanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-calendar-check text-emerald-500"></i> {t('attTitle')}</h2><div className="flex items-center gap-2"><input type="date" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-emerald-500 outline-none" value={attendanceDate} onChange={(e) => setAttendanceDate(e.target.value)} /><button onClick={() => setIsAttendanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4"><label className="text-zinc-400 text-xs font-bold block mb-2">{t('attPaste')}</label><textarea className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-xs text-white h-20 mb-2 focus:border-emerald-500 outline-none" placeholder={t('attPlaceholder')} value={importText} onChange={e => setImportText(e.target.value)}></textarea><button onClick={parseImportText} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-900/30 rounded-lg text-xs font-bold">{t('attPasteDesc')}</button></div><div className="flex justify-between items-center mb-2 px-1"><span className="text-xs text-zinc-500">Selected {attendanceList.length} / {reportFiltered.length}</span><button onClick={() => setAttendanceList(attendanceList.length === reportFiltered.length ? [] : reportFiltered.map(t => t.id))} className="text-xs text-indigo-400 hover:text-indigo-300">Select All</button></div><div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">{reportFiltered.map(trainee => (<div key={trainee.id} onClick={() => toggleAttendance(trainee.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${attendanceList.includes(trainee.id) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}><div className="flex items-center gap-3"><div className={`w-5 h-5 rounded-full flex items-center justify-center border ${attendanceList.includes(trainee.id) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>{attendanceList.includes(trainee.id) && <i className="fa-solid fa-check text-black text-xs"></i>}</div><div><p className="text-sm font-bold text-white">{trainee.name}</p><p className="text-[10px] text-zinc-500">{trainee.team}</p></div></div><div className="text-xs text-zinc-400">{trainee.attendance}%</div></div>))}</div><div className="flex gap-2"><button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button><button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button><button onClick={handleWhatsappShare} className="px-4 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl shadow-lg" title={t('attWhatsapp')}><i className="fa-brands fa-whatsapp text-xl"></i></button></div></div></div>)}
-                    {/* Finance Modal (New) */}
+                    {/* Finance Modal */}
                     {isFinanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-yellow-600 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-sack-dollar text-yellow-500"></i> {t('finTitle')}</h2><div className="flex items-center gap-2"><input type="month" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-yellow-500 outline-none" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} /><button onClick={() => setIsFinanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-yellow-900/20 border border-yellow-800 p-3 rounded-xl mb-4 flex justify-between items-center relative group"><div className="text-xs text-yellow-200"><p className="font-bold">{BANK_INFO.bankName}</p><p className="font-mono text-yellow-400 text-sm my-0.5">{BANK_INFO.accNum}</p><p className="text-[10px] opacity-70">{BANK_INFO.holder}</p></div><button onClick={copyBankInfo} className="bg-yellow-700/50 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1"><i className="fa-regular fa-copy"></i> {t('finCopy')}</button></div><div className="grid grid-cols-2 gap-3 mb-4"><div className="bg-emerald-900/30 border border-emerald-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-emerald-400 uppercase">{t('finTotal')}</span><span className="text-xl font-bold text-white">RM {getFinanceSummary().totalAmount}</span><span className="text-[10px] text-zinc-400">({getFinanceSummary().paidCount} pax)</span></div><div className="bg-red-900/30 border border-red-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-red-400 uppercase">{t('finPending')}</span><span className="text-xl font-bold text-white">RM {getFinanceSummary().pendingAmount}</span><span className="text-[10px] text-zinc-400">({reportFiltered.length - getFinanceSummary().paidCount} pax)</span></div></div><div className="flex gap-2 mb-4"><div className="flex-1 flex justify-between items-center bg-zinc-950 p-2 rounded-lg border border-zinc-800"><span className="text-xs text-zinc-400 pl-2">{t('finFee')}</span><input type="number" className="w-20 bg-black text-white text-right text-sm px-2 py-1 rounded border border-zinc-700 focus:border-yellow-500 outline-none" value={monthlyFee} onChange={e => setMonthlyFee(parseInt(e.target.value) || 0)} /></div><select className="w-1/3 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-xs px-2 outline-none" value={msgTemplate} onChange={(e) => setMsgTemplate(e.target.value)}><option value="gentle">🌸 {t('msgTemplates', 'gentle')}</option><option value="friendly">🤝 {t('msgTemplates', 'friendly')}</option><option value="soft">🍃 {t('msgTemplates', 'soft')}</option><option value="formal">👔 {t('msgTemplates', 'formal')}</option></select></div><div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">{reportFiltered.map(trainee => { const isPaid = trainee.feeHistory && trainee.feeHistory[financeMonth]; return (<div key={trainee.id} className="flex items-center justify-between p-3 rounded-xl border border-zinc-700 bg-zinc-800/30"><div className="flex items-center gap-3"><div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${isPaid ? 'bg-emerald-600 text-white' : 'bg-red-900/50 text-red-500 border border-red-800'}`}>{isPaid ? <i className="fa-solid fa-check"></i> : "RM"}</div><div><p className="text-sm font-bold text-white">{trainee.name}</p><p className="text-[10px] text-zinc-500">{trainee.team}</p></div></div><div className="flex items-center gap-2">{!isPaid && (<button onClick={() => sendFeeReminder(trainee)} className="w-8 h-8 rounded-full bg-[#25D366]/20 hover:bg-[#25D366] text-[#25D366] hover:text-white border border-[#25D366]/50 flex items-center justify-center transition-all" title={t('finRemind')}><i className="fa-brands fa-whatsapp"></i></button>)}<button onClick={() => toggleFeeStatus(trainee.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isPaid ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-transparent border-zinc-600 text-zinc-400 hover:border-yellow-500 hover:text-yellow-500'}`}>{isPaid ? t('finPaid') : t('finUnpaid')}</button></div></div>); })}</div><button onClick={exportFinanceExcel} className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl border border-zinc-600 flex items-center justify-center gap-2"><i className="fa-solid fa-file-invoice-dollar"></i> {t('finExport')}</button></div></div>)}
                     {/* (Other modals shareTarget, isDataToolsOpen, isCropperOpen are identical to previous version, omitted for brevity but should be included) */}
                     {shareTarget && (<div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in" onClick={() => setShareTarget(null)}><div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}><div className="text-center mb-6"><div className="w-20 h-20 mx-auto rounded-full overflow-hidden border-4 border-zinc-800 mb-3"><img src={shareTarget.image} className="w-full h-full object-cover" onError={e => e.target.src = DEFAULT_IMAGE} /></div><h3 className="text-xl font-bold text-white">{shareTarget.name}</h3><p className="text-sm text-zinc-500">{shareTarget.team}</p></div><div className="space-y-3"><button onClick={() => handleSystemShare(shareTarget)} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95"><i className="fa-solid fa-share-nodes"></i> {t('share', 'sendToParents')}</button><div className="relative flex py-2 items-center"><div className="flex-grow border-t border-zinc-700"></div><span className="flex-shrink-0 mx-4 text-xs text-zinc-500">{t('share', 'textOnly')}</span><div className="flex-grow border-t border-zinc-700"></div></div><div className="grid grid-cols-2 gap-3"><a href={`https://wa.me/?text=${encodeURIComponent(generateShareText(shareTarget))}`} target="_blank" className="py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-brands fa-whatsapp text-lg"></i> WhatsApp</a><a href={`mailto:?subject=CFC Player: ${shareTarget.name}&body=${encodeURIComponent(generateShareText(shareTarget))}`} className="py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-solid fa-envelope"></i> Email</a></div></div></div></div>)}
@@ -599,629 +575,4 @@
         root.render(<App />);
     </script>
 </body>
-</html><!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CFC Youth Academy</title>
-    
-    <!-- 样式与图标 -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-
-    <!-- React 核心 -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-
-    <style>
-        body { background-color: #09090b; color: #fff; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* 裁剪器容器样式 */
-        .cropper-container { max-height: 60vh; background-color: #000; }
-        #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 50; }
-        .hidden { display: none !important; }
-        /* 日期选择器深色模式适配 */
-        input[type="date"], input[type="month"] { color-scheme: dark; }
-        input[type="date"]::-webkit-calendar-picker-indicator, input[type="month"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; opacity: 0.8; }
-    </style>
-</head>
-<body>
-    <div id="static-loading">
-        <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
-        <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p class="text-zinc-500 text-sm mt-2">Fixing Variables...</p>
-    </div>
-
-    <div id="root"></div>
-
-    <script type="text/babel">
-        // =================================================================
-        // 🔑 你的专属钥匙
-        // =================================================================
-        const MY_MASTER_KEY = "$2a$10$JuGSKsBRirNG95vYP0fbSuotikgzUSy8nphUaCtjGq0qsdCalvBo2"; 
-        const JSONBIN_URL = "https://api.jsonbin.io/v3/b";
-        
-        // 🔥 年度固定目标
-        const PRESET_YEARLY_TOTAL = 52;
-        // 💰 默认月费 (可在界面修改)
-        const DEFAULT_MONTHLY_FEE = 150;
-        // =================================================================
-
-        if (!window.React || !window.ReactDOM) {
-            document.getElementById('static-loading').innerHTML = '<p class="text-red-500 p-4">错误：React 加载失败。请检查网络连接。</p>';
-            throw new Error("React 未加载");
-        }
-
-        const { useState, useEffect, useRef, useMemo } = React;
-
-        setTimeout(() => {
-            const loader = document.getElementById('static-loading');
-            if(loader) loader.classList.add('hidden');
-        }, 1000); 
-
-        // --- 多语言字典 ---
-        const TRANSLATIONS = {
-            zh: {
-                appTitle: "CFC YOUTH ACADEMY",
-                systemName: "青训学院系统",
-                localMode: "本地版",
-                cloudMode: "云端同步",
-                backupRestore: "备份/恢复",
-                manageSchools: "学校",
-                attendanceTool: "出席库", 
-                financeTool: "财务", 
-                register: "注册",
-                searchPlaceholder: "搜索姓名、学校...",
-                noData: "暂无球员数据",
-                age: "年龄",
-                category: "组别", 
-                height: "身高",
-                weight: "体重",
-                attendance: "出席率",
-                attCount: "出席次数",
-                totalCount: "年度目标",
-                coachReport: "教练报告",
-                editReport: "编辑报告",
-                edit: "编辑",
-                delete: "删除",
-                aiAnalyze: "教练分析",
-                updateProfile: "更新档案",
-                newPlayer: "新球员",
-                name: "姓名",
-                nationality: "国籍",
-                school: "所属学校",
-                mainPos: "主位置",
-                subPos: "副位置",
-                save: "保存",
-                cancel: "取消",
-                addSchool: "新增学校",
-                backupTools: "备份工具",
-                backupToDrive: "备份到 Google Drive",
-                exportDesc: "生成备份文件并自动打开你的云端文件夹。",
-                restoreData: "恢复数据",
-                restoreDesc: "从手机文件夹中选择之前的备份文件 (.json)。",
-                selectFile: "选择备份文件",
-                shareProfile: "分享档案",
-                sendToParents: "发送给家长 (含照片)",
-                textOnly: "仅发送文字报告",
-                cropTitle: "裁剪头像",
-                rotate: "旋转",
-                confirmCrop: "确认裁剪",
-                attTitle: "智能出席库", 
-                attDate: "记录日期", 
-                attPaste: "📄 粘贴名单导入 (WhatsApp/Excel)",
-                attPasteDesc: "直接粘贴文字，系统会自动识别名单中的名字并勾选。",
-                attPlaceholder: "例如：今日出席：Arthur, Stella, Money...",
-                attConfirm: "提交 / 更新记录",
-                attShare: "分享出席表",
-                attWhatsapp: "WhatsApp",
-                attExcel: "导出 Excel", 
-                attTotal: "总人数",
-                attPresent: "出席",
-                resetStats: "重置数据", 
-                cloudSetup: "云端同步设置 (JSONBin)",
-                cloudKey: "Master Key",
-                cloudBin: "Bin ID",
-                cloudConnect: "连接云端",
-                cloudCreate: "✨ 自动创建新数据库",
-                cloudDesc: "输入 Key 即可自动创建并连接云数据库，实现多设备同步。",
-                finTitle: "财务中心", finMonth: "月份", finFee: "月费标准 (RM)", finPaid: "已交", finUnpaid: "未交", finTotal: "总收入", finPending: "待收", finRemind: "催费", finExport: "导出财务表",
-                remindMsg: "您好，提醒一下 {name} {month} 月份的学费 (RM{amount}) 尚未缴交，谢谢支持！🙏🏻",
-                stats: { pace: "速度", shooting: "射门", passing: "传球", dribbling: "盘带", defending: "防守", physical: "体能" },
-                ai: {
-                    analyzing: "教练组正在分析...",
-                    reportTitle: "教练深度评估报告",
-                    position: "球员定位",
-                    rating: "综合评级",
-                    strength: "核心竞争力",
-                    suggestion: "战术建议",
-                    comment: "教练评语",
-                    template: "均衡型球员",
-                    advice: "需进一步观察。",
-                    commentText: "潜力不错，建议继续观察。"
-                }
-            },
-            en: {
-                appTitle: "CFC YOUTH ACADEMY", systemName: "ACADEMY SYSTEM", localMode: "Local Mode", cloudMode: "Cloud Sync",
-                backupRestore: "Backup", manageSchools: "Schools", attendanceTool: "Attendance", 
-                financeTool: "Finance", 
-                register: "Register", searchPlaceholder: "Search...", noData: "No Data",
-                age: "Age", category: "Category", height: "Height", weight: "Weight", attendance: "Att.",
-                attCount: "Attended", totalCount: "Goal", coachReport: "Coach Report", editReport: "Edit", edit: "Edit", delete: "Delete",
-                aiAnalyze: "Analysis", updateProfile: "Update", newPlayer: "New Player", name: "Name", nationality: "Nationality",
-                school: "School", mainPos: "Main Pos", subPos: "Sub Pos", save: "Save", cancel: "Cancel", addSchool: "Add School",
-                backupTools: "Backup Tools", backupToDrive: "Backup to Drive", exportDesc: "Generate backup.",
-                restoreData: "Restore", restoreDesc: "Restore from file.", selectFile: "Select File", shareProfile: "Share",
-                sendToParents: "Send (Photo)", textOnly: "Text Only", cropTitle: "Crop", rotate: "Rotate", confirmCrop: "Confirm",
-                attTitle: "Smart Attendance", attDate: "Date", attPaste: "Paste List", attPasteDesc: "Auto-check", attPlaceholder: "Names...",
-                attConfirm: "Submit", attShare: "Share", attWhatsapp: "WhatsApp", attExcel: "Excel", attTotal: "Total", attPresent: "Present", resetStats: "Reset",
-                cloudSetup: "Cloud Setup", cloudKey: "Master Key", cloudBin: "Bin ID", cloudConnect: "Connect", cloudCreate: "✨ Auto Create DB", cloudDesc: "Enter Key to sync.",
-                finTitle: "Finance Hub", finMonth: "Month", finFee: "Fee (RM)", finPaid: "Paid", finUnpaid: "Unpaid", finTotal: "Revenue", finPending: "Pending", finRemind: "Remind", finExport: "Export Excel",
-                remindMsg: "Hi, gentle reminder that {name}'s fee for {month} (RM{amount}) is pending. Thanks! 🙏🏻",
-                stats: { pace: "PAC", shooting: "SHO", passing: "PAS", dribbling: "DRI", defending: "DEF", physical: "PHY" },
-                ai: { analyzing: "Analyzing...", reportTitle: "Coach Report", position: "Role", rating: "Rating", strength: "Strength", suggestion: "Advice", comment: "Comment", template: "Balanced", advice: "Observe.", commentText: "Good potential." }
-            },
-            ms: {
-                appTitle: "AKADEMI BELIA CFC", systemName: "SISTEM AKADEMI", localMode: "Tempatan", cloudMode: "Awan",
-                backupRestore: "Sandaran", manageSchools: "Sekolah", attendanceTool: "Kehadiran", 
-                financeTool: "Kewangan",
-                register: "Daftar", searchPlaceholder: "Cari...", noData: "Tiada Data",
-                age: "Umur", category: "Kategori", height: "Tinggi", weight: "Berat", attendance: "Kehadiran",
-                attCount: "Hadir", totalCount: "Sasaran", coachReport: "Laporan", editReport: "Sunting", edit: "Sunting", delete: "Padam",
-                aiAnalyze: "Analisis", updateProfile: "Kemaskini", newPlayer: "Pemain Baru", name: "Nama", nationality: "Warganegara",
-                school: "Sekolah", mainPos: "Posisi", subPos: "Posisi 2", save: "Simpan", cancel: "Batal", addSchool: "Tambah",
-                backupTools: "Alat", backupToDrive: "Sandaran Drive", exportDesc: "Jana fail .json", restoreData: "Pulihkan",
-                restoreDesc: "Pilih fail .json", selectFile: "Pilih Fail", shareProfile: "Kongsi", sendToParents: "Hantar (Foto)",
-                textOnly: "Teks Sahaja", cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Sahkan", attTitle: "Kehadiran",
-                attDate: "Tarikh", attPaste: "Tampal Senarai", attPasteDesc: "Tanda nama automatik", attPlaceholder: "Contoh: Hadir: Arthur, Stella...",
-                attConfirm: "Hantar", attShare: "Kongsi", attWhatsapp: "WhatsApp", attExcel: "Eksport Excel", attTotal: "Jumlah", attPresent: "Hadir",
-                resetStats: "Tetap Semula", cloudSetup: "Tetapan Awan", cloudKey: "Master Key", cloudBin: "Bin ID", cloudConnect: "Sambung", cloudCreate: "✨ Cipta DB Baru", cloudDesc: "Masukkan Key untuk auto-cipta.",
-                finTitle: "Pusat Kewangan", finMonth: "Bulan", finFee: "Yuran (RM)", finPaid: "Bayar", finUnpaid: "Belum", finTotal: "Hasil", finPending: "Tunggakan", finRemind: "Ingatkan", finExport: "Eksport Excel",
-                remindMsg: "Salam, peringatan mesra yuran {name} untuk {month} (RM{amount}) belum dijelaskan. Terima kasih! 🙏🏻",
-                stats: { pace: "Laju", shooting: "Tembak", passing: "Hantar", dribbling: "Gelecek", defending: "Pertahan", physical: "Fizikal" },
-                ai: { analyzing: "Menganalisis...", reportTitle: "Laporan Jurulatih", position: "Peranan", rating: "Penilaian", strength: "Kekuatan", suggestion: "Nasihat", comment: "Komen", template: "Seimbang", advice: "Perlu pantau.", commentText: "Potensi baik." }
-            }
-        };
-
-        const INITIAL_TEAMS = ['皇家书院', '星耀中学', '雷霆体校', '蓝鹰国际', '北境一中', '南洋公学', '光辉中学', '风暴竞技', '银河实验', '泰坦中学'];
-        const CATEGORIES = ['U8', 'U10', 'U12', 'U15', 'U18'];
-        const POSITIONS = ['前锋 (FW)', '左边锋 (LW)', '右边锋 (RW)', '前腰 (CAM)', '中场 (CM)', '左中场 (LM)', '右中场 (RM)', '后腰 (CDM)', '后卫 (DF)', '中后卫 (CB)', '左后卫 (LB)', '右后卫 (RB)', '门将 (GK)'];
-        const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=400&h=400&fit=crop';
-        const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
-
-        const INITIAL_TRAINEES = [
-            { id: '1', name: 'Arthur Pendragon', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', age: '17', category: 'U18', height: '182', weight: '76', attendance: 98, totalSessions: 52, attendedSessions: 49, attendanceHistory: [], feeHistory: {}, nationality: '英国', team: '皇家书院', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop', stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 } },
-        ];
-
-        const App = () => {
-            const [lang, setLang] = useState('zh');
-            const t = (key, subKey) => {
-                const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh'];
-                if (subKey && dict[key]) return dict[key][subKey];
-                return dict[key] || key;
-            };
-
-            const [teams, setTeams] = useState(INITIAL_TEAMS);
-            const [trainees, setTrainees] = useState([]);
-            const [leagueName, setLeagueName] = useState('CFC YOUTH ACADEMY');
-            const [appLogo, setAppLogo] = useState(null);
-            
-            // Cloud
-            const [cloudConfig, setCloudConfig] = useState({ key: MY_MASTER_KEY || '', binId: '' });
-            const [isCloudConnected, setIsCloudConnected] = useState(false);
-            const [cloudStatus, setCloudStatus] = useState("");
-
-            // UI
-            const [isModalOpen, setIsModalOpen] = useState(false);
-            const [isSchoolManagerOpen, setIsSchoolManagerOpen] = useState(false);
-            const [isDataToolsOpen, setIsDataToolsOpen] = useState(false); 
-            const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
-            const [isFinanceOpen, setIsFinanceOpen] = useState(false); // Finance Modal
-            const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
-            const [isEditingReport, setIsEditingReport] = useState(false);
-            const [isCropperOpen, setIsCropperOpen] = useState(false);
-
-            const [shareTarget, setShareTarget] = useState(null);
-            const [searchTerm, setSearchTerm] = useState('');
-            const [selectedPosition, setSelectedPosition] = useState('全部');
-            const [selectedTeam, setSelectedTeam] = useState('全部');
-            const [editingTrainee, setEditingTrainee] = useState(null);
-            const [isEditingTitle, setIsEditingTitle] = useState(false);
-            
-            const [formData, setFormData] = useState({ name:'', primaryPosition:'前锋 (FW)', secondaryPosition:'无', age:'16', category: 'U18', height: '', weight: '', attendance: 0, nationality:'', team:'', image:'', totalSessions: PRESET_YEARLY_TOTAL, attendedSessions: 0, stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50} });
-            
-            const [renamingTeam, setRenamingTeam] = useState({ original: '', current: '' });
-            const [aiResult, setAiResult] = useState(null);
-            const [aiLoading, setAiLoading] = useState(false);
-            
-            // Attendance
-            const [attendanceList, setAttendanceList] = useState([]); 
-            const [importText, setImportText] = useState("");
-            const [attendanceDate, setAttendanceDate] = useState(""); 
-            
-            // Finance
-            const [financeMonth, setFinanceMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
-            const [monthlyFee, setMonthlyFee] = useState(DEFAULT_MONTHLY_FEE);
-
-            // Cropper
-            const [tempImage, setTempImage] = useState(null);
-            const [isLogoCrop, setIsLogoCrop] = useState(false);
-            const cropperRef = useRef(null);
-            const cropperImageRef = useRef(null);
-
-            const fileInputRef = useRef(null);
-            const logoInputRef = useRef(null);
-            const backupInputRef = useRef(null);
-
-            // --- Init ---
-            useEffect(() => {
-                const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
-                const savedCloud = JSON.parse(localStorage.getItem('cfc_jsonbin_config') || '{}');
-
-                if (localData.trainees) {
-                    const sanitized = localData.trainees.map(t => {
-                        let total = t.totalSessions || PRESET_YEARLY_TOTAL;
-                        if (total === 0) total = PRESET_YEARLY_TOTAL;
-                        let attended = t.attendedSessions || 0;
-                        if (attended > total) total = attended; 
-                        const rate = Math.round((attended / total) * 100);
-                        return {
-                            ...t,
-                            totalSessions: total,
-                            attendedSessions: attended,
-                            attendance: rate,
-                            attendanceHistory: Array.isArray(t.attendanceHistory) ? t.attendanceHistory : [],
-                            feeHistory: t.feeHistory || {},
-                            stats: t.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 }
-                        };
-                    });
-                    setTrainees(sanitized);
-                } else {
-                    setTrainees(INITIAL_TRAINEES);
-                }
-                if (localData.teams) setTeams(localData.teams);
-                if (localData.leagueName) setLeagueName(localData.leagueName);
-                if (localData.appLogo) setAppLogo(localData.appLogo);
-
-                let activeKey = MY_MASTER_KEY || savedCloud.key;
-                let activeBin = savedCloud.binId;
-                if (activeKey) {
-                    setCloudConfig({ key: activeKey, binId: activeBin || '' });
-                    if (activeBin) syncFromCloud(activeKey, activeBin);
-                }
-            }, []);
-
-            // ... (Cloud Logic: stripImages, syncFromCloud, syncToCloud, createCloudBin, handleConnectCloud, saveToLocal - Unchanged) ...
-            const stripImages = (data) => {
-                const cleanData = JSON.parse(JSON.stringify(data));
-                if (cleanData.trainees) cleanData.trainees = cleanData.trainees.map(t => { if (t.image && t.image.startsWith('data:image')) t.image = DEFAULT_IMAGE; return t; });
-                if (cleanData.appLogo && cleanData.appLogo.startsWith('data:image')) cleanData.appLogo = null;
-                return cleanData;
-            };
-            const syncFromCloud = async (key, binId) => {
-                setCloudStatus("⏳ Syncing...");
-                try {
-                    const res = await fetch(`${JSONBIN_URL}/${binId}/latest`, { headers: { 'X-Master-Key': key } });
-                    if (res.ok) {
-                        const json = await res.json();
-                        const data = json.record;
-                        if (data.trainees) setTrainees(data.trainees); if (data.teams) setTeams(data.teams); if (data.leagueName) setLeagueName(data.leagueName);
-                        const merged = { ...JSON.parse(localStorage.getItem('cfc_local_db') || '{}'), ...data };
-                        localStorage.setItem('cfc_local_db', JSON.stringify(merged));
-                        setIsCloudConnected(true); setCloudStatus("✅ Ready"); setTimeout(() => setCloudStatus(""), 2000);
-                    } else { setCloudStatus("❌ Fail"); setIsCloudConnected(false); }
-                } catch (e) { setCloudStatus("❌ Net Error"); setIsCloudConnected(false); }
-            };
-            const syncToCloud = async (dataOverride = null) => {
-                if (!isCloudConnected || !cloudConfig.key || !cloudConfig.binId) return;
-                setCloudStatus("☁️ Saving...");
-                const rawData = dataOverride || { trainees, teams, leagueName }; const cleanData = stripImages(rawData);
-                try { await fetch(`${JSONBIN_URL}/${cloudConfig.binId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': cloudConfig.key }, body: JSON.stringify(cleanData) }); setCloudStatus("✅ Saved"); setTimeout(() => setCloudStatus(""), 2000); } catch (e) { setCloudStatus("❌ Fail"); }
-            };
-            const createCloudBin = async () => {
-                if (!cloudConfig.key) return alert("请先填入 Master Key"); setCloudStatus("Creating...");
-                try { const res = await fetch(JSONBIN_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Master-Key": cloudConfig.key, "X-Bin-Name": "CFC_League_Data" }, body: JSON.stringify({ trainees, teams, leagueName, note: "Created by CFC App" }) }); if (res.ok) { const json = await res.json(); const newBinId = json.metadata.id; setCloudConfig(prev => ({ ...prev, binId: newBinId })); localStorage.setItem('cfc_jsonbin_config', JSON.stringify({ key: cloudConfig.key, binId: newBinId })); setIsCloudConnected(true); setCloudStatus("✅ Created"); alert(`✅ Created! Bin ID: ${newBinId}`); setTimeout(() => setCloudStatus(""), 2000); } else { throw new Error("Failed"); } } catch (e) { alert("❌ Failed"); setCloudStatus("❌ Error"); }
-            };
-            const handleConnectCloud = () => { if (cloudConfig.key && cloudConfig.binId) { localStorage.setItem('cfc_jsonbin_config', JSON.stringify(cloudConfig)); syncFromCloud(cloudConfig.key, cloudConfig.binId); setIsCloudModalOpen(false); } else { alert("Missing Key/ID"); } };
-            const saveToLocal = (newData) => {
-                const currentData = { trainees: newData.trainees !== undefined ? newData.trainees : trainees, teams: newData.teams !== undefined ? newData.teams : teams, leagueName: newData.leagueName !== undefined ? newData.leagueName : leagueName, appLogo: newData.appLogo !== undefined ? newData.appLogo : appLogo };
-                if (newData.trainees !== undefined) setTrainees(newData.trainees); if (newData.teams !== undefined) setTeams(newData.teams); if (newData.leagueName !== undefined) setLeagueName(newData.leagueName); if (newData.appLogo !== undefined) setAppLogo(newData.appLogo);
-                localStorage.setItem('cfc_local_db', JSON.stringify(currentData));
-                if (isCloudConnected) { syncToCloud({ trainees: currentData.trainees, teams: currentData.teams, leagueName: currentData.leagueName }); }
-            };
-
-            // ... (Backup/Import/File/Cropper - Unchanged) ...
-            const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(`✅ 备份已下载！`)) window.open(DRIVE_LINK, '_blank'); }, 500); };
-            const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(`⚠️ 覆盖当前数据？`)) { saveToLocal(p); alert(`✅ 成功恢复！`); setIsDataToolsOpen(false); } } catch (e) { alert("❌ 文件错误"); } e.target.value=null; }; r.readAsText(f); };
-            const handleFile = (e, isLogo) => { const f = e.target.files?.[0]; if(!f) return; const r = new FileReader(); r.onloadend = () => { setTempImage(r.result); setIsLogoCrop(isLogo); setIsCropperOpen(true); }; r.readAsDataURL(f); };
-            useEffect(() => { if (isCropperOpen && cropperImageRef.current) { if (cropperRef.current) cropperRef.current.destroy(); cropperRef.current = new Cropper(cropperImageRef.current, { aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8 }); } }, [isCropperOpen, tempImage]);
-            const handleCropConfirm = () => { if (cropperRef.current) { const c = cropperRef.current.getCroppedCanvas({ width: 400, height: 400 }); const u = c.toDataURL('image/jpeg', 0.8); if (isLogoCrop) { setAppLogo(u); saveToLocal({ appLogo: u }); } else { setFormData(p => ({ ...p, image: u })); } setIsCropperOpen(false); setTempImage(null); if(fileInputRef.current) fileInputRef.current.value=''; if(logoInputRef.current) logoInputRef.current.value=''; } };
-            const handleRotate = () => { if (cropperRef.current) cropperRef.current.rotate(90); };
-            const handleAttendanceChange = (field, value) => { const val = parseInt(value) || 0; let newData = { ...formData, [field]: val }; const att = field === 'attendedSessions' ? val : formData.attendedSessions; const tot = field === 'totalSessions' ? val : formData.totalSessions; const newRate = tot === 0 ? 0 : Math.round((att / tot) * 100); newData.attendance = newRate; setFormData(newData); };
-            const resetPlayerStats = () => { if(!confirm("⚠️ Reset stats to 0?")) return; const data = { ...formData, totalSessions: PRESET_YEARLY_TOTAL, attendedSessions: 0, attendance: 0, attendanceHistory: [] }; setFormData(data); };
-            const handleSave = () => { if(!formData.name) return; const data = { ...formData, image: formData.image || DEFAULT_IMAGE }; const finalData = { ...data }; let newTrainees; if(editingTrainee) { const oldT = trainees.find(t => t.id === editingTrainee.id); newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...finalData, attendanceHistory: oldT.attendanceHistory, feeHistory: oldT.feeHistory, id: t.id } : t); } else { newTrainees = [{ ...finalData, id: Date.now().toString(), attendanceHistory: [], feeHistory: {} }, ...trainees]; } saveToLocal({ trainees: newTrainees }); setIsModalOpen(false); };
-            const deleteTrainee = (id) => { if(confirm("Delete?")) { const newT = trainees.filter(t => t.id !== id); saveToLocal({ trainees: newT }); } };
-            const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const newTeams = teams.map(t=>t===old?n:t); const newT = trainees.map(t=>t.team===old?{...t,team:n}:t); saveToLocal({teams:newTeams, trainees:newT}); setRenamingTeam({original:'',current:''}); };
-            const handleAddTeam = () => { const n=`New School ${teams.length+1}`; saveToLocal({teams:[...teams,n]}); };
-            const handleDeleteTeam = (n) => { if(!confirm(`Delete ${n}?`)) return; const newTeams=teams.filter(t=>t!==n); const newT=trainees.map(t=>t.team===n?{...t,team:'Free Agent'}:t); saveToLocal({teams:newTeams,trainees:newT}); };
-            const handleRandomPhoto = () => { const arr=['https://images.unsplash.com/photo-1511886929837-354d827aae26?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1504257365157-1496a50d48f2?w=400&h=400&fit=crop']; setFormData(p=>({...p, image:arr[Math.floor(Math.random()*arr.length)]})); };
-            const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
-            const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
-            const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
-            const generateShareText = (t) => { const L = TRANSLATIONS[lang]; const c = t.category ? `[${t.category}] ` : ''; return `【${L.appTitle}】\n\n${L.name}：${t.name}\n${L.school}：${c}${t.team}\n${L.mainPos}：${t.primaryPosition}\n${L.age}：${t.age} | ${L.height}：${t.height||'-'}cm | ${L.weight}：${t.weight||'-'}kg\n${L.attendance}：${t.attendance||0}%\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}`; };
-            const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("Copied!"); } } catch(e){} };
-            const handleSystemShare = async (t) => { try{await navigator.share({title:t.name, text:generateShareText(t)})}catch(e){alert("Use WhatsApp Button");} };
-            const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(t => attendanceList.includes(t.id)).map(t => t.name); const aNames = reportFiltered.filter(t => !attendanceList.includes(t.id)).map(t => t.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
-            const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(t => { const status = attendanceList.includes(t.id) ? "Present" : "Absent"; csvContent += `${t.name.replace(/,/g," ")},${t.team.replace(/,/g," ")},${t.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
-
-            const reportFiltered = useMemo(() => trainees.filter(trainee => {
-                const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
-                const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
-                return matchPos && matchTeam;
-            }), [trainees, selectedPosition, selectedTeam]);
-
-            const uiFiltered = useMemo(() => reportFiltered.filter(t => 
-                t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.team.toLowerCase().includes(searchTerm.toLowerCase())
-            ), [reportFiltered, searchTerm]);
-
-            // Attendance Logic
-            const openAttendanceModal = () => {
-                const today = new Date().toISOString().slice(0, 10);
-                setAttendanceDate(today);
-                const alreadyRecorded = reportFiltered.some(t => t.attendanceHistory && t.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today));
-                if (alreadyRecorded) {
-                    const presentIds = reportFiltered.filter(t => t.attendanceHistory.some(h => {
-                         const hDate = typeof h === 'string' ? h : h.date;
-                         const hStatus = typeof h === 'string' ? 'present' : h.status; 
-                         return hDate === today && hStatus === 'present';
-                    })).map(t => t.id);
-                    setAttendanceList(presentIds);
-                } else { setAttendanceList(reportFiltered.map(t => t.id)); }
-                setImportText(""); setIsAttendanceOpen(true);
-            };
-            const toggleAttendance = (id) => { if (attendanceList.includes(id)) setAttendanceList(attendanceList.filter(pid => pid !== id)); else setAttendanceList([...attendanceList, id]); };
-            const parseImportText = () => { if (!importText) return; const text = importText.toLowerCase(); const matchedIds = reportFiltered.filter(t => text.includes(t.name.toLowerCase())).map(t => t.id); if (matchedIds.length > 0) { setAttendanceList(matchedIds); alert(`✅ ID: ${matchedIds.length}`); } else { alert("⚠️ No match"); } };
-            const submitAttendance = () => {
-                const totalCount = reportFiltered.length; const presentCount = attendanceList.filter(id => reportFiltered.some(r => r.id === id)).length;
-                if (!confirm(`${TRANSLATIONS[lang].attConfirm} [${attendanceDate}]?\n\n${TRANSLATIONS[lang].attTotal}: ${totalCount}\n${TRANSLATIONS[lang].attPresent}: ${presentCount}`)) return;
-                const newTrainees = trainees.map(t => {
-                    if (reportFiltered.some(r => r.id === t.id)) {
-                        let history = t.attendanceHistory || []; if(!Array.isArray(history)) history = [];
-                        const isPresent = attendanceList.includes(t.id);
-                        const newStatus = isPresent ? 'present' : 'absent';
-                        const todayIndex = history.findIndex(h => (typeof h === 'string' ? h : h.date) === attendanceDate);
-                        let newTotal = t.totalSessions || PRESET_YEARLY_TOTAL; let newAttended = t.attendedSessions || 0; let newHistory = [...history];
-                        if (todayIndex !== -1) {
-                            const oldStatus = typeof newHistory[todayIndex] === 'string' ? 'present' : newHistory[todayIndex].status;
-                            if (oldStatus !== newStatus) { if (newStatus === 'present') newAttended++; else newAttended--; }
-                            newHistory[todayIndex] = { date: attendanceDate, status: newStatus };
-                        } else {
-                            if (isPresent) newAttended++;
-                            newHistory.push({ date: attendanceDate, status: newStatus });
-                        }
-                        const newRate = newTotal === 0 ? 0 : Math.round((newAttended / newTotal) * 100);
-                        return { ...t, totalSessions: newTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: newHistory };
-                    }
-                    return t;
-                });
-                saveToLocal({ trainees: newTrainees }); setIsAttendanceOpen(false); alert("✅ Updated!");
-            };
-
-            // 🔥 财务功能 (Finance Logic)
-            const toggleFeeStatus = (traineeId) => {
-                const newTrainees = trainees.map(t => {
-                    if (t.id === traineeId) {
-                        const history = t.feeHistory || {};
-                        const currentStatus = history[financeMonth] || false;
-                        return { ...t, feeHistory: { ...history, [financeMonth]: !currentStatus } };
-                    }
-                    return t;
-                });
-                saveToLocal({ trainees: newTrainees });
-            };
-
-            const sendFeeReminder = (trainee) => {
-                const msg = t('remindMsg').replace('{name}', trainee.name).replace('{month}', financeMonth).replace('{amount}', monthlyFee);
-                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-            };
-
-            const exportFinanceExcel = () => {
-                let csvContent = "\uFEFFName,Team,Category,Month,Amount,Status\n";
-                // 使用 reportFiltered，只导出当前筛选的列表 (支持分校导出)
-                reportFiltered.forEach(t => {
-                    const status = (t.feeHistory && t.feeHistory[financeMonth]) ? "Paid" : "Unpaid";
-                    csvContent += `${t.name.replace(/,/g," ")},${t.team.replace(/,/g," ")},${t.category||""},${financeMonth},${monthlyFee},${status}\n`;
-                });
-                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a"); link.href = url; link.download = `CFC_Finance_${financeMonth}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            };
-
-            const getFinanceSummary = () => {
-                const paidCount = reportFiltered.filter(t => t.feeHistory && t.feeHistory[financeMonth]).length;
-                const totalAmount = paidCount * monthlyFee;
-                const pendingAmount = (reportFiltered.length - paidCount) * monthlyFee;
-                return { paidCount, totalAmount, pendingAmount };
-            };
-
-            return (
-                <div className="max-w-7xl mx-auto p-4 md:p-8 pb-20 fade-in">
-                    <div className="h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-yellow-500 mb-6"></div>
-                    
-                    <header className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
-                        <div className="flex items-center gap-4 w-full md:w-auto">
-                            <div className="relative group w-16 h-16 bg-zinc-800 rounded-xl flex items-center justify-center cursor-pointer border border-zinc-700 overflow-hidden shrink-0" onClick={() => logoInputRef.current.click()}>
-                                {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-3xl"></i>}
-                                <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleFile(e, true)} />
-                            </div>
-                            <div className="flex-1">
-                                {isEditingTitle ? (
-                                    <input autoFocus className="bg-zinc-800 text-white text-2xl font-black px-2 py-1 rounded w-full border border-zinc-600" 
-                                        value={leagueName} onChange={e => setLeagueName(e.target.value)} 
-                                        onBlur={() => {setIsEditingTitle(false); saveToLocal({leagueName});}} />
-                                ) : (
-                                    <h1 className="text-2xl font-black cursor-pointer flex items-center gap-2" onClick={() => setIsEditingTitle(true)}>{leagueName} <i className="fa-solid fa-pen text-xs text-zinc-600"></i></h1>
-                                )}
-                                <div className="text-xs text-zinc-500 mt-1 flex items-center gap-2">
-                                    <span className="bg-zinc-900 text-yellow-500 border border-yellow-500/20 px-2 py-0.5 rounded font-bold">{t('systemName')}</span>
-                                    <div onClick={() => setIsCloudModalOpen(true)} className={`cursor-pointer px-2 rounded flex items-center gap-1 ${isCloudConnected ? 'bg-emerald-900/30 text-emerald-400' : 'bg-zinc-800 text-zinc-400'}`}>
-                                        <i className={`fa-solid fa-cloud ${isCloudConnected ? '' : 'text-zinc-600'}`}></i>
-                                        {isCloudConnected ? t('cloudMode') : t('localMode')}
-                                        <span className="text-[10px] ml-1">{cloudStatus}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto items-end">
-                            <div className="flex bg-zinc-800 rounded-lg p-1 border border-zinc-700">
-                                <button onClick={() => setLang('zh')} className={`px-2 py-1 rounded text-lg ${lang==='zh'?'bg-zinc-600':'hover:bg-zinc-700'}`}>🇨🇳</button>
-                                <button onClick={() => setLang('en')} className={`px-2 py-1 rounded text-lg ${lang==='en'?'bg-zinc-600':'hover:bg-zinc-700'}`}>🇬🇧</button>
-                                <button onClick={() => setLang('ms')} className={`px-2 py-1 rounded text-lg ${lang==='ms'?'bg-zinc-600':'hover:bg-zinc-700'}`}>🇲🇾</button>
-                            </div>
-                            <div className="flex gap-2 w-full">
-                                <button onClick={() => setIsFinanceOpen(true)} className="bg-yellow-600 text-yellow-100 px-4 py-3 rounded-xl font-bold border border-yellow-500 whitespace-nowrap"><i className="fa-solid fa-sack-dollar mr-2"></i>{t('financeTool')}</button>
-                                <button onClick={openAttendanceModal} className="bg-emerald-900 text-emerald-100 px-4 py-3 rounded-xl font-bold border border-emerald-700 whitespace-nowrap"><i className="fa-solid fa-calendar-check mr-2"></i>{t('attendanceTool')}</button>
-                                <button onClick={() => setIsDataToolsOpen(true)} className="bg-indigo-900 text-indigo-100 px-4 py-3 rounded-xl font-bold border border-indigo-700 whitespace-nowrap"><i className="fa-solid fa-cloud-arrow-up"></i></button>
-                                <button onClick={() => setIsSchoolManagerOpen(true)} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-3 rounded-xl font-bold border border-zinc-700 whitespace-nowrap"><i className="fa-solid fa-gear"></i>{t('manageSchools')}</button>
-                                <button onClick={() => { setEditingTrainee(null); setIsModalOpen(true); }} className="flex-[2] bg-zinc-100 hover:bg-white text-zinc-900 px-6 py-3 rounded-xl font-bold whitespace-nowrap shadow-lg"><i className="fa-solid fa-plus mr-2"></i>{t('register')}</button>
-                            </div>
-                        </div>
-                    </header>
-
-                    {/* AI Result */}
-                    {aiResult && (<div className="mb-8 bg-zinc-900 border border-zinc-700 rounded-xl p-4 relative fade-in"><div className="flex justify-between items-center mb-3"><h3 className="font-bold text-white flex items-center gap-2"><span className="bg-indigo-600 text-white w-6 h-6 rounded flex items-center justify-center text-xs"><i className="fa-solid fa-clipboard-user"></i></span>{t('coachReport')}: <span className="text-indigo-400">{aiResult.name}</span></h3><div className="flex gap-2"><button onClick={handleReportShare} className="text-zinc-400 hover:text-white transition-colors"><i className="fa-solid fa-share-nodes"></i></button><button onClick={() => setIsEditingReport(!isEditingReport)} className="text-zinc-400 hover:text-white transition-colors"><i className={`fa-solid ${isEditingReport ? 'fa-floppy-disk text-emerald-500' : 'fa-pen-to-square'}`}></i></button><button onClick={() => setAiResult(null)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div></div>{isEditingReport ? <textarea className="w-full bg-black/40 text-zinc-300 text-sm p-4 rounded-lg border border-zinc-700 outline-none resize-y min-h-[150px]" value={aiResult.content} onChange={(e) => setAiResult({...aiResult, content: e.target.value})}></textarea> : <div className="text-zinc-300 text-sm whitespace-pre-wrap leading-relaxed bg-black/20 p-4 rounded-lg">{aiResult.content}</div>}{aiLoading && <div className="text-xs text-zinc-500 mt-2 flex items-center gap-2"><i className="fa-solid fa-spinner fa-spin"></i> {t('ai', 'analyzing')}</div>}</div>)}
-
-                    {/* Filters */}
-                    <div className="mb-8 space-y-3">
-                        <input className="w-full pl-4 pr-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white focus:border-indigo-500 outline-none placeholder-zinc-600" placeholder={t('searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">{['全部', ...teams].map(t => <button key={t} onClick={() => setSelectedTeam(t)} className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-colors ${selectedTeam === t ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800'}`}>{t.split(' (')[0]}</button>)}</div>
-                        <div className="flex gap-2 overflow-x-auto no-scrollbar">{['全部', ...POSITIONS].map(p => <button key={p} onClick={() => setSelectedPosition(p)} className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-colors ${selectedPosition === p ? 'bg-zinc-100 text-black' : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800'}`}>{p.replace(/\s*\(.*?\)\s*/g, '')}</button>)}</div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {uiFiltered.length === 0 && <div className="col-span-full py-20 text-center text-zinc-600 border-2 border-dashed border-zinc-800 rounded-3xl">{t('noData')}</div>}
-                        {uiFiltered.map(trainee => (
-                            <div key={trainee.id} className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col hover:border-zinc-600 transition-colors relative group overflow-hidden">
-                                <div className="w-full h-48 relative shrink-0">
-                                    <img src={trainee.image} className="w-full h-full object-cover bg-zinc-800" onError={e => e.target.src = DEFAULT_IMAGE} />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent opacity-80"></div>
-                                    <span className="absolute top-2 left-2 bg-yellow-500 text-black text-[10px] font-black px-2 py-0.5 rounded shadow z-10">{getPositionCode(trainee.primaryPosition)}</span>
-                                    {trainee.category && <span className="absolute top-2 right-2 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow z-10">{trainee.category}</span>}
-                                    <button onClick={(e) => { e.stopPropagation(); setShareTarget(trainee); }} className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center bg-white/20 backdrop-blur rounded-full text-white hover:bg-emerald-600 transition-all z-20 shadow-lg border border-white/20" title={t('shareProfile')}><i className="fa-solid fa-share-nodes text-xs"></i></button>
-                                    <div className="absolute bottom-2 left-3 right-12"><h3 className="text-lg font-bold text-white truncate shadow-black drop-shadow-md leading-tight">{trainee.name}</h3><p className="text-[10px] text-zinc-300 flex items-center gap-1 truncate shadow-black drop-shadow-md"><i className="fa-solid fa-school text-yellow-500"></i> {trainee.team.split(' (')[0]}</p></div>
-                                </div>
-                                <div className="p-4 flex-1 flex flex-col">
-                                    <div className="flex justify-between items-center bg-zinc-950 p-2 rounded-lg mb-3 border border-zinc-800"><div className="text-center flex-1 border-r border-zinc-800"><div className="text-[10px] text-zinc-500 uppercase">{t('age')}</div><div className="text-xs font-bold text-white">{trainee.age}</div></div><div className="text-center flex-1 border-r border-zinc-800"><div className="text-[10px] text-zinc-500 uppercase">{t('height')}</div><div className="text-xs font-bold text-white">{trainee.height || '-'} <span className="text-[8px] font-normal">cm</span></div></div><div className="text-center flex-1"><div className="text-[10px] text-zinc-500 uppercase">{t('weight')}</div><div className="text-xs font-bold text-white">{trainee.weight || '-'} <span className="text-[8px] font-normal">kg</span></div></div></div>
-                                    <div className="mb-3 px-1"><div className="flex justify-between text-[10px] text-zinc-500 mb-1 font-bold"><span>{t('attendance')} ({trainee.attendedSessions}/{trainee.totalSessions})</span><span className={trainee.attendance >= 90 ? 'text-emerald-500' : 'text-zinc-300'}>{trainee.attendance || 0}%</span></div><div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden"><div className={`h-full ${getAttendanceColor(trainee.attendance || 0)}`} style={{width: `${trainee.attendance || 0}%`}}></div></div></div>
-                                    <div className="space-y-1.5 mb-4">{['pace', 'shooting', 'passing'].map(s => { const val = (trainee.stats && trainee.stats[s]) || 0; return (<div key={s} className="flex items-center gap-2"><span className="text-[9px] text-zinc-500 uppercase w-10">{t('stats', s)}</span><div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden"><div className="h-full bg-indigo-500" style={{width: `${val}%`}}></div></div><span className="text-[9px] font-bold text-zinc-400 w-4 text-right">{val}</span></div>); })}</div>
-                                    <div className="flex gap-2 mt-auto pt-3 border-t border-zinc-800/50"><button onClick={() => { setEditingTrainee(trainee); setFormData(trainee); setIsModalOpen(true); }} className="p-1.5 text-zinc-500 hover:text-white transition-colors"><i className="fa-solid fa-pen-to-square"></i></button><button onClick={() => deleteTrainee(trainee.id)} className="p-1.5 text-zinc-500 hover:text-red-500 transition-colors"><i className="fa-solid fa-trash"></i></button><div className="flex-1"></div><button onClick={() => mockAI('球探', trainee)} className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-xs rounded border border-zinc-700 transition-colors flex items-center gap-1"><i className="fa-solid fa-magnifying-glass-chart"></i> {t('aiAnalyze')}</button></div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Modals: Cloud Setup */}
-                    {isCloudModalOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-sm rounded-2xl border border-emerald-700 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-cloud text-emerald-500"></i> {t('cloudSetup')}</h2><button onClick={() => setIsCloudModalOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4"><p className="text-sm text-zinc-400 leading-relaxed">{t('cloudDesc')}</p><div className="bg-black p-3 rounded-lg border border-zinc-700"><label className="text-xs text-zinc-500 block mb-1 font-bold">{t('cloudKey')}</label><input className="w-full bg-transparent text-white outline-none font-mono text-sm" placeholder="X-Master-Key" value={cloudConfig.key} onChange={e => setCloudConfig({...cloudConfig, key: e.target.value})} /></div><div className="bg-black p-3 rounded-lg border border-zinc-700"><label className="text-xs text-zinc-500 block mb-1 font-bold">{t('cloudBin')}</label><input className="w-full bg-transparent text-white outline-none font-mono text-sm" placeholder="Bin ID" value={cloudConfig.binId} onChange={e => setCloudConfig({...cloudConfig, binId: e.target.value})} /></div><div className="border-t border-zinc-800 pt-2 mt-2"><button onClick={createCloudBin} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-900/30 mb-3">{t('cloudCreate')}</button></div><button onClick={handleConnectCloud} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition-transform active:scale-95">{t('cloudConnect')}</button></div></div></div>)}
-                    
-                    {/* Attendance Modal */}
-                    {isAttendanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-calendar-check text-emerald-500"></i> {t('attTitle')}</h2><div className="flex items-center gap-2"><input type="date" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-emerald-500 outline-none" value={attendanceDate} onChange={(e) => setAttendanceDate(e.target.value)} /><button onClick={() => setIsAttendanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4"><label className="text-zinc-400 text-xs font-bold block mb-2">{t('attPaste')}</label><textarea className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-xs text-white h-20 mb-2 focus:border-emerald-500 outline-none" placeholder={t('attPlaceholder')} value={importText} onChange={e => setImportText(e.target.value)}></textarea><button onClick={parseImportText} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-900/30 rounded-lg text-xs font-bold">{t('attPasteDesc')}</button></div><div className="flex justify-between items-center mb-2 px-1"><span className="text-xs text-zinc-500">Selected {attendanceList.length} / {reportFiltered.length}</span><button onClick={() => setAttendanceList(attendanceList.length === reportFiltered.length ? [] : reportFiltered.map(t => t.id))} className="text-xs text-indigo-400 hover:text-indigo-300">Select All</button></div><div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">{reportFiltered.map(t => (<div key={t.id} onClick={() => toggleAttendance(t.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${attendanceList.includes(t.id) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}><div className="flex items-center gap-3"><div className={`w-5 h-5 rounded-full flex items-center justify-center border ${attendanceList.includes(t.id) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>{attendanceList.includes(t.id) && <i className="fa-solid fa-check text-black text-xs"></i>}</div><div><p className="text-sm font-bold text-white">{t.name}</p><p className="text-[10px] text-zinc-500">{t.team}</p></div></div><div className="text-xs text-zinc-400">{t.attendance}%</div></div>))}</div><div className="flex gap-2"><button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button><button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button><button onClick={handleWhatsappShare} className="px-4 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl shadow-lg" title={t('attWhatsapp')}><i className="fa-brands fa-whatsapp text-xl"></i></button></div></div></div>)}
-                    {/* (Other modals shareTarget, isDataToolsOpen, isCropperOpen are identical to previous version, omitted for brevity but should be included) */}
-                    {shareTarget && (<div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in" onClick={() => setShareTarget(null)}><div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}><div className="text-center mb-6"><div className="w-20 h-20 mx-auto rounded-full overflow-hidden border-4 border-zinc-800 mb-3"><img src={shareTarget.image} className="w-full h-full object-cover" onError={e => e.target.src = DEFAULT_IMAGE} /></div><h3 className="text-xl font-bold text-white">{shareTarget.name}</h3><p className="text-sm text-zinc-500">{shareTarget.team}</p></div><div className="space-y-3"><button onClick={() => handleSystemShare(shareTarget)} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95"><i className="fa-solid fa-share-nodes"></i> {t('share', 'sendToParents')}</button><div className="relative flex py-2 items-center"><div className="flex-grow border-t border-zinc-700"></div><span className="flex-shrink-0 mx-4 text-xs text-zinc-500">{t('share', 'textOnly')}</span><div className="flex-grow border-t border-zinc-700"></div></div><div className="grid grid-cols-2 gap-3"><a href={`https://wa.me/?text=${encodeURIComponent(generateShareText(shareTarget))}`} target="_blank" className="py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-brands fa-whatsapp text-lg"></i> WhatsApp</a><a href={`mailto:?subject=CFC Player: ${shareTarget.name}&body=${encodeURIComponent(generateShareText(shareTarget))}`} className="py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-solid fa-envelope"></i> Email</a></div></div></div></div>)}
-                    {isDataToolsOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-lg font-bold text-white flex items-center gap-2"><i className="fa-solid fa-cloud-arrow-up text-indigo-500"></i> {t('backupTools')}</h2><button onClick={() => setIsDataToolsOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4"><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 relative group overflow-hidden"><div className="absolute top-0 right-0 p-2 opacity-20"><i className="fab fa-google-drive text-6xl text-white"></i></div><h3 className="text-white font-bold mb-2 flex items-center gap-2 z-10 relative"><i className="fa-solid fa-cloud-upload-alt text-emerald-500"></i> {t('backupToDrive')}</h3><p className="text-zinc-500 text-xs mb-3 relative z-10">{t('exportDesc')}</p><button onClick={handleBackupToDrive} className="w-full py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 relative z-10 border border-emerald-500"><i className="fab fa-google-drive"></i> {t('save')}</button></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800"><h3 className="text-zinc-300 font-bold mb-2 flex items-center gap-2"><i className="fa-solid fa-file-import text-indigo-500"></i> {t('restoreData')}</h3><p className="text-zinc-500 text-xs mb-3">{t('restoreDesc')}</p><div className="relative group"><button className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-indigo-400 border border-indigo-900/50 rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 cursor-pointer" onClick={() => backupInputRef.current.click()}><i className="fa-solid fa-folder-open"></i> {t('selectFile')}</button><input type="file" ref={backupInputRef} className="hidden" accept=".json" onChange={handleImportFile} /></div></div></div><p className="text-center text-zinc-600 text-xs mt-6">{t('dataSafe')}</p></div></div>)}
-                    {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
-                    
-                    {/* 🔥 编辑模态框 (包含自由修改考勤) */}
-                    {isModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-white">{editingTrainee ? t('updateProfile') : t('newPlayer')}</h2><button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4 mb-6"><div className="flex items-center gap-4"><div className="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center overflow-hidden border border-zinc-700 shrink-0 cursor-pointer relative" onClick={() => fileInputRef.current.click()}>{formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <i className="fa-solid fa-camera text-zinc-600"></i>}<input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFile} /></div><div className="flex-1 space-y-2"><input className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('name')} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} /><div className="flex gap-2"><input type="number" className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('age')} value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('nationality')} value={formData.nationality} onChange={e => setFormData({...formData, nationality: e.target.value})} /></div><div className="flex gap-2"><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('height')} value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">cm</span></div><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('weight')} value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">kg</span></div><div className="w-1/3"><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.category || 'U18'} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div></div></div></div><div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><div className="flex flex-col"><span className="text-xs font-bold text-zinc-400">{t('attendance')}</span><span className={formData.attendance >= 90 ? 'text-emerald-500 font-bold' : 'text-white font-bold'}>{formData.attendance || 0}%</span></div><div className="flex items-center gap-2"><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('attCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.attendedSessions} onChange={(e) => handleAttendanceChange('attendedSessions', e.target.value)} /></div><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('totalCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.totalSessions} onChange={(e) => handleAttendanceChange('totalSessions', e.target.value)} /></div><button onClick={resetPlayerStats} className="ml-2 bg-red-900/30 hover:bg-red-900/50 text-red-500 text-[10px] px-2 py-2 rounded border border-red-900/50 h-full flex items-center justify-center" title={t('resetStats')}><i className="fa-solid fa-rotate-right"></i></button></div></div><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}>{teams.map(t => <option key={t} value={t}>{t}</option>)}</select><div className="grid grid-cols-2 gap-2"><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.primaryPosition} onChange={e => setFormData({...formData, primaryPosition: e.target.value})}>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.secondaryPosition} onChange={e => setFormData({...formData, secondaryPosition: e.target.value})}><option value="无">无</option>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-800 p-4 rounded-xl mb-4">{Object.keys(formData.stats).map(s => (<div key={s}><div className="flex justify-between text-[10px] text-zinc-400 uppercase mb-1"><span>{t('stats', s)}</span> <span>{formData.stats[s]}</span></div><input type="range" min="0" max="99" className="w-full accent-white h-1 bg-zinc-600 rounded-lg appearance-none" value={formData.stats[s]} onChange={e => setFormData({...formData, stats: {...formData.stats, [s]: parseInt(e.target.value)}})} /></div>))}</div></div><div className="flex gap-2"><button onClick={handleSave} className="flex-1 py-3 bg-zinc-100 hover:bg-white text-zinc-900 font-bold rounded-xl transition-colors">{t('save')}</button><button onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-colors">{t('cancel')}</button></div></div></div>)}
-                    
-                    {/* Finance Modal (New) */}
-                    {isFinanceOpen && (
-                        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
-                            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-yellow-600 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-sack-dollar text-yellow-500"></i> {t('finTitle')}</h2>
-                                    <div className="flex items-center gap-2">
-                                        <input type="month" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-yellow-500 outline-none" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} />
-                                        <button onClick={() => setIsFinanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button>
-                                    </div>
-                                </div>
-
-                                {/* Summary Bar */}
-                                <div className="grid grid-cols-2 gap-3 mb-4">
-                                    <div className="bg-emerald-900/30 border border-emerald-800 p-3 rounded-xl flex flex-col items-center">
-                                        <span className="text-[10px] text-emerald-400 uppercase">{t('finTotal')}</span>
-                                        <span className="text-xl font-bold text-white">RM {getFinanceSummary().totalAmount}</span>
-                                        <span className="text-[10px] text-zinc-400">({getFinanceSummary().paidCount} pax)</span>
-                                    </div>
-                                    <div className="bg-red-900/30 border border-red-800 p-3 rounded-xl flex flex-col items-center">
-                                        <span className="text-[10px] text-red-400 uppercase">{t('finPending')}</span>
-                                        <span className="text-xl font-bold text-white">RM {getFinanceSummary().pendingAmount}</span>
-                                        <span className="text-[10px] text-zinc-400">({reportFiltered.length - getFinanceSummary().paidCount} pax)</span>
-                                    </div>
-                                </div>
-
-                                {/* Fee Setting */}
-                                <div className="flex justify-between items-center bg-zinc-950 p-2 rounded-lg border border-zinc-800 mb-4">
-                                    <span className="text-xs text-zinc-400 pl-2">{t('finFee')}</span>
-                                    <input type="number" className="w-20 bg-black text-white text-right text-sm px-2 py-1 rounded border border-zinc-700 focus:border-yellow-500 outline-none" value={monthlyFee} onChange={e => setMonthlyFee(parseInt(e.target.value) || 0)} />
-                                </div>
-
-                                {/* List */}
-                                <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">
-                                    {reportFiltered.map(trainee => {
-                                        const isPaid = trainee.feeHistory && trainee.feeHistory[financeMonth];
-                                        return (
-                                            <div key={trainee.id} className="flex items-center justify-between p-3 rounded-xl border border-zinc-700 bg-zinc-800/30">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${isPaid ? 'bg-emerald-600 text-white' : 'bg-red-900/50 text-red-500 border border-red-800'}`}>
-                                                        {isPaid ? <i className="fa-solid fa-check"></i> : "RM"}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-white">{trainee.name}</p>
-                                                        <p className="text-[10px] text-zinc-500">{trainee.team}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    {!isPaid && (
-                                                        <button onClick={() => sendFeeReminder(trainee)} className="w-8 h-8 rounded-full bg-[#25D366]/20 hover:bg-[#25D366] text-[#25D366] hover:text-white border border-[#25D366]/50 flex items-center justify-center transition-all" title={t('finRemind')}>
-                                                            <i className="fa-brands fa-whatsapp"></i>
-                                                        </button>
-                                                    )}
-                                                    <button 
-                                                        onClick={() => toggleFeeStatus(trainee.id)} 
-                                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isPaid ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-transparent border-zinc-600 text-zinc-400 hover:border-yellow-500 hover:text-yellow-500'}`}
-                                                    >
-                                                        {isPaid ? t('finPaid') : t('finUnpaid')}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                <button onClick={exportFinanceExcel} className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl border border-zinc-600 flex items-center justify-center gap-2">
-                                    <i className="fa-solid fa-file-invoice-dollar"></i> {t('finExport')}
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* (Other modals shareTarget, isDataToolsOpen, isCropperOpen are identical to previous version, omitted for brevity but should be included) */}
-                    {shareTarget && (<div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in" onClick={() => setShareTarget(null)}><div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}><div className="text-center mb-6"><div className="w-20 h-20 mx-auto rounded-full overflow-hidden border-4 border-zinc-800 mb-3"><img src={shareTarget.image} className="w-full h-full object-cover" onError={e => e.target.src = DEFAULT_IMAGE} /></div><h3 className="text-xl font-bold text-white">{shareTarget.name}</h3><p className="text-sm text-zinc-500">{shareTarget.team}</p></div><div className="space-y-3"><button onClick={() => handleSystemShare(shareTarget)} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95"><i className="fa-solid fa-share-nodes"></i> {t('share', 'sendToParents')}</button><div className="relative flex py-2 items-center"><div className="flex-grow border-t border-zinc-700"></div><span className="flex-shrink-0 mx-4 text-xs text-zinc-500">{t('share', 'textOnly')}</span><div className="flex-grow border-t border-zinc-700"></div></div><div className="grid grid-cols-2 gap-3"><a href={`https://wa.me/?text=${encodeURIComponent(generateShareText(shareTarget))}`} target="_blank" className="py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-brands fa-whatsapp text-lg"></i> WhatsApp</a><a href={`mailto:?subject=CFC Player: ${shareTarget.name}&body=${encodeURIComponent(generateShareText(shareTarget))}`} className="py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-solid fa-envelope"></i> Email</a></div></div></div></div>)}
-                    {isDataToolsOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-lg font-bold text-white flex items-center gap-2"><i className="fa-solid fa-cloud-arrow-up text-indigo-500"></i> {t('backupTools')}</h2><button onClick={() => setIsDataToolsOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4"><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 relative group overflow-hidden"><div className="absolute top-0 right-0 p-2 opacity-20"><i className="fab fa-google-drive text-6xl text-white"></i></div><h3 className="text-white font-bold mb-2 flex items-center gap-2 z-10 relative"><i className="fa-solid fa-cloud-upload-alt text-emerald-500"></i> {t('backupToDrive')}</h3><p className="text-zinc-500 text-xs mb-3 relative z-10">{t('exportDesc')}</p><button onClick={handleBackupToDrive} className="w-full py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 relative z-10 border border-emerald-500"><i className="fab fa-google-drive"></i> {t('save')}</button></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800"><h3 className="text-zinc-300 font-bold mb-2 flex items-center gap-2"><i className="fa-solid fa-file-import text-indigo-500"></i> {t('restoreData')}</h3><p className="text-zinc-500 text-xs mb-3">{t('restoreDesc')}</p><div className="relative group"><button className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-indigo-400 border border-indigo-900/50 rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 cursor-pointer" onClick={() => backupInputRef.current.click()}><i className="fa-solid fa-folder-open"></i> {t('selectFile')}</button><input type="file" ref={backupInputRef} className="hidden" accept=".json" onChange={handleImportFile} /></div></div></div><p className="text-center text-zinc-600 text-xs mt-6">{t('dataSafe')}</p></div></div>)}
-                    {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
-                </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
 </html>
-
