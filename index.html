@@ -35,7 +35,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p class="text-zinc-500 text-sm mt-2">Fixing Data & Loading...</p>
+        <p class="text-zinc-500 text-sm mt-2">Recalibrating Data...</p>
     </div>
 
     <div id="root"></div>
@@ -113,10 +113,10 @@
                 attConfirm: "提交 / 更新记录",
                 attShare: "分享出席表",
                 attWhatsapp: "WhatsApp",
-                attExcel: "导出 Excel", 
+                attExcel: "导出 Excel (分校)", 
                 attTotal: "总场次",
                 attPresent: "出席",
-                resetStats: "重置考勤数据",
+                resetStats: "校准/重置数据",
                 cloudSetup: "云端同步设置 (JSONBin)",
                 cloudKey: "Master Key",
                 cloudBin: "Bin ID",
@@ -150,7 +150,7 @@
                 textOnly: "Text Only", cropTitle: "Crop", rotate: "Rotate", confirmCrop: "Confirm", attTitle: "Attendance",
                 attDate: "Date", attPaste: "Paste List", attPasteDesc: "Auto-check", attPlaceholder: "Names...", attConfirm: "Submit",
                 attShare: "Share", attWhatsapp: "WhatsApp", attExcel: "Export Excel", attTotal: "Total", attPresent: "Present",
-                resetStats: "Reset Stats",
+                resetStats: "Recalibrate",
                 cloudSetup: "Cloud Setup (JSONBin)", cloudKey: "Master Key", cloudBin: "Bin ID", cloudConnect: "Connect",
                 cloudCreate: "✨ Auto Create DB", cloudDesc: "Enter Key to auto-create and sync.",
                 stats: { pace: "PAC", shooting: "SHO", passing: "PAS", dribbling: "DRI", defending: "DEF", physical: "PHY" },
@@ -199,12 +199,10 @@
             const [leagueName, setLeagueName] = useState('CFC YOUTH ACADEMY');
             const [appLogo, setAppLogo] = useState(null);
             
-            // 云端状态
             const [cloudConfig, setCloudConfig] = useState({ key: MY_MASTER_KEY || '', binId: '' });
             const [isCloudConnected, setIsCloudConnected] = useState(false);
             const [cloudStatus, setCloudStatus] = useState("");
 
-            // UI 状态
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [isSchoolManagerOpen, setIsSchoolManagerOpen] = useState(false);
             const [isDataToolsOpen, setIsDataToolsOpen] = useState(false); 
@@ -226,7 +224,6 @@
             const [aiResult, setAiResult] = useState(null);
             const [aiLoading, setAiLoading] = useState(false);
             
-            // 考勤状态
             const [attendanceList, setAttendanceList] = useState([]); 
             const [importText, setImportText] = useState("");
             const [attendanceDate, setAttendanceDate] = useState(""); 
@@ -240,36 +237,49 @@
             const logoInputRef = useRef(null);
             const backupInputRef = useRef(null);
 
-            // --- 核心：数据初始化与清洗 (Fix 1000% Bug) ---
+            // --- 核心：数据清洗与校准 ---
+            // 这个函数负责“救活”那些数据异常的球员
+            const calibrateTrainee = (t) => {
+                let history = Array.isArray(t.attendanceHistory) ? t.attendanceHistory : [];
+                
+                // 1. 如果有历史记录，强制按历史记录重算（这是最准的）
+                let calculatedTotal = history.length;
+                let calculatedAttended = history.filter(h => (typeof h === 'string' ? 'present' : h.status) === 'present').length;
+
+                // 2. 如果没有历史记录，但有死数据 (Fallback)
+                if (calculatedTotal === 0) {
+                    calculatedTotal = t.totalSessions || 0;
+                    calculatedAttended = t.attendedSessions || 0;
+                    
+                    // 🔥 修复 1000% BUG：如果出席次数 > 总场次，说明数据坏了，强制修复
+                    if (calculatedAttended > calculatedTotal) {
+                        calculatedTotal = calculatedAttended; // 分母至少要等于分子
+                    }
+                    // 如果都没数据但有百分比，给个默认基数 10
+                    if (calculatedTotal === 0 && t.attendance > 0) {
+                        calculatedTotal = 10;
+                        calculatedAttended = Math.round(10 * (t.attendance / 100));
+                    }
+                }
+
+                const rate = calculatedTotal === 0 ? 0 : Math.round((calculatedAttended / calculatedTotal) * 100);
+
+                return {
+                    ...t,
+                    totalSessions: calculatedTotal,
+                    attendedSessions: calculatedAttended,
+                    attendance: rate,
+                    attendanceHistory: history,
+                    stats: t.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 }
+                };
+            };
+
             useEffect(() => {
                 const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
                 const savedCloud = JSON.parse(localStorage.getItem('cfc_jsonbin_config') || '{}');
 
                 if (localData.trainees) {
-                    const sanitized = localData.trainees.map(t => {
-                        let total = t.totalSessions || 0;
-                        let attended = t.attendedSessions || 0;
-                        
-                        // 🔥 强力清洗：如果有不合理数据 (1000%)，强制修复
-                        if (attended > total) {
-                            total = attended; // 分母至少要等于分子
-                        }
-                        // 如果出席率是 100 且 total 是 1，可能是刚注册，正常
-                        // 如果数据是 NaN 或 null，重置为 0
-                        if (isNaN(total)) total = 0;
-                        if (isNaN(attended)) attended = 0;
-
-                        const rate = total === 0 ? 0 : Math.round((attended / total) * 100);
-
-                        return {
-                            ...t,
-                            totalSessions: total,
-                            attendedSessions: attended,
-                            attendance: rate,
-                            attendanceHistory: Array.isArray(t.attendanceHistory) ? t.attendanceHistory : [],
-                            stats: t.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 }
-                        };
-                    });
+                    const sanitized = localData.trainees.map(calibrateTrainee);
                     setTrainees(sanitized);
                 } else {
                     setTrainees(INITIAL_TRAINEES);
@@ -312,7 +322,7 @@
                         const json = await res.json();
                         const data = json.record;
                         
-                        if (data.trainees) setTrainees(data.trainees);
+                        if (data.trainees) setTrainees(data.trainees); // 注意：这里拉下来的数据也会在下次保存/编辑时被 calibrateTrainee 逻辑修正
                         if (data.teams) setTeams(data.teams);
                         if (data.leagueName) setLeagueName(data.leagueName);
                         
@@ -340,10 +350,7 @@
                 try {
                     await fetch(`${JSONBIN_URL}/${cloudConfig.binId}`, {
                         method: 'PUT',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'X-Master-Key': cloudConfig.key
-                        },
+                        headers: { 'Content-Type': 'application/json', 'X-Master-Key': cloudConfig.key },
                         body: JSON.stringify(cleanData)
                     });
                     setCloudStatus("✅ Saved");
@@ -359,34 +366,22 @@
                 try {
                     const res = await fetch(JSONBIN_URL, {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-Master-Key": cloudConfig.key,
-                            "X-Bin-Name": "CFC_League_Data"
-                        },
-                        body: JSON.stringify({
-                            trainees: trainees,
-                            teams: teams,
-                            leagueName: leagueName,
-                            note: "Created by CFC App"
-                        })
+                        headers: { "Content-Type": "application/json", "X-Master-Key": cloudConfig.key, "X-Bin-Name": "CFC_League_Data" },
+                        body: JSON.stringify({ trainees, teams, leagueName, note: "Created by CFC App" })
                     });
                     
                     if (res.ok) {
                         const json = await res.json();
                         const newBinId = json.metadata.id;
                         setCloudConfig(prev => ({ ...prev, binId: newBinId }));
-                        
                         localStorage.setItem('cfc_jsonbin_config', JSON.stringify({ key: cloudConfig.key, binId: newBinId }));
                         setIsCloudConnected(true);
                         setCloudStatus("✅ Created");
-                        alert(`✅ 云端数据库创建成功！\n\nBin ID: ${newBinId}\n\n请务必复制这个 ID，在其他手机填入即可同步数据。`);
+                        alert(`✅ 云端数据库创建成功！\n\nBin ID: ${newBinId}`);
                         setTimeout(() => setCloudStatus(""), 2000);
-                    } else {
-                        throw new Error("创建失败");
-                    }
+                    } else { throw new Error("创建失败"); }
                 } catch (e) {
-                    alert("❌ 创建失败，请检查 Key 是否正确");
+                    alert("❌ 创建失败，请检查 Key");
                     setCloudStatus("❌ Error");
                 }
             };
@@ -409,31 +404,50 @@
                     leagueName: newData.leagueName !== undefined ? newData.leagueName : leagueName,
                     appLogo: newData.appLogo !== undefined ? newData.appLogo : appLogo,
                 };
-                
                 if (newData.trainees !== undefined) setTrainees(newData.trainees);
                 if (newData.teams !== undefined) setTeams(newData.teams);
                 if (newData.leagueName !== undefined) setLeagueName(newData.leagueName);
                 if (newData.appLogo !== undefined) setAppLogo(newData.appLogo);
-
                 localStorage.setItem('cfc_local_db', JSON.stringify(currentData));
-
                 if (isCloudConnected) {
-                    syncToCloud({
-                        trainees: currentData.trainees,
-                        teams: currentData.teams,
-                        leagueName: currentData.leagueName
-                    });
+                    syncToCloud({ trainees: currentData.trainees, teams: currentData.teams, leagueName: currentData.leagueName });
                 }
             };
 
             // ... (Backup, Import, File, Cropper logic) ...
-            const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(`✅ 备份已下载！请自行保存或上传到云盘。`)) window.open(DRIVE_LINK, '_blank'); }, 500); };
-            const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(`⚠️ 覆盖当前数据？\n这将恢复所有内容(含图片)。`)) { saveToLocal(p); if (isCloudConnected) syncToCloud(p); alert(`✅ 成功恢复！`); setIsDataToolsOpen(false); } } catch (e) { alert("❌ 文件错误"); } e.target.value=null; }; r.readAsText(f); };
+            const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(`✅ 备份已下载！`)) window.open(DRIVE_LINK, '_blank'); }, 500); };
+            const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(`⚠️ 覆盖当前数据？`)) { saveToLocal(p); if (isCloudConnected) syncToCloud(p); alert(`✅ 成功恢复！`); setIsDataToolsOpen(false); } } catch (e) { alert("❌ 文件错误"); } e.target.value=null; }; r.readAsText(f); };
             const handleFile = (e, isLogo) => { const f = e.target.files?.[0]; if(!f) return; const r = new FileReader(); r.onloadend = () => { setTempImage(r.result); setIsLogoCrop(isLogo); setIsCropperOpen(true); }; r.readAsDataURL(f); };
             useEffect(() => { if (isCropperOpen && cropperImageRef.current) { if (cropperRef.current) cropperRef.current.destroy(); cropperRef.current = new Cropper(cropperImageRef.current, { aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8 }); } }, [isCropperOpen, tempImage]);
             const handleCropConfirm = () => { if (cropperRef.current) { const c = cropperRef.current.getCroppedCanvas({ width: 400, height: 400 }); const u = c.toDataURL('image/jpeg', 0.8); if (isLogoCrop) { setAppLogo(u); saveToLocal({ appLogo: u }); } else { setFormData(p => ({ ...p, image: u })); } setIsCropperOpen(false); setTempImage(null); if(fileInputRef.current) fileInputRef.current.value=''; if(logoInputRef.current) logoInputRef.current.value=''; } };
             const handleRotate = () => { if (cropperRef.current) cropperRef.current.rotate(90); };
-            const handleSave = () => { if(!formData.name) return; const data = { ...formData, image: formData.image || DEFAULT_IMAGE }; let newTotal = data.totalSessions; let newAttended = data.attendedSessions; if (editingTrainee && data.attendance !== editingTrainee.attendance) { const base = newTotal || 10; newTotal = base; newAttended = Math.round(base * (data.attendance / 100)); } const finalData = { ...data, totalSessions: newTotal, attendedSessions: newAttended }; let newTrainees; if(editingTrainee) newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...finalData, id: t.id } : t); else newTrainees = [{ ...finalData, id: Date.now().toString() }, ...trainees]; saveToLocal({ trainees: newTrainees }); setIsModalOpen(false); };
+            
+            const handleSave = () => { 
+                if(!formData.name) return; 
+                const data = { ...formData, image: formData.image || DEFAULT_IMAGE }; 
+                
+                // 编辑模式：合并数据并校准
+                let newTrainees;
+                if(editingTrainee) {
+                    newTrainees = trainees.map(t => {
+                        if (t.id === editingTrainee.id) {
+                            // 如果用户手动拉了滑块，生成虚拟历史来支撑这个百分比
+                            if (data.attendance !== editingTrainee.attendance) {
+                                const newBase = 100;
+                                const newAtt = Math.round(data.attendance);
+                                return { ...t, ...data, totalSessions: newBase, attendedSessions: newAtt, attendanceHistory: [] }; // 清空历史以匹配新手设
+                            }
+                            return { ...t, ...data };
+                        }
+                        return t;
+                    });
+                } else {
+                    newTrainees = [{ ...data, id: Date.now().toString(), totalSessions: 0, attendedSessions: 0, attendance: 0 }, ...trainees]; 
+                }
+                saveToLocal({ trainees: newTrainees }); 
+                setIsModalOpen(false); 
+            };
+            
             const deleteTrainee = (id) => { if(confirm("删除此球员？")) { const newT = trainees.filter(t => t.id !== id); saveToLocal({ trainees: newT }); } };
             const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const newTeams = teams.map(t=>t===old?n:t); const newT = trainees.map(t=>t.team===old?{...t,team:n}:t); saveToLocal({teams:newTeams, trainees:newT}); setRenamingTeam({original:'',current:''}); };
             const handleAddTeam = () => { const n=`New School ${teams.length+1}`; saveToLocal({teams:[...teams,n]}); };
@@ -448,9 +462,9 @@
             const handleSystemShare = async (t) => { try{await navigator.share({title:t.name, text:generateShareText(t)})}catch(e){alert("Use WhatsApp Button");} };
             const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(t => attendanceList.includes(t.id)).map(t => t.name); const aNames = reportFiltered.filter(t => !attendanceList.includes(t.id)).map(t => t.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
             
-            // 🔥 新增：重置球员考勤数据
+            // 🔥 修复：重置考勤 (校准功能)
             const resetPlayerStats = () => {
-                if(!confirm("⚠️ 确定要重置当前球员的考勤数据吗？\n出席率将归零。")) return;
+                if(!confirm("⚠️ 确定要校准/重置此球员的考勤数据吗？\n这将清空历史，出席率归零。")) return;
                 const data = { 
                     ...formData, 
                     totalSessions: 0, 
@@ -458,19 +472,18 @@
                     attendance: 0,
                     attendanceHistory: [] 
                 };
-                setFormData(data); // 更新表单显示
-                // 自动保存
+                setFormData(data); 
                 if(editingTrainee) {
                      const newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...data, id: t.id } : t);
                      saveToLocal({ trainees: newTrainees });
                 }
             };
 
-            // 🔥 修复：导出 Excel 时包含学校名，并且只包含当前筛选的人
+            // 🔥 修复：智能分校导出
             const handleExportAttendanceExcel = () => {
                 const date = attendanceDate || new Date().toISOString().slice(0, 10);
-                // 获取当前选择的学校名，如果是“全部”就叫 All_Schools
-                const schoolName = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '_');
+                // 智能命名：如果选了特定学校，文件名就带学校名
+                const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
                 
                 let csvContent = "\uFEFFName,Team,Category,Status,Date\n";
                 reportFiltered.forEach(t => {
@@ -482,14 +495,12 @@
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.href = url;
-                // 文件名带学校
-                link.download = `CFC_Att_${schoolName}_${date}.csv`;
+                link.download = `CFC_Att_${targetSchool}_${date}.csv`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             };
 
-            // 智能列表
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
                 const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
@@ -500,7 +511,6 @@
                 t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.team.toLowerCase().includes(searchTerm.toLowerCase())
             ), [reportFiltered, searchTerm]);
 
-            // 考勤逻辑
             const openAttendanceModal = () => {
                 const today = new Date().toISOString().slice(0, 10);
                 setAttendanceDate(today);
@@ -520,31 +530,50 @@
             };
             const toggleAttendance = (id) => { if (attendanceList.includes(id)) setAttendanceList(attendanceList.filter(pid => pid !== id)); else setAttendanceList([...attendanceList, id]); };
             const parseImportText = () => { if (!importText) return; const text = importText.toLowerCase(); const matchedIds = reportFiltered.filter(t => text.includes(t.name.toLowerCase())).map(t => t.id); if (matchedIds.length > 0) { setAttendanceList(matchedIds); alert(`✅ ID: ${matchedIds.length}`); } else { alert("⚠️ No match"); } };
+            
             const submitAttendance = () => {
                 const totalCount = reportFiltered.length;
                 const presentCount = attendanceList.filter(id => reportFiltered.some(r => r.id === id)).length;
                 if (!confirm(`Confirm [${attendanceDate}]?`)) return;
-                let skippedCount = 0;
+                
                 const newTrainees = trainees.map(t => {
                     if (reportFiltered.some(r => r.id === t.id)) {
                         let history = t.attendanceHistory || []; if(!Array.isArray(history)) history = [];
                         const isPresent = attendanceList.includes(t.id);
                         const newStatus = isPresent ? 'present' : 'absent';
+                        
                         const todayIndex = history.findIndex(h => (typeof h === 'string' ? h : h.date) === attendanceDate);
-                        let newTotal = t.totalSessions || 0;
-                        let newAttended = t.attendedSessions || 0;
-                        let newHistory = [...history];
+                        
+                        // 🔥 修复：只累加今天的增量，防止无限累加
+                        // 先还原出如果不算今天的总数
+                        let baseTotal = t.totalSessions || 0;
+                        let baseAttended = t.attendedSessions || 0;
+
+                        // 如果今天已经在记录里了，先扣掉那一笔，因为我们要重算
                         if (todayIndex !== -1) {
                             const oldEntry = history[todayIndex];
                             const oldStatus = typeof oldEntry === 'string' ? 'present' : oldEntry.status;
-                            if (oldStatus !== newStatus) { if (newStatus === 'present') newAttended++; else newAttended--; }
-                            newHistory[todayIndex] = { date: attendanceDate, status: newStatus };
+                            // 扣除旧记录的影响（只扣除出席数，总场次不扣，因为无论出席与否都算一场）
+                            // 但这里为了逻辑简单，我们采用“增量修正”
+                            if (oldStatus !== newStatus) {
+                                if (newStatus === 'present') baseAttended++; // 缺席 -> 出席
+                                else baseAttended--; // 出席 -> 缺席
+                            }
+                            history[todayIndex] = { date: attendanceDate, status: newStatus };
                         } else {
-                            newTotal++; if (isPresent) newAttended++;
-                            newHistory.push({ date: attendanceDate, status: newStatus });
+                            // 真正的新记录
+                            baseTotal++; 
+                            if (isPresent) baseAttended++;
+                            history.push({ date: attendanceDate, status: newStatus });
                         }
-                        const newRate = newTotal === 0 ? 0 : Math.round((newAttended / newTotal) * 100);
-                        return { ...t, totalSessions: newTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: newHistory };
+
+                        // 强制校准：分母不能为0，分子不能大于分母
+                        if (baseTotal === 0 && baseAttended > 0) baseTotal = baseAttended;
+                        if (baseAttended > baseTotal) baseTotal = baseAttended;
+
+                        const newRate = baseTotal === 0 ? 0 : Math.round((baseAttended / baseTotal) * 100);
+                        
+                        return { ...t, totalSessions: baseTotal, attendedSessions: baseAttended, attendance: newRate, attendanceHistory: history };
                     }
                     return t;
                 });
@@ -643,6 +672,7 @@
                     {isDataToolsOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-lg font-bold text-white flex items-center gap-2"><i className="fa-solid fa-cloud-arrow-up text-indigo-500"></i> {t('backupTools')}</h2><button onClick={() => setIsDataToolsOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4"><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 relative group overflow-hidden"><div className="absolute top-0 right-0 p-2 opacity-20"><i className="fab fa-google-drive text-6xl text-white"></i></div><h3 className="text-white font-bold mb-2 flex items-center gap-2 z-10 relative"><i className="fa-solid fa-cloud-upload-alt text-emerald-500"></i> {t('backupToDrive')}</h3><p className="text-zinc-500 text-xs mb-3 relative z-10">{t('exportDesc')}</p><button onClick={handleBackupToDrive} className="w-full py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 relative z-10 border border-emerald-500"><i className="fab fa-google-drive"></i> {t('save')}</button></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800"><h3 className="text-zinc-300 font-bold mb-2 flex items-center gap-2"><i className="fa-solid fa-file-import text-indigo-500"></i> {t('restoreData')}</h3><p className="text-zinc-500 text-xs mb-3">{t('restoreDesc')}</p><div className="relative group"><button className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-indigo-400 border border-indigo-900/50 rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 cursor-pointer" onClick={() => backupInputRef.current.click()}><i className="fa-solid fa-folder-open"></i> {t('selectFile')}</button><input type="file" ref={backupInputRef} className="hidden" accept=".json" onChange={handleImportFile} /></div></div></div><p className="text-center text-zinc-600 text-xs mt-6">{t('dataSafe')}</p></div></div>)}
                     {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
                     {isModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-white">{editingTrainee ? t('updateProfile') : t('newPlayer')}</h2><button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4 mb-6"><div className="flex items-center gap-4"><div className="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center overflow-hidden border border-zinc-700 shrink-0 cursor-pointer relative" onClick={() => fileInputRef.current.click()}>{formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <i className="fa-solid fa-camera text-zinc-600"></i>}<input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFile} /></div><div className="flex-1 space-y-2"><input className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('name')} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} /><div className="flex gap-2"><input type="number" className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('age')} value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('nationality')} value={formData.nationality} onChange={e => setFormData({...formData, nationality: e.target.value})} /></div><div className="flex gap-2"><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('height')} value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">cm</span></div><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('weight')} value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">kg</span></div><div className="w-1/3"><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.category || 'U18'} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div></div></div></div><div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><div className="flex flex-col"><span className="text-xs font-bold text-zinc-400">{t('attendance')}</span><span className={formData.attendance >= 90 ? 'text-emerald-500 font-bold' : 'text-white font-bold'}>{formData.attendance || 0}%</span></div><div className="flex items-center gap-2"><span className="text-[10px] text-zinc-600">({formData.attendedSessions || 0}/{formData.totalSessions || 0})</span><button onClick={resetPlayerStats} className="bg-red-900/30 hover:bg-red-900/50 text-red-500 text-[10px] px-2 py-1 rounded border border-red-900/50">{t('resetStats')}</button></div></div><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}>{teams.map(t => <option key={t} value={t}>{t}</option>)}</select><div className="grid grid-cols-2 gap-2"><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.primaryPosition} onChange={e => setFormData({...formData, primaryPosition: e.target.value})}>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.secondaryPosition} onChange={e => setFormData({...formData, secondaryPosition: e.target.value})}><option value="无">无</option>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-800 p-4 rounded-xl mb-4">{Object.keys(formData.stats).map(s => (<div key={s}><div className="flex justify-between text-[10px] text-zinc-400 uppercase mb-1"><span>{t('stats', s)}</span> <span>{formData.stats[s]}</span></div><input type="range" min="0" max="99" className="w-full accent-white h-1 bg-zinc-600 rounded-lg appearance-none" value={formData.stats[s]} onChange={e => setFormData({...formData, stats: {...formData.stats, [s]: parseInt(e.target.value)}})} /></div>))}</div></div><div className="flex gap-2"><button onClick={handleSave} className="flex-1 py-3 bg-zinc-100 hover:bg-white text-zinc-900 font-bold rounded-xl transition-colors">{t('save')}</button><button onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-colors">{t('cancel')}</button></div></div></div>)}
+                    {isSchoolManagerOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-lg font-bold text-white">{t('manageSchools')}</h2><button onClick={() => setIsSchoolManagerOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="max-h-[50vh] overflow-y-auto space-y-2 mb-4">{teams.map(team => (<div key={team} className="flex items-center justify-between bg-zinc-800 p-3 rounded-lg border border-zinc-700">{renamingTeam.original === team ? (<div className="flex gap-2 flex-1"><input autoFocus className="flex-1 bg-zinc-950 px-2 py-1 text-sm text-white rounded outline-none border border-emerald-500" value={renamingTeam.current} onChange={e => setRenamingTeam({...renamingTeam, current: e.target.value})} /><button onClick={() => handleRenameTeam(team)} className="text-emerald-500"><i className="fa-solid fa-check"></i></button></div>) : (<><span className="text-sm text-zinc-300">{team}</span><div className="flex gap-2"><button onClick={() => setRenamingTeam({original: team, current: team})} className="text-zinc-500 hover:text-white"><i className="fa-solid fa-pen"></i></button><button onClick={() => handleDeleteTeam(team)} className="text-zinc-500 hover:text-red-500"><i className="fa-solid fa-trash"></i></button></div></>)}</div>))}</div><button onClick={handleAddTeam} className="w-full py-2 bg-zinc-800 text-zinc-300 text-sm font-bold rounded border border-zinc-700 hover:bg-zinc-700 transition-colors">{t('addSchool')}</button></div></div>)}
                 </div>
             );
         };
