@@ -35,7 +35,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p class="text-zinc-500 text-sm mt-2">Updating Settings...</p>
+        <p class="text-zinc-500 text-sm mt-2">Calibrating...</p>
     </div>
 
     <div id="root"></div>
@@ -47,7 +47,7 @@
         const MY_MASTER_KEY = "$2a$10$JuGSKsBRirNG95vYP0fbSuotikgzUSy8nphUaCtjGq0qsdCalvBo2"; 
         const JSONBIN_URL = "https://api.jsonbin.io/v3/b";
         
-        // 🔥 年度预设目标：52次
+        // 🔥 年度固定目标：52次
         const PRESET_YEARLY_TOTAL = 52;
         // =================================================================
 
@@ -121,7 +121,7 @@
                 attExcel: "导出 Excel", 
                 attTotal: "总人数",
                 attPresent: "出席",
-                resetStats: "重置", 
+                resetStats: "重置数据", 
                 cloudSetup: "云端同步设置 (JSONBin)",
                 cloudKey: "Master Key",
                 cloudBin: "Bin ID",
@@ -170,7 +170,7 @@
                 school: "Sekolah", mainPos: "Posisi", subPos: "Posisi 2", save: "Simpan", cancel: "Batal", addSchool: "Tambah",
                 backupTools: "Alat", backupToDrive: "Sandaran Drive", exportDesc: "Jana fail .json", restoreData: "Pulihkan",
                 restoreDesc: "Pilih fail .json", selectFile: "Pilih Fail", shareProfile: "Kongsi", sendToParents: "Hantar (Foto)",
-                textOnly: "Teks Sahaja", cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Sahkan", attTitle: "Pusat Kehadiran",
+                textOnly: "Teks Sahaja", cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Sahkan", attTitle: "Kehadiran",
                 attDate: "Tarikh", attPaste: "Tampal Senarai", attPasteDesc: "Tanda nama automatik", attPlaceholder: "Contoh: Hadir: Arthur, Stella...",
                 attConfirm: "Hantar", attShare: "Kongsi", attWhatsapp: "WhatsApp", attExcel: "Eksport Excel", attTotal: "Jumlah", attPresent: "Hadir",
                 resetStats: "Tetap Semula", cloudSetup: "Tetapan Awan", cloudKey: "Master Key", cloudBin: "Bin ID", cloudConnect: "Sambung",
@@ -203,12 +203,10 @@
             const [leagueName, setLeagueName] = useState('CFC YOUTH ACADEMY');
             const [appLogo, setAppLogo] = useState(null);
             
-            // 云端状态
             const [cloudConfig, setCloudConfig] = useState({ key: MY_MASTER_KEY || '', binId: '' });
             const [isCloudConnected, setIsCloudConnected] = useState(false);
             const [cloudStatus, setCloudStatus] = useState("");
 
-            // UI 状态
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [isSchoolManagerOpen, setIsSchoolManagerOpen] = useState(false);
             const [isDataToolsOpen, setIsDataToolsOpen] = useState(false); 
@@ -224,15 +222,7 @@
             const [editingTrainee, setEditingTrainee] = useState(null);
             const [isEditingTitle, setIsEditingTitle] = useState(false);
             
-            // 🔥 初始化：默认 totalSessions = PRESET_YEARLY_TOTAL (52)
-            const [formData, setFormData] = useState({ 
-                name:'', primaryPosition:'前锋 (FW)', secondaryPosition:'无', age:'16', category: 'U18', height: '', weight: '', 
-                attendance: 0, 
-                totalSessions: PRESET_YEARLY_TOTAL, // 默认 52
-                attendedSessions: 0, 
-                nationality:'', team:'', image:'', 
-                stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50} 
-            });
+            const [formData, setFormData] = useState({ name:'', primaryPosition:'前锋 (FW)', secondaryPosition:'无', age:'16', category: 'U18', height: '', weight: '', attendance: 0, nationality:'', team:'', image:'', totalSessions: PRESET_YEARLY_TOTAL, attendedSessions: 0, stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50} });
             
             const [renamingTeam, setRenamingTeam] = useState({ original: '', current: '' });
             const [aiResult, setAiResult] = useState(null);
@@ -251,35 +241,24 @@
             const logoInputRef = useRef(null);
             const backupInputRef = useRef(null);
 
-            // --- 核心：数据初始化 (强制校准分母为 52) ---
+            // --- 核心：数据初始化 ---
             useEffect(() => {
                 const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
                 const savedCloud = JSON.parse(localStorage.getItem('cfc_jsonbin_config') || '{}');
 
                 if (localData.trainees) {
                     const sanitized = localData.trainees.map(t => {
-                        let history = Array.isArray(t.attendanceHistory) ? t.attendanceHistory : [];
-                        
-                        // 🔥 如果之前没有设置过 totalSessions (或者为0)，强制设为 52
-                        // 如果用户已经手动改过 (比如改成 10)，就保留，不覆盖
-                        let currentTotal = (t.totalSessions && t.totalSessions > 0) ? t.totalSessions : PRESET_YEARLY_TOTAL;
-                        
-                        let currentAttended = t.attendedSessions || 0;
-                        if (history.length > 0) {
-                            currentAttended = history.filter(h => (typeof h === 'string' ? 'present' : h.status) === 'present').length;
-                        } 
-
-                        // 简单防错
-                        if (currentAttended > currentTotal) currentTotal = currentAttended;
-
-                        const rate = currentTotal === 0 ? 0 : Math.round((currentAttended / currentTotal) * 100);
-
+                        let total = t.totalSessions || PRESET_YEARLY_TOTAL;
+                        if (total === 0) total = PRESET_YEARLY_TOTAL; // 强制默认52
+                        let attended = t.attendedSessions || 0;
+                        if (attended > total) total = attended; 
+                        const rate = Math.round((attended / total) * 100);
                         return {
                             ...t,
-                            totalSessions: currentTotal,
-                            attendedSessions: currentAttended,
+                            totalSessions: total,
+                            attendedSessions: attended,
                             attendance: rate,
-                            attendanceHistory: history,
+                            attendanceHistory: Array.isArray(t.attendanceHistory) ? t.attendanceHistory : [],
                             stats: t.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 }
                         };
                     });
@@ -293,14 +272,13 @@
 
                 let activeKey = MY_MASTER_KEY || savedCloud.key;
                 let activeBin = savedCloud.binId;
-                
                 if (activeKey) {
                     setCloudConfig({ key: activeKey, binId: activeBin || '' });
                     if (activeBin) syncFromCloud(activeKey, activeBin);
                 }
             }, []);
 
-            // --- JSONBin Logic ---
+            // ... (JSONBin logic) ...
             const stripImages = (data) => {
                 const cleanData = JSON.parse(JSON.stringify(data));
                 if (cleanData.trainees) {
@@ -400,26 +378,46 @@
             useEffect(() => { if (isCropperOpen && cropperImageRef.current) { if (cropperRef.current) cropperRef.current.destroy(); cropperRef.current = new Cropper(cropperImageRef.current, { aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8 }); } }, [isCropperOpen, tempImage]);
             const handleCropConfirm = () => { if (cropperRef.current) { const c = cropperRef.current.getCroppedCanvas({ width: 400, height: 400 }); const u = c.toDataURL('image/jpeg', 0.8); if (isLogoCrop) { setAppLogo(u); saveToLocal({ appLogo: u }); } else { setFormData(p => ({ ...p, image: u })); } setIsCropperOpen(false); setTempImage(null); if(fileInputRef.current) fileInputRef.current.value=''; if(logoInputRef.current) logoInputRef.current.value=''; } };
             const handleRotate = () => { if (cropperRef.current) cropperRef.current.rotate(90); };
-            
-            // 🔥 核心更新：允许在编辑框手动修改 Attendance / Total Sessions
-            const handleAttendanceInputChange = (field, value) => {
+            const deleteTrainee = (id) => { if(confirm("删除此球员？")) { const newT = trainees.filter(t => t.id !== id); saveToLocal({ trainees: newT }); } };
+            const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const newTeams = teams.map(t=>t===old?n:t); const newT = trainees.map(t=>t.team===old?{...t,team:n}:t); saveToLocal({teams:newTeams, trainees:newT}); setRenamingTeam({original:'',current:''}); };
+            const handleAddTeam = () => { const n=`New School ${teams.length+1}`; saveToLocal({teams:[...teams,n]}); };
+            const handleDeleteTeam = (n) => { if(!confirm(`Delete ${n}?`)) return; const newTeams=teams.filter(t=>t!==n); const newT=trainees.map(t=>t.team===n?{...t,team:'Free Agent'}:t); saveToLocal({teams:newTeams,trainees:newT}); };
+            const handleRandomPhoto = () => { const arr=['https://images.unsplash.com/photo-1511886929837-354d827aae26?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1504257365157-1496a50d48f2?w=400&h=400&fit=crop']; setFormData(p=>({...p, image:arr[Math.floor(Math.random()*arr.length)]})); };
+            const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
+            const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
+            const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
+            const generateShareText = (t) => { const L = TRANSLATIONS[lang]; const c = t.category ? `[${t.category}] ` : ''; return `【${L.appTitle}】\n\n${L.name}：${t.name}\n${L.school}：${c}${t.team}\n${L.mainPos}：${t.primaryPosition}\n${L.age}：${t.age} | ${L.height}：${t.height||'-'}cm | ${L.weight}：${t.weight||'-'}kg\n${L.attendance}：${t.attendance||0}%\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}`; };
+            const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("Copied!"); } } catch(e){} };
+            const handleSystemShare = async (t) => { try{await navigator.share({title:t.name, text:generateShareText(t)})}catch(e){alert("Use WhatsApp Button");} };
+            const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(t => attendanceList.includes(t.id)).map(t => t.name); const aNames = reportFiltered.filter(t => !attendanceList.includes(t.id)).map(t => t.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
+            const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(t => { const status = attendanceList.includes(t.id) ? "Present" : "Absent"; csvContent += `${t.name.replace(/,/g," ")},${t.team.replace(/,/g," ")},${t.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
+
+            // 🔥 修复：手动修改考勤数字 - 更新 State
+            const handleAttendanceChange = (field, value) => {
                 const val = parseInt(value) || 0;
                 let newData = { ...formData, [field]: val };
                 
-                // 实时更新百分比
                 const att = field === 'attendedSessions' ? val : formData.attendedSessions;
                 const tot = field === 'totalSessions' ? val : formData.totalSessions;
-                const rate = tot === 0 ? 0 : Math.round((att / tot) * 100);
+                const newRate = tot === 0 ? 0 : Math.round((att / tot) * 100);
                 
-                newData.attendance = rate;
+                newData.attendance = newRate;
                 setFormData(newData);
             };
 
+            // 🔥 修复：重置数据
+            const resetPlayerStats = () => {
+                if(!confirm("⚠️ Reset stats to 0?")) return;
+                const data = { ...formData, totalSessions: PRESET_YEARLY_TOTAL, attendedSessions: 0, attendance: 0, attendanceHistory: [] };
+                setFormData(data); 
+            };
+
+            // 🔥 核心修复：保存时直接使用 input 的值，不进行反推覆盖
             const handleSave = () => {
                 if(!formData.name) return;
                 const data = { ...formData, image: formData.image || DEFAULT_IMAGE };
                 
-                // 直接使用表单里的数据，不再做反推，完全信任用户输入
+                // 完全信任当前表单里的数据
                 const finalData = { ...data };
 
                 let newTrainees;
@@ -433,29 +431,7 @@
                 setIsModalOpen(false); 
             };
 
-            const deleteTrainee = (id) => { if(confirm("删除此球员？")) { const newT = trainees.filter(t => t.id !== id); saveToLocal({ trainees: newT }); } };
-            const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const newTeams = teams.map(t=>t===old?n:t); const newT = trainees.map(t=>t.team===old?{...t,team:n}:t); saveToLocal({teams:newTeams, trainees:newT}); setRenamingTeam({original:'',current:''}); };
-            const handleAddTeam = () => { const n=`New School ${teams.length+1}`; saveToLocal({teams:[...teams,n]}); };
-            const handleDeleteTeam = (n) => { if(!confirm(`Delete ${n}?`)) return; const newTeams=teams.filter(t=>t!==n); const newT=trainees.map(t=>t.team===n?{...t,team:'Free Agent'}:t); saveToLocal({teams:newTeams,trainees:newT}); };
-            const handleRandomPhoto = () => { const arr=['https://images.unsplash.com/photo-1511886929837-354d827aae26?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1504257365157-1496a50d48f2?w=400&h=400&fit=crop']; setFormData(p=>({...p, image:arr[Math.floor(Math.random()*arr.length)]})); };
-            
-            const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
-            const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
-            const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
-            const generateShareText = (t) => { const L = TRANSLATIONS[lang]; const c = t.category ? `[${t.category}] ` : ''; return `【${L.appTitle}】\n\n${L.name}：${t.name}\n${L.school}：${c}${t.team}\n${L.mainPos}：${t.primaryPosition}\n${L.age}：${t.age} | ${L.height}：${t.height||'-'}cm | ${L.weight}：${t.weight||'-'}kg\n${L.attendance}：${t.attendance||0}%\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}`; };
-            const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("Copied!"); } } catch(e){} };
-            const handleSystemShare = async (t) => { try{await navigator.share({title:t.name, text:generateShareText(t)})}catch(e){alert("Use WhatsApp Button");} };
-            const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(t => attendanceList.includes(t.id)).map(t => t.name); const aNames = reportFiltered.filter(t => !attendanceList.includes(t.id)).map(t => t.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
-            const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(t => { const status = attendanceList.includes(t.id) ? "Present" : "Absent"; csvContent += `${t.name.replace(/,/g," ")},${t.team.replace(/,/g," ")},${t.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
-
-            // 🔥 修复：重置到 0/52
-            const resetPlayerStats = () => {
-                if(!confirm("⚠️ Reset stats to 0/52?")) return;
-                const data = { ...formData, totalSessions: PRESET_YEARLY_TOTAL, attendedSessions: 0, attendance: 0, attendanceHistory: [] };
-                setFormData(data); 
-                // Don't auto save here, let user click save
-            };
-
+            // 智能列表
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
                 const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
@@ -466,7 +442,7 @@
                 t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.team.toLowerCase().includes(searchTerm.toLowerCase())
             ), [reportFiltered, searchTerm]);
 
-            // 考勤逻辑
+            // 考勤逻辑 (🔥 修复：提交考勤时不增加总场次)
             const openAttendanceModal = () => {
                 const today = new Date().toISOString().slice(0, 10);
                 setAttendanceDate(today);
@@ -500,7 +476,7 @@
                         
                         const todayIndex = history.findIndex(h => (typeof h === 'string' ? h : h.date) === attendanceDate);
                         
-                        // 使用当前保存的 totalSessions，不自动 +1，除非手动改
+                        // 🔥 核心：分母保持不变 (PRESET_YEARLY_TOTAL)，只更新分子
                         let newTotal = t.totalSessions || PRESET_YEARLY_TOTAL; 
                         let newAttended = t.attendedSessions || 0;
                         let newHistory = [...history];
@@ -523,8 +499,8 @@
                             ...t, 
                             totalSessions: newTotal, 
                             attendedSessions: newAttended, 
-                            attendance: newRate,
-                            attendanceHistory: newHistory
+                            attendance: newRate, 
+                            attendanceHistory: newHistory 
                         };
                     }
                     return t;
@@ -573,6 +549,7 @@
                                 <button onClick={() => setLang('en')} className={`px-2 py-1 rounded text-lg ${lang==='en'?'bg-zinc-600':'hover:bg-zinc-700'}`}>🇬🇧</button>
                                 <button onClick={() => setLang('ms')} className={`px-2 py-1 rounded text-lg ${lang==='ms'?'bg-zinc-600':'hover:bg-zinc-700'}`}>🇲🇾</button>
                             </div>
+
                             <div className="flex gap-2 w-full">
                                 <button onClick={openAttendanceModal} className="bg-emerald-900 text-emerald-100 px-4 py-3 rounded-xl font-bold border border-emerald-700 whitespace-nowrap"><i className="fa-solid fa-calendar-check mr-2"></i>{t('attendanceTool')}</button>
                                 <button onClick={() => setIsDataToolsOpen(true)} className="bg-indigo-900 text-indigo-100 px-4 py-3 rounded-xl font-bold border border-indigo-700 whitespace-nowrap"><i className="fa-solid fa-cloud-arrow-up"></i></button>
@@ -625,7 +602,7 @@
                     {isDataToolsOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-lg font-bold text-white flex items-center gap-2"><i className="fa-solid fa-cloud-arrow-up text-indigo-500"></i> {t('backupTools')}</h2><button onClick={() => setIsDataToolsOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4"><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 relative group overflow-hidden"><div className="absolute top-0 right-0 p-2 opacity-20"><i className="fab fa-google-drive text-6xl text-white"></i></div><h3 className="text-white font-bold mb-2 flex items-center gap-2 z-10 relative"><i className="fa-solid fa-cloud-upload-alt text-emerald-500"></i> {t('backupToDrive')}</h3><p className="text-zinc-500 text-xs mb-3 relative z-10">{t('exportDesc')}</p><button onClick={handleBackupToDrive} className="w-full py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 relative z-10 border border-emerald-500"><i className="fab fa-google-drive"></i> {t('save')}</button></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800"><h3 className="text-zinc-300 font-bold mb-2 flex items-center gap-2"><i className="fa-solid fa-file-import text-indigo-500"></i> {t('restoreData')}</h3><p className="text-zinc-500 text-xs mb-3">{t('restoreDesc')}</p><div className="relative group"><button className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-indigo-400 border border-indigo-900/50 rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 cursor-pointer" onClick={() => backupInputRef.current.click()}><i className="fa-solid fa-folder-open"></i> {t('selectFile')}</button><input type="file" ref={backupInputRef} className="hidden" accept=".json" onChange={handleImportFile} /></div></div></div><p className="text-center text-zinc-600 text-xs mt-6">{t('dataSafe')}</p></div></div>)}
                     {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
                     
-                    {/* 🔥 编辑模态框 (包含自由修改出席次数) */}
+                    {/* 🔥 编辑模态框 (包含自由修改考勤) */}
                     {isModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-white">{editingTrainee ? t('updateProfile') : t('newPlayer')}</h2><button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4 mb-6"><div className="flex items-center gap-4"><div className="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center overflow-hidden border border-zinc-700 shrink-0 cursor-pointer relative" onClick={() => fileInputRef.current.click()}>{formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <i className="fa-solid fa-camera text-zinc-600"></i>}<input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFile} /></div><div className="flex-1 space-y-2"><input className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('name')} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} /><div className="flex gap-2"><input type="number" className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('age')} value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('nationality')} value={formData.nationality} onChange={e => setFormData({...formData, nationality: e.target.value})} /></div><div className="flex gap-2"><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('height')} value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">cm</span></div><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('weight')} value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">kg</span></div><div className="w-1/3"><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.category || 'U18'} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div></div></div></div>
                     {/* 自由修改考勤 */}
                     <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><div className="flex flex-col"><span className="text-xs font-bold text-zinc-400">{t('attendance')}</span><span className={formData.attendance >= 90 ? 'text-emerald-500 font-bold' : 'text-white font-bold'}>{formData.attendance || 0}%</span></div><div className="flex items-center gap-2"><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('attCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.attendedSessions} onChange={(e) => handleAttendanceChange('attendedSessions', e.target.value)} /></div><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('totalCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.totalSessions} onChange={(e) => handleAttendanceChange('totalSessions', e.target.value)} /></div><button onClick={resetPlayerStats} className="ml-2 bg-red-900/30 hover:bg-red-900/50 text-red-500 text-[10px] px-2 py-2 rounded border border-red-900/50 h-full flex items-center justify-center" title={t('resetStats')}><i className="fa-solid fa-rotate-right"></i></button></div></div><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}>{teams.map(t => <option key={t} value={t}>{t}</option>)}</select><div className="grid grid-cols-2 gap-2"><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.primaryPosition} onChange={e => setFormData({...formData, primaryPosition: e.target.value})}>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.secondaryPosition} onChange={e => setFormData({...formData, secondaryPosition: e.target.value})}><option value="无">无</option>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-800 p-4 rounded-xl mb-4">{Object.keys(formData.stats).map(s => (<div key={s}><div className="flex justify-between text-[10px] text-zinc-400 uppercase mb-1"><span>{t('stats', s)}</span> <span>{formData.stats[s]}</span></div><input type="range" min="0" max="99" className="w-full accent-white h-1 bg-zinc-600 rounded-lg appearance-none" value={formData.stats[s]} onChange={e => setFormData({...formData, stats: {...formData.stats, [s]: parseInt(e.target.value)}})} /></div>))}</div></div><div className="flex gap-2"><button onClick={handleSave} className="flex-1 py-3 bg-zinc-100 hover:bg-white text-zinc-900 font-bold rounded-xl transition-colors">{t('save')}</button><button onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-colors">{t('cancel')}</button></div></div></div>)}
