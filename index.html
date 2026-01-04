@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CFC Youth Academy</title>
     
-    <!-- 样式与图标 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 
-    <!-- React 核心 -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -21,11 +19,9 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* 裁剪器容器样式 */
         .cropper-container { max-height: 60vh; background-color: #000; }
         #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 50; }
         .hidden { display: none !important; }
-        /* 日期选择器深色模式适配 */
         input[type="date"] { color-scheme: dark; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; opacity: 0.8; }
         input[type="date"]:hover::-webkit-calendar-picker-indicator { opacity: 1; }
@@ -35,16 +31,16 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p class="text-zinc-500 text-sm mt-2">Connecting Cloud...</p>
+        <p class="text-zinc-500 text-sm mt-2">System Ready...</p>
     </div>
 
     <div id="root"></div>
 
     <script type="text/babel">
         // =================================================================
-        // 🔑 阿盛的专属钥匙 (已填入)
+        // 🔑 你的钥匙 (已自动清理空格)
         // =================================================================
-        const MY_MASTER_KEY = "$2a$10$JuGSKsBRirNG95vYP0fbSuotikgzUSy8nphUaCtjGq0qsdCalvBo2"; 
+        const MY_MASTER_KEY = "$2a$10$JuGSKsBRirNG95vYP0fbSuotikgzUSy8nphUaCtjGq0qsdCalvBo2".trim(); 
         const JSONBIN_URL = "https://api.jsonbin.io/v3/b";
         // =================================================================
 
@@ -310,12 +306,10 @@
             const [leagueName, setLeagueName] = useState('CFC YOUTH ACADEMY');
             const [appLogo, setAppLogo] = useState(null);
             
-            // 云端状态
             const [cloudConfig, setCloudConfig] = useState({ key: MY_MASTER_KEY || '', binId: '' });
             const [isCloudConnected, setIsCloudConnected] = useState(false);
             const [cloudStatus, setCloudStatus] = useState("");
 
-            // UI 状态
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [isSchoolManagerOpen, setIsSchoolManagerOpen] = useState(false);
             const [isDataToolsOpen, setIsDataToolsOpen] = useState(false); 
@@ -332,12 +326,10 @@
             const [isEditingTitle, setIsEditingTitle] = useState(false);
             
             const [formData, setFormData] = useState({ name:'', primaryPosition:'前锋 (FW)', secondaryPosition:'无', age:'16', category: 'U18', height: '', weight: '', attendance: 100, nationality:'', team:'', image:'', totalSessions: 0, attendedSessions: 0, stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50} });
-            
             const [renamingTeam, setRenamingTeam] = useState({ original: '', current: '' });
             const [aiResult, setAiResult] = useState(null);
             const [aiLoading, setAiLoading] = useState(false);
             
-            // 考勤状态
             const [attendanceList, setAttendanceList] = useState([]); 
             const [importText, setImportText] = useState("");
             const [attendanceDate, setAttendanceDate] = useState(""); 
@@ -351,9 +343,7 @@
             const logoInputRef = useRef(null);
             const backupInputRef = useRef(null);
 
-            // --- 核心：数据初始化 (本地 + 云端) ---
             useEffect(() => {
-                // 1. 加载本地数据
                 const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
                 const savedCloud = JSON.parse(localStorage.getItem('cfc_jsonbin_config') || '{}');
 
@@ -374,19 +364,19 @@
                 if (localData.leagueName) setLeagueName(localData.leagueName);
                 if (localData.appLogo) setAppLogo(localData.appLogo);
 
-                // 2. 尝试云同步 (优先使用硬编码配置)
-                let activeKey = MY_MASTER_KEY || savedCloud.key;
-                let activeBin = savedCloud.binId;
+                // 优先使用硬编码的 Key，如果有
+                const activeKey = MY_MASTER_KEY || savedCloud.key;
+                const activeBin = savedCloud.binId;
                 
                 if (activeKey) {
-                    setCloudConfig({ key: activeKey, binId: activeBin });
+                    setCloudConfig({ key: activeKey, binId: activeBin || '' });
                     if (activeBin) {
                         syncFromCloud(activeKey, activeBin);
                     }
                 }
             }, []);
 
-            // --- JSONBin 逻辑 ---
+            // --- JSONBin 逻辑 (修复) ---
             const syncFromCloud = async (key, binId) => {
                 setCloudStatus("⏳ Syncing...");
                 try {
@@ -396,7 +386,6 @@
                     if (res.ok) {
                         const json = await res.json();
                         const data = json.record;
-                        
                         if (data.trainees) setTrainees(data.trainees);
                         if (data.teams) setTeams(data.teams);
                         if (data.leagueName) setLeagueName(data.leagueName);
@@ -407,8 +396,7 @@
                         setCloudStatus("✅ Ready");
                         setTimeout(() => setCloudStatus(""), 2000);
                     } else {
-                        setCloudStatus("❌ Fail");
-                        setIsCloudConnected(false);
+                        throw new Error(`Sync Read Fail: ${res.status}`);
                     }
                 } catch (e) {
                     setCloudStatus("❌ Net Error");
@@ -436,6 +424,7 @@
                 }
             };
 
+            // 🔥 修复：打印详细错误
             const createCloudBin = async () => {
                 if (!cloudConfig.key) return alert("请先填入 Master Key");
                 setCloudStatus("Creating...");
@@ -459,17 +448,17 @@
                         const json = await res.json();
                         const newBinId = json.metadata.id;
                         setCloudConfig(prev => ({ ...prev, binId: newBinId }));
-                        
                         localStorage.setItem('cfc_jsonbin_config', JSON.stringify({ key: cloudConfig.key, binId: newBinId }));
                         setIsCloudConnected(true);
                         setCloudStatus("✅ Created");
-                        alert(`✅ 云端数据库创建成功！\n\nBin ID: ${newBinId}\n\n请复制保存这个 ID，在其他手机输入即可同步数据。`);
+                        alert(`✅ 云端数据库创建成功！\n\nBin ID: ${newBinId}\n\n请复制这个 ID 到其他设备以同步数据。`);
                         setTimeout(() => setCloudStatus(""), 2000);
                     } else {
-                        throw new Error("创建失败");
+                        const errText = await res.text();
+                        throw new Error(`Error ${res.status}: ${errText}`);
                     }
                 } catch (e) {
-                    alert("❌ 创建失败，请检查 Key 是否正确");
+                    alert(`❌ 创建失败:\n${e.message}\n请检查 Key 是否正确，或网络是否通畅。`);
                     setCloudStatus("❌ Error");
                 }
             };
@@ -484,7 +473,6 @@
                 }
             };
 
-            // --- 统一保存 ---
             const saveToLocal = (newData) => {
                 const currentData = {
                     trainees: newData.trainees !== undefined ? newData.trainees : trainees,
@@ -492,14 +480,11 @@
                     leagueName: newData.leagueName !== undefined ? newData.leagueName : leagueName,
                     appLogo: newData.appLogo !== undefined ? newData.appLogo : appLogo,
                 };
-                
                 if (newData.trainees !== undefined) setTrainees(newData.trainees);
                 if (newData.teams !== undefined) setTeams(newData.teams);
                 if (newData.leagueName !== undefined) setLeagueName(newData.leagueName);
                 if (newData.appLogo !== undefined) setAppLogo(newData.appLogo);
-
                 localStorage.setItem('cfc_local_db', JSON.stringify(currentData));
-
                 if (isCloudConnected) {
                     syncToCloud({
                         trainees: currentData.trainees,
@@ -509,7 +494,7 @@
                 }
             };
 
-            // ... (Backup, Import, File, Cropper logic) ...
+            // ... (Backup, Import, File logic)
             const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(`✅ 备份已下载！请自行保存或上传到云盘。`)) window.open(DRIVE_LINK, '_blank'); }, 500); };
             const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(`⚠️ 覆盖当前数据？`)) { saveToLocal(p); alert(`✅ 成功恢复！`); setIsDataToolsOpen(false); } } catch (e) { alert("❌ 文件错误"); } e.target.value=null; }; r.readAsText(f); };
             const handleFile = (e, isLogo) => { const f = e.target.files?.[0]; if(!f) return; const r = new FileReader(); r.onloadend = () => { setTempImage(r.result); setIsLogoCrop(isLogo); setIsCropperOpen(true); }; r.readAsDataURL(f); };
@@ -531,7 +516,6 @@
             const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(t => attendanceList.includes(t.id)).map(t => t.name); const aNames = reportFiltered.filter(t => !attendanceList.includes(t.id)).map(t => t.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
             const handleExportAttendanceExcel = () => { const date = attendanceDate; let csv = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(t => { const s = attendanceList.includes(t.id)?"Present":"Absent"; csv += `${t.name.replace(/,/g," ")},${t.team.replace(/,/g," ")},${t.category||""},${s},${date}\n`; }); const b = new Blob([csv], { type: "text/csv;charset=utf-8;" }); const u = URL.createObjectURL(b); const l = document.createElement("a"); l.href = u; l.download = `CFC_Attendance_${date}.csv`; document.body.appendChild(l); l.click(); document.body.removeChild(l); };
 
-            // 智能列表
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
                 const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
@@ -542,7 +526,6 @@
                 t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.team.toLowerCase().includes(searchTerm.toLowerCase())
             ), [reportFiltered, searchTerm]);
 
-            // 考勤逻辑
             const openAttendanceModal = () => {
                 const today = new Date().toISOString().slice(0, 10);
                 setAttendanceDate(today);
