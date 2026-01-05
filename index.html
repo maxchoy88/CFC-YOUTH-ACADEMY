@@ -34,7 +34,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p class="text-zinc-500 text-sm mt-2">Loading Finance Module...</p>
+        <p class="text-zinc-500 text-sm mt-2">Upgrading Reports...</p>
     </div>
 
     <div id="root"></div>
@@ -45,7 +45,10 @@
         // =================================================================
         const MY_MASTER_KEY = "$2a$10$JuGSKsBRirNG95vYP0fbSuotikgzUSy8nphUaCtjGq0qsdCalvBo2"; 
         const JSONBIN_URL = "https://api.jsonbin.io/v3/b";
+        
+        // 🔥 年度固定目标
         const PRESET_YEARLY_TOTAL = 52;
+        // 💰 默认月费 (可在界面修改)
         const DEFAULT_MONTHLY_FEE = 150;
 
         const BANK_INFO = {
@@ -97,7 +100,7 @@
                 cloudConnect: "连接云端", cloudCreate: "✨ 自动创建新数据库", 
                 cloudDesc: "输入 Key 即可自动创建并连接云数据库，实现多设备同步。",
                 finTitle: "财务中心", finMonth: "月份", finFee: "月费标准 (RM)", finPaid: "已交", finUnpaid: "未交",
-                finTotal: "总收入", finPending: "待收", finRemind: "催费", finExport: "导出财务表",
+                finTotal: "总收入", finPending: "待收", finRemind: "催费", finExport: "导出专业报表",
                 finBank: "银行户口", finCopy: "复制", finCopied: "已复制！", finToggleAll: "一键全选",
                 
                 msgTemplates: { gentle: "🌸 温柔提醒", friendly: "🤝 朋友语气", soft: "🍃 婉转提醒", formal: "👔 正式通知" },
@@ -140,7 +143,7 @@
                 cloudSetup: "Cloud Setup", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "Connect", cloudCreate: "✨ Auto Create DB", cloudDesc: "Enter Key to sync.",
                 finTitle: "Finance Hub", finMonth: "Month", finFee: "Fee (RM)", finPaid: "Paid", finUnpaid: "Unpaid",
-                finTotal: "Revenue", finPending: "Pending", finRemind: "Remind", finExport: "Export Excel",
+                finTotal: "Revenue", finPending: "Pending", finRemind: "Remind", finExport: "Export Report",
                 finBank: "Bank Info", finCopy: "Copy", finCopied: "Copied!", finToggleAll: "Toggle All",
 
                 msgTemplates: { gentle: "Gentle", friendly: "Friendly", soft: "Soft Nudge", formal: "Formal" },
@@ -179,7 +182,7 @@
                 cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Sahkan",
                 attTitle: "Pusat Kehadiran", attDate: "Tarikh", attPaste: "Tampal Senarai", attPasteDesc: "Auto-tanda",
                 attPlaceholder: "Contoh: Hadir: Arthur...", attConfirm: "Hantar",
-                attShare: "Kongsi", attWhatsapp: "WhatsApp", attExcel: "Eksport Excel", attTotal: "Jumlah", attPresent: "Hadir",
+                attShare: "Kongsi", attWhatsapp: "WhatsApp", attExcel: "Eksport Laporan", attTotal: "Jumlah", attPresent: "Hadir",
                 resetStats: "Tetap Semula", cloudSetup: "Tetapan Awan", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "Sambung", cloudCreate: "✨ Cipta DB Baru", cloudDesc: "Masukkan Key untuk auto-cipta.",
                 finTitle: "Pusat Kewangan", finMonth: "Bulan", finFee: "Yuran (RM)", finPaid: "Bayar", finUnpaid: "Belum",
@@ -326,7 +329,7 @@
                 return cleanData;
             };
             const syncFromCloud = async (key, binId) => {
-                setCloudStatus("⏳ Syncing...");
+                setCloudStatus(t('status', 'syncing'));
                 try {
                     const res = await fetch(`${JSONBIN_URL}/${binId}/latest`, { headers: { 'X-Master-Key': key } });
                     if (res.ok) {
@@ -484,16 +487,89 @@
                 alert(t('finCopied'));
             };
 
+            // 🔥 核心升级：智能分校财务报表
             const exportFinanceExcel = () => {
-                let csvContent = "\uFEFFName,Team,Category,Month,Amount,Status\n";
-                // 使用 reportFiltered，只导出当前筛选的列表 (支持分校导出)
-                reportFiltered.forEach(trainee => {
-                    const status = (trainee.feeHistory && trainee.feeHistory[financeMonth]) ? "Paid" : "Unpaid";
-                    csvContent += `${trainee.name.replace(/,/g," ")},${trainee.team.replace(/,/g," ")},${trainee.category||""},${financeMonth},${monthlyFee},${status}\n`;
+                const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
+                
+                // 1. 数据分组
+                const teamsMap = {};
+                reportFiltered.forEach(t => {
+                    if (!teamsMap[t.team]) teamsMap[t.team] = [];
+                    teamsMap[t.team].push(t);
                 });
+
+                let csvContent = "\uFEFF"; // BOM for Excel encoding
+                // Global Header
+                csvContent += `CFC YOUTH ACADEMY FINANCE REPORT\n`;
+                csvContent += `Month:,${financeMonth}\n`;
+                csvContent += `Generated:,${new Date().toISOString().slice(0, 10)}\n`;
+                csvContent += `Scope:,${targetSchool}\n`;
+                csvContent += `Fee Standard:,RM ${monthlyFee}\n\n`;
+
+                let grandTotalCollected = 0;
+                let grandTotalPending = 0;
+
+                // 2. 遍历学校
+                Object.keys(teamsMap).sort().forEach(school => {
+                    const students = teamsMap[school];
+                    const paidCount = students.filter(t => t.feeHistory && t.feeHistory[financeMonth]).length;
+                    const totalCount = students.length;
+                    const unpaidCount = totalCount - paidCount;
+                    const collected = paidCount * monthlyFee;
+                    const pending = unpaidCount * monthlyFee;
+                    const rate = totalCount === 0 ? 0 : Math.round((paidCount / totalCount) * 100);
+
+                    // Accumulate Grand Total
+                    grandTotalCollected += collected;
+                    grandTotalPending += pending;
+
+                    // School Header Block
+                    csvContent += `------------------------------------------------\n`;
+                    csvContent += `SCHOOL:,${school.replace(/,/g, " ")}\n`;
+                    csvContent += `Summary:,${paidCount} Paid / ${totalCount} Total (${rate}%)\n`;
+                    csvContent += `Cash Flow:,Collected: RM ${collected},Pending: RM ${pending}\n`;
+                    csvContent += `------------------------------------------------\n`;
+                    
+                    // Column Headers
+                    csvContent += `Name,Category,Position,Fee (RM),Status\n`;
+
+                    // Sort Students: Category -> Name
+                    students.sort((a, b) => {
+                         if (a.category !== b.category) return (a.category || '').localeCompare(b.category || '');
+                         return a.name.localeCompare(b.name);
+                    });
+
+                    // Student Rows
+                    students.forEach(t => {
+                        const isPaid = t.feeHistory && t.feeHistory[financeMonth];
+                        const status = isPaid ? "PAID" : "UNPAID";
+                        const safeName = t.name.replace(/,/g, " ");
+                        const safeCat = (t.category || "-").replace(/,/g, " ");
+                        const safePos = (t.primaryPosition || "-").split(' ')[0];
+                        
+                        csvContent += `${safeName},${safeCat},${safePos},${monthlyFee},${status}\n`;
+                    });
+
+                    csvContent += `\n\n`; // Space between schools
+                });
+
+                // 3. Grand Total Footer (If All Schools)
+                if (selectedTeam === '全部') {
+                     csvContent += `================================================\n`;
+                     csvContent += `GRAND TOTAL SUMMARY\n`;
+                     csvContent += `Total Collected:,RM ${grandTotalCollected}\n`;
+                     csvContent += `Total Pending:,RM ${grandTotalPending}\n`;
+                     csvContent += `================================================\n`;
+                }
+
                 const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                 const url = URL.createObjectURL(blob);
-                const link = document.createElement("a"); link.href = url; link.download = `CFC_Finance_${financeMonth}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                const link = document.createElement("a"); 
+                link.href = url; 
+                link.download = `CFC_Fin_${targetSchool}_${financeMonth}.csv`; 
+                document.body.appendChild(link); 
+                link.click(); 
+                document.body.removeChild(link);
             };
 
             const getFinanceSummary = () => {
