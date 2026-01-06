@@ -21,11 +21,9 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* 裁剪器容器样式 */
         .cropper-container { max-height: 60vh; background-color: #000; }
         #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 50; }
         .hidden { display: none !important; }
-        /* 日期选择器深色模式适配 */
         input[type="date"], input[type="month"] { color-scheme: dark; }
         input[type="date"]::-webkit-calendar-picker-indicator, input[type="month"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; opacity: 0.8; }
     </style>
@@ -34,7 +32,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p class="text-zinc-500 text-sm mt-2">Upgrading Reports...</p>
+        <p class="text-zinc-500 text-sm mt-2">Finalizing System...</p>
     </div>
 
     <div id="root"></div>
@@ -45,10 +43,7 @@
         // =================================================================
         const MY_MASTER_KEY = "$2a$10$JuGSKsBRirNG95vYP0fbSuotikgzUSy8nphUaCtjGq0qsdCalvBo2"; 
         const JSONBIN_URL = "https://api.jsonbin.io/v3/b";
-        
-        // 🔥 年度固定目标
         const PRESET_YEARLY_TOTAL = 52;
-        // 💰 默认月费 (可在界面修改)
         const DEFAULT_MONTHLY_FEE = 150;
 
         const BANK_INFO = {
@@ -92,7 +87,7 @@
                 attConfirm: "提交 / 更新记录",
                 attShare: "分享出席表",
                 attWhatsapp: "WhatsApp",
-                attExcel: "导出 Excel", 
+                attExcel: "导出专业报表", // Updated
                 attTotal: "总人数",
                 attPresent: "出席",
                 resetStats: "重置数据", 
@@ -100,7 +95,7 @@
                 cloudConnect: "连接云端", cloudCreate: "✨ 自动创建新数据库", 
                 cloudDesc: "输入 Key 即可自动创建并连接云数据库，实现多设备同步。",
                 finTitle: "财务中心", finMonth: "月份", finFee: "月费标准 (RM)", finPaid: "已交", finUnpaid: "未交",
-                finTotal: "总收入", finPending: "待收", finRemind: "催费", finExport: "导出专业报表",
+                finTotal: "总收入", finPending: "待收", finRemind: "催费", finExport: "导出专业报表", // Updated
                 finBank: "银行户口", finCopy: "复制", finCopied: "已复制！", finToggleAll: "一键全选",
                 
                 msgTemplates: { gentle: "🌸 温柔提醒", friendly: "🤝 朋友语气", soft: "🍃 婉转提醒", formal: "👔 正式通知" },
@@ -139,7 +134,7 @@
                 cropTitle: "Crop", rotate: "Rotate", confirmCrop: "Confirm",
                 attTitle: "Attendance", attDate: "Date", attPaste: "Paste List", attPasteDesc: "Auto-check",
                 attPlaceholder: "Names...", attConfirm: "Submit", attShare: "Share", attWhatsapp: "WhatsApp",
-                attExcel: "Excel", attTotal: "Total", attPresent: "Present", resetStats: "Reset",
+                attExcel: "Export Report", attTotal: "Total", attPresent: "Present", resetStats: "Reset",
                 cloudSetup: "Cloud Setup", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "Connect", cloudCreate: "✨ Auto Create DB", cloudDesc: "Enter Key to sync.",
                 finTitle: "Finance Hub", finMonth: "Month", finFee: "Fee (RM)", finPaid: "Paid", finUnpaid: "Unpaid",
@@ -186,7 +181,7 @@
                 resetStats: "Tetap Semula", cloudSetup: "Tetapan Awan", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "Sambung", cloudCreate: "✨ Cipta DB Baru", cloudDesc: "Masukkan Key untuk auto-cipta.",
                 finTitle: "Pusat Kewangan", finMonth: "Bulan", finFee: "Yuran (RM)", finPaid: "Bayar", finUnpaid: "Belum",
-                finTotal: "Hasil", finPending: "Tunggakan", finRemind: "Ingatkan", finExport: "Eksport Excel",
+                finTotal: "Hasil", finPending: "Tunggakan", finRemind: "Ingatkan", finExport: "Eksport Laporan",
                 finBank: "Bank", finCopy: "Salin", finCopied: "Disalin!", finToggleAll: "Tanda Semua",
                 
                 msgTemplates: { gentle: "Lembut", friendly: "Mesra", soft: "Santai", formal: "Rasmi" },
@@ -382,7 +377,55 @@
             const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('alerts', 'copied')); } } catch(e){} };
             const handleSystemShare = async (trainee) => { try{await navigator.share({title:trainee.name, text:generateShareText(trainee)})}catch(e){alert(t('alerts', 'useWhatsapp'));} };
             const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(trainee => attendanceList.includes(trainee.id)).map(trainee => trainee.name); const aNames = reportFiltered.filter(trainee => !attendanceList.includes(trainee.id)).map(trainee => trainee.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
-            const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(trainee => { const status = attendanceList.includes(trainee.id) ? "Present" : "Absent"; csvContent += `${trainee.name.replace(/,/g," ")},${trainee.team.replace(/,/g," ")},${trainee.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
+            
+            // 🔥 修复：智能分校考勤报表导出 (Attendance Report)
+            const handleExportAttendanceExcel = () => {
+                const date = attendanceDate || new Date().toISOString().slice(0, 10);
+                const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
+                
+                // 1. 数据分组
+                const teamsMap = {};
+                reportFiltered.forEach(trainee => {
+                    if (!teamsMap[trainee.team]) teamsMap[trainee.team] = [];
+                    teamsMap[trainee.team].push(trainee);
+                });
+
+                let csvContent = "\uFEFF"; // BOM
+                csvContent += `CFC YOUTH ACADEMY ATTENDANCE REPORT\n`;
+                csvContent += `Date:,${date}\n\n`;
+
+                // 2. 遍历学校
+                Object.keys(teamsMap).sort().forEach(school => {
+                    const students = teamsMap[school];
+                    const presentCount = students.filter(t => attendanceList.includes(t.id)).length;
+                    const absentCount = students.length - presentCount;
+                    const schoolRate = students.length === 0 ? 0 : Math.round((presentCount / students.length) * 100);
+
+                    // 学校表头
+                    csvContent += `------------------------------------------------\n`;
+                    csvContent += `SCHOOL:,${school.replace(/,/g, " ")}\n`;
+                    csvContent += `Stats:,Total: ${students.length}, Present: ${presentCount}, Absent: ${absentCount}, Rate: ${schoolRate}%\n`;
+                    csvContent += `------------------------------------------------\n`;
+                    csvContent += `Name,Category,Position,Status,Yearly Att. %\n`;
+
+                    // 学生名单
+                    students.sort((a,b) => a.name.localeCompare(b.name)).forEach(trainee => {
+                        const status = attendanceList.includes(trainee.id) ? "Present" : "Absent";
+                        const safeName = trainee.name.replace(/,/g, " ");
+                        const safeCat = (trainee.category || "-").replace(/,/g, " ");
+                        const safePos = (trainee.primaryPosition || "-").split(' ')[0]; 
+                        const yearlyRate = `${trainee.attendance}%`; 
+                        
+                        csvContent += `${safeName},${safeCat},${safePos},${status},${yearlyRate}\n`;
+                    });
+
+                    csvContent += `\n\n`; // 空行分隔
+                });
+
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            };
 
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
@@ -452,17 +495,15 @@
                 saveToLocal({ trainees: newTrainees });
             };
             
-            // 🔥 新增：财务一键全选逻辑
+            // 🔥 财务一键全选逻辑
             const toggleAllFeeStatus = () => {
-                // 检查当前列表是否所有人都是 Paid
                 const allPaid = reportFiltered.every(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]);
-                const targetStatus = !allPaid; // 如果全是Paid，则全设为Unpaid；否则全设为Paid
+                const targetStatus = !allPaid; 
                 
                 const statusText = targetStatus ? (lang === 'zh' ? "已交 (PAID)" : "PAID") : (lang === 'zh' ? "未交 (UNPAID)" : "UNPAID");
                 if (!confirm(t('alerts', 'finConfirmAll').replace('{status}', statusText))) return;
 
                 const newTrainees = trainees.map(trainee => {
-                    // 只修改当前列表中的人
                     if (reportFiltered.some(rt => rt.id === trainee.id)) {
                         const history = trainee.feeHistory || {};
                         return { ...trainee, feeHistory: { ...history, [financeMonth]: targetStatus } };
@@ -487,19 +528,18 @@
                 alert(t('finCopied'));
             };
 
-            // 🔥 核心升级：智能分校财务报表
+            // 🔥 修复：智能分校财务报表导出
             const exportFinanceExcel = () => {
                 const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
                 
                 // 1. 数据分组
                 const teamsMap = {};
-                reportFiltered.forEach(t => {
-                    if (!teamsMap[t.team]) teamsMap[t.team] = [];
-                    teamsMap[t.team].push(t);
+                reportFiltered.forEach(trainee => {
+                    if (!teamsMap[trainee.team]) teamsMap[trainee.team] = [];
+                    teamsMap[trainee.team].push(trainee);
                 });
 
-                let csvContent = "\uFEFF"; // BOM for Excel encoding
-                // Global Header
+                let csvContent = "\uFEFF"; // BOM
                 csvContent += `CFC YOUTH ACADEMY FINANCE REPORT\n`;
                 csvContent += `Month:,${financeMonth}\n`;
                 csvContent += `Generated:,${new Date().toISOString().slice(0, 10)}\n`;
@@ -663,7 +703,6 @@
                     {isAttendanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-calendar-check text-emerald-500"></i> {t('attTitle')}</h2><div className="flex items-center gap-2"><input type="date" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-emerald-500 outline-none" value={attendanceDate} onChange={(e) => setAttendanceDate(e.target.value)} /><button onClick={() => setIsAttendanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4"><label className="text-zinc-400 text-xs font-bold block mb-2">{t('attPaste')}</label><textarea className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-xs text-white h-20 mb-2 focus:border-emerald-500 outline-none" placeholder={t('attPlaceholder')} value={importText} onChange={e => setImportText(e.target.value)}></textarea><button onClick={parseImportText} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-900/30 rounded-lg text-xs font-bold">{t('attPasteDesc')}</button></div><div className="flex justify-between items-center mb-2 px-1"><span className="text-xs text-zinc-500">Selected {attendanceList.length} / {reportFiltered.length}</span><button onClick={() => setAttendanceList(attendanceList.length === reportFiltered.length ? [] : reportFiltered.map(t => t.id))} className="text-xs text-indigo-400 hover:text-indigo-300">Select All</button></div><div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">{reportFiltered.map(trainee => (<div key={trainee.id} onClick={() => toggleAttendance(trainee.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${attendanceList.includes(trainee.id) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}><div className="flex items-center gap-3"><div className={`w-5 h-5 rounded-full flex items-center justify-center border ${attendanceList.includes(trainee.id) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>{attendanceList.includes(trainee.id) && <i className="fa-solid fa-check text-black text-xs"></i>}</div><div><p className="text-sm font-bold text-white">{trainee.name}</p><p className="text-[10px] text-zinc-500">{trainee.team}</p></div></div><div className="text-xs text-zinc-400">{trainee.attendance}%</div></div>))}</div><div className="flex gap-2"><button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button><button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button><button onClick={handleWhatsappShare} className="px-4 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl shadow-lg" title={t('attWhatsapp')}><i className="fa-brands fa-whatsapp text-xl"></i></button></div></div></div>)}
                     {/* Finance Modal */}
                     {isFinanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-yellow-600 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-sack-dollar text-yellow-500"></i> {t('finTitle')}</h2><div className="flex items-center gap-2"><input type="month" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-yellow-500 outline-none" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} /><button onClick={() => setIsFinanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-yellow-900/20 border border-yellow-800 p-3 rounded-xl mb-4 flex justify-between items-center relative group"><div className="text-xs text-yellow-200"><p className="font-bold">{BANK_INFO.bankName}</p><p className="font-mono text-yellow-400 text-sm my-0.5">{BANK_INFO.accNum}</p><p className="text-[10px] opacity-70">{BANK_INFO.holder}</p></div><button onClick={copyBankInfo} className="bg-yellow-700/50 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1"><i className="fa-regular fa-copy"></i> {t('finCopy')}</button></div><div className="grid grid-cols-2 gap-3 mb-4"><div className="bg-emerald-900/30 border border-emerald-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-emerald-400 uppercase">{t('finTotal')}</span><span className="text-xl font-bold text-white">RM {getFinanceSummary().totalAmount}</span><span className="text-[10px] text-zinc-400">({getFinanceSummary().paidCount} pax)</span></div><div className="bg-red-900/30 border border-red-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-red-400 uppercase">{t('finPending')}</span><span className="text-xl font-bold text-white">RM {getFinanceSummary().pendingAmount}</span><span className="text-[10px] text-zinc-400">({reportFiltered.length - getFinanceSummary().paidCount} pax)</span></div></div>
-                    {/* Added Toggle All Button */}
                     <div className="flex justify-between items-center mb-2 px-1">
                         <span className="text-xs text-zinc-500">Selected: {reportFiltered.length}</span>
                         <button onClick={toggleAllFeeStatus} className="text-xs text-indigo-400 hover:text-indigo-300 font-bold border border-indigo-500/30 px-2 py-1 rounded">
