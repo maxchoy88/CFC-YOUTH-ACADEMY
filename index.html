@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 
-    <!-- React 核心 (使用稳定源) -->
+    <!-- React 核心 -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -31,19 +31,18 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Starting System...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Initializing Pro Reports...</p>
     </div>
 
     <div id="root"></div>
 
-    <!-- 安全阀脚本：如果 React 5秒没加载，提示错误 -->
     <script>
         setTimeout(() => {
             const loader = document.getElementById('static-loading');
             const root = document.getElementById('root');
             if (loader && !loader.classList.contains('hidden') && (!root || root.innerHTML.trim() === "")) {
                 document.getElementById('loading-text').innerHTML = 
-                    `<span style="color:#ef4444">⚠️ Connection Timeout.<br>Please check your internet or code syntax.</span>`;
+                    `<span style="color:#ef4444">⚠️ Timeout. Please refresh.</span>`;
             }
         }, 5000);
     </script>
@@ -66,13 +65,12 @@
 
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // 移除加载动画
         setTimeout(() => {
             const loader = document.getElementById('static-loading');
             if(loader) loader.classList.add('hidden');
         }, 1000); 
 
-        // --- 多语言字典 (语法检查完毕) ---
+        // --- 多语言字典 ---
         const TRANSLATIONS = {
             zh: {
                 appTitle: "CFC YOUTH ACADEMY", systemName: "青训学院系统", localMode: "本地版", cloudMode: "云端同步",
@@ -97,7 +95,7 @@
                 cloudConnect: "连接云端", cloudCreate: "✨ 自动创建新数据库", 
                 cloudDesc: "输入 Key 即可自动创建并连接云数据库，实现多设备同步。",
                 finTitle: "财务中心", finMonth: "月份", finFee: "月费标准 (RM)", finPaid: "已交", finUnpaid: "未交",
-                finTotal: "总收入", finPending: "待收", finRemind: "催费", finExport: "导出财务表",
+                finTotal: "总收入", finPending: "待收", finRemind: "催费", finExport: "导出专业报表",
                 finBank: "银行户口", finCopy: "复制", finCopied: "已复制！", finToggleAll: "一键全选",
                 finSearch: "搜索财务名单...",
                 
@@ -116,7 +114,7 @@
                 alerts: {
                     fillImgConfig: "请填写 Cloud Name 和 Upload Preset", imgCloudConnected: "✅ 图片云已连接！",
                     fillMasterKey: "请先填入 Master Key", cloudCreated: "✅ 云端数据库创建成功！\n\nBin ID: {binId}\n\n请务必复制这个 ID，在其他手机填入即可同步数据。",
-                    fillCloudConfig: "请填写 Master Key 和 Bin ID", backupDownloaded: "✅ 备份已下载！",
+                    fillCloudConfig: "请填写 Master Key 和 Bin ID", backupDownloaded: "✅ 备份已下载！\n(包含所有图片)\n\n点击“确定”将跳转到 Google Drive。",
                     overwriteConfirm: "⚠️ 覆盖当前数据？\n这将恢复所有内容(含图片)。",
                     fileError: "❌ 文件错误", deleteConfirm: "删除此项？",
                     resetConfirm: "⚠️ 确定要重置此球员的考勤数据吗？", updated: "✅ 数据已更新！", copied: "已复制！", useWhatsapp: "请使用 WhatsApp 按钮",
@@ -143,7 +141,7 @@
                 cloudSetup: "Cloud Setup", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "Connect", cloudCreate: "✨ Auto Create DB", cloudDesc: "Enter Key to sync.",
                 finTitle: "Finance Hub", finMonth: "Month", finFee: "Fee (RM)", finPaid: "Paid", finUnpaid: "Unpaid",
-                finTotal: "Revenue", finPending: "Pending", finRemind: "Remind", finExport: "Export Excel",
+                finTotal: "Revenue", finPending: "Pending", finRemind: "Remind", finExport: "Export Report",
                 finBank: "Bank Info", finCopy: "Copy", finCopied: "Copied!", finToggleAll: "Toggle All", finSearch: "Search Finance...",
 
                 msgTemplates: { gentle: "Gentle", friendly: "Friendly", soft: "Soft Nudge", formal: "Formal" },
@@ -186,7 +184,7 @@
                 resetStats: "Tetap Semula", cloudSetup: "Tetapan Awan", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "Sambung", cloudCreate: "✨ Cipta DB Baru", cloudDesc: "Masukkan Key untuk auto-cipta.",
                 finTitle: "Pusat Kewangan", finMonth: "Bulan", finFee: "Yuran (RM)", finPaid: "Bayar", finUnpaid: "Belum",
-                finTotal: "Hasil", finPending: "Tunggakan", finRemind: "Ingatkan", finExport: "Eksport Excel",
+                finTotal: "Hasil", finPending: "Tunggakan", finRemind: "Ingatkan", finExport: "Eksport Laporan",
                 finBank: "Bank", finCopy: "Salin", finCopied: "Disalin!", finToggleAll: "Tanda Semua", finSearch: "Cari...",
                 
                 msgTemplates: { gentle: "Lembut", friendly: "Mesra", soft: "Santai", formal: "Rasmi" },
@@ -219,7 +217,7 @@
         const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
 
         const INITIAL_TRAINEES = [
-            { id: '1', name: 'Arthur Pendragon', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', age: '17', category: 'U18', height: '182', weight: '76', attendance: 0, totalSessions: 52, attendedSessions: 0, attendanceHistory: [], feeHistory: {}, nationality: '英国', team: '皇家书院', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop', stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 } },
+            { id: '1', name: 'Arthur Pendragon', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', age: '17', category: 'U18', height: '182', weight: '76', attendance: 98, totalSessions: 52, attendedSessions: 49, attendanceHistory: [], feeHistory: {}, nationality: '英国', team: '皇家书院', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop', stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 } },
         ];
 
         const App = () => {
@@ -326,7 +324,7 @@
                 }
             }, []);
 
-            // ... (Cloud Logic: stripImages, syncFromCloud, syncToCloud, createCloudBin, handleConnectCloud, saveToLocal - Unchanged) ...
+            // ... (Cloud Logic) ...
             const stripImages = (data) => {
                 const cleanData = JSON.parse(JSON.stringify(data));
                 if (cleanData.trainees) cleanData.trainees = cleanData.trainees.map(t => { if (t.image && t.image.startsWith('data:image')) t.image = DEFAULT_IMAGE; return t; });
@@ -365,7 +363,7 @@
                 if (isCloudConnected) { syncToCloud({ trainees: currentData.trainees, teams: currentData.teams, leagueName: currentData.leagueName }); }
             };
 
-            // ... (Backup/Import/File/Cropper - Unchanged) ...
+            // ... (Handlers) ...
             const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(t('alerts', 'backupDownloaded'))) window.open(DRIVE_LINK, '_blank'); }, 500); };
             const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(t('alerts', 'overwriteConfirm'))) { saveToLocal(p); alert(t('alerts', 'updated')); setIsDataToolsOpen(false); } } catch (e) { alert(t('alerts', 'fileError')); } e.target.value=null; }; r.readAsText(f); };
             const handleFile = (e, isLogo) => { const f = e.target.files?.[0]; if(!f) return; const r = new FileReader(); r.onloadend = () => { setTempImage(r.result); setIsLogoCrop(isLogo); setIsCropperOpen(true); }; r.readAsDataURL(f); };
@@ -387,7 +385,82 @@
             const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('alerts', 'copied')); } } catch(e){} };
             const handleSystemShare = async (trainee) => { try{await navigator.share({title:trainee.name, text:generateShareText(trainee)})}catch(e){alert(t('alerts', 'useWhatsapp'));} };
             const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(trainee => attendanceList.includes(trainee.id)).map(trainee => trainee.name); const aNames = reportFiltered.filter(trainee => !attendanceList.includes(trainee.id)).map(trainee => trainee.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
-            const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(trainee => { const status = attendanceList.includes(trainee.id) ? "Present" : "Absent"; csvContent += `${trainee.name.replace(/,/g," ")},${trainee.team.replace(/,/g," ")},${trainee.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
+            
+            // 🔥 核心升级：智能分校考勤报表
+            const handleExportAttendanceExcel = () => {
+                const date = attendanceDate || new Date().toISOString().slice(0, 10);
+                const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
+                
+                // 1. 数据分组
+                const teamsMap = {};
+                let grandTotal = 0;
+                let grandPresent = 0;
+
+                // 使用 reportFiltered (根据已选学校/位置过滤)
+                reportFiltered.forEach(trainee => {
+                    if (!teamsMap[trainee.team]) teamsMap[trainee.team] = [];
+                    teamsMap[trainee.team].push(trainee);
+                });
+
+                let csvContent = "\uFEFF"; // BOM
+                csvContent += `CFC YOUTH ACADEMY ATTENDANCE REPORT\n`;
+                csvContent += `Date:,${date}\n`;
+                csvContent += `Scope:,${targetSchool}\n\n`;
+
+                // 2. 遍历学校
+                Object.keys(teamsMap).sort().forEach(school => {
+                    const students = teamsMap[school];
+                    const presentCount = students.filter(t => attendanceList.includes(t.id)).length;
+                    const absentCount = students.length - presentCount;
+                    const schoolRate = students.length === 0 ? 0 : Math.round((presentCount / students.length) * 100);
+
+                    // 总计
+                    grandTotal += students.length;
+                    grandPresent += presentCount;
+
+                    // 学校表头
+                    csvContent += `------------------------------------------------\n`;
+                    csvContent += `SCHOOL:,${school.replace(/,/g, " ")}\n`;
+                    csvContent += `Summary:,Total: ${students.length}, Present: ${presentCount}, Absent: ${absentCount}, Rate: ${schoolRate}%\n`;
+                    csvContent += `------------------------------------------------\n`;
+                    csvContent += `Name,Category,Position,Status,Yearly Att. %\n`;
+
+                    // 学生名单排序：组别 -> 姓名
+                    students.sort((a,b) => {
+                        if (a.category !== b.category) return (a.category || '').localeCompare(b.category || '');
+                        return a.name.localeCompare(b.name);
+                    });
+
+                    students.forEach(trainee => {
+                        const status = attendanceList.includes(trainee.id) ? "Present" : "Absent";
+                        const safeName = trainee.name.replace(/,/g, " ");
+                        const safeCat = (trainee.category || "-").replace(/,/g, " ");
+                        const safePos = (trainee.primaryPosition || "-").split(' ')[0]; 
+                        const yearlyRate = `${trainee.attendance}%`; 
+                        
+                        csvContent += `${safeName},${safeCat},${safePos},${status},${yearlyRate}\n`;
+                    });
+
+                    csvContent += `\n\n`;
+                });
+
+                // 3. Grand Total (如果选了全部)
+                if (selectedTeam === '全部') {
+                     const grandAbsent = grandTotal - grandPresent;
+                     const grandRate = grandTotal === 0 ? 0 : Math.round((grandPresent / grandTotal) * 100);
+                     csvContent += `================================================\n`;
+                     csvContent += `GRAND TOTAL SUMMARY\n`;
+                     csvContent += `Total Students:,${grandTotal}\n`;
+                     csvContent += `Total Present:,${grandPresent}\n`;
+                     csvContent += `Total Absent:,${grandAbsent}\n`;
+                     csvContent += `Overall Rate:,${grandRate}%\n`;
+                     csvContent += `================================================\n`;
+                }
+
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            };
 
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
@@ -490,7 +563,7 @@
                 alert(t('finCopied'));
             };
             
-            // 🔥 智能财务分校报表
+            // 🔥 修复：智能分校财务报表导出
             const exportFinanceExcel = () => {
                 const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
                 
