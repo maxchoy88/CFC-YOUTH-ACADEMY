@@ -21,11 +21,9 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* 裁剪器容器样式 */
         .cropper-container { max-height: 60vh; background-color: #000; }
         #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 50; transition: opacity 0.5s; }
         .hidden { opacity: 0; pointer-events: none; }
-        /* 日期选择器深色模式适配 */
         input[type="date"], input[type="month"] { color-scheme: dark; }
     </style>
 </head>
@@ -33,7 +31,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Updating Card Labels...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Enabling Photo Sharing...</p>
     </div>
 
     <div id="root"></div>
@@ -83,11 +81,11 @@
                 attCount: "出席次数", totalCount: "年度目标", coachReport: "教练报告", editReport: "编辑报告",
                 edit: "编辑", delete: "删除", aiAnalyze: "教练分析", updateProfile: "更新档案", newPlayer: "新球员",
                 name: "姓名", nationality: "国籍", school: "所属学校", mainPos: "主位置", subPos: "副位置",
-                parentName: "家长", phone: "电话", email: "电邮", tin: "TIN", // 简短标签
+                parentName: "家长", phone: "电话", email: "电邮", tin: "TIN",
                 save: "保存", cancel: "取消", addSchool: "新增学校", backupTools: "备份工具",
                 backupToDrive: "备份到 Google Drive", exportDesc: "生成备份文件并自动打开你的云端文件夹。",
                 restoreData: "恢复数据", restoreDesc: "从手机文件夹中选择之前的备份文件 (.json)。",
-                selectFile: "选择备份文件", shareProfile: "分享档案", sendToParents: "发送给家长 (含照片)",
+                selectFile: "选择备份文件", shareProfile: "分享档案", sendToParents: "📲 发送照片给家长 (WhatsApp)", // Updated
                 textOnly: "仅发送文字报告", cropTitle: "裁剪头像", rotate: "旋转", confirmCrop: "确认裁剪",
                 attTitle: "智能出席库", attDate: "记录日期", attPaste: "📄 粘贴名单导入 (WhatsApp/Excel)",
                 attPasteDesc: "直接粘贴文字，系统会自动识别名单中的名字并勾选。",
@@ -138,7 +136,7 @@
                 save: "Save", cancel: "Cancel", addSchool: "Add School", backupTools: "Tools",
                 backupToDrive: "Backup to Drive", exportDesc: "Generate backup file.",
                 restoreData: "Restore", restoreDesc: "Restore from file.", selectFile: "Select File",
-                shareProfile: "Share", sendToParents: "Send (Photo)", textOnly: "Text Only",
+                shareProfile: "Share", sendToParents: "📲 Send Photo via WhatsApp", textOnly: "Text Only",
                 cropTitle: "Crop", rotate: "Rotate", confirmCrop: "Confirm",
                 attTitle: "Attendance", attDate: "Date", attPaste: "Paste List", attPasteDesc: "Auto-check",
                 attPlaceholder: "Names...", attConfirm: "Submit", attShare: "Share", attWhatsapp: "WhatsApp",
@@ -182,7 +180,7 @@
                 save: "Simpan", cancel: "Batal", addSchool: "Tambah", backupTools: "Alat",
                 backupToDrive: "Sandaran Drive", exportDesc: "Jana fail sandaran.",
                 restoreData: "Pulihkan", restoreDesc: "Pilih fail .json.", selectFile: "Pilih Fail",
-                shareProfile: "Kongsi", sendToParents: "Hantar (Foto)", textOnly: "Teks Sahaja",
+                shareProfile: "Kongsi", sendToParents: "📲 Hantar Foto (WhatsApp)", textOnly: "Teks Sahaja",
                 cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Sahkan",
                 attTitle: "Pusat Kehadiran", attDate: "Tarikh", attPaste: "Tampal Senarai", attPasteDesc: "Auto-tanda",
                 attPlaceholder: "Contoh: Hadir: Arthur...", attConfirm: "Hantar",
@@ -236,6 +234,7 @@
         const App = () => {
             const [lang, setLang] = useState('zh');
             
+            // 🔥 增强的翻译函数 (Safe t-function)
             const t = (key, subKey) => {
                 const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh'];
                 if (subKey) {
@@ -271,6 +270,7 @@
             const [editingTrainee, setEditingTrainee] = useState(null);
             const [isEditingTitle, setIsEditingTitle] = useState(false);
             
+            // 🔥 新增字段：parentName, phone, email, tin
             const [formData, setFormData] = useState({ 
                 name:'', primaryPosition:'前锋 (FW)', secondaryPosition:'无', age:'16', category: 'U18', height: '', weight: '', 
                 attendance: 0, nationality:'', team:'', image:'', 
@@ -403,7 +403,21 @@
             const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
             const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
             const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
-            const generateShareText = (trainee) => { const L = TRANSLATIONS[lang]; const c = trainee.category ? `[${trainee.category}] ` : ''; 
+            
+            // 🔥 系统分享功能升级：发送照片 + 文本
+            // 注意：Web Share API Level 2 支持 share({files})，但必须是 file 对象，不能是 url
+            // 所以我们需要把 dataURL 转成 File 对象
+            const dataURLtoFile = (dataurl, filename) => {
+                try {
+                    let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                    bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                    while(n--){ u8arr[n] = bstr.charCodeAt(n); }
+                    return new File([u8arr], filename, {type:mime});
+                } catch(e) { return null; }
+            };
+
+            const generateShareText = (trainee) => { 
+                const L = TRANSLATIONS[lang]; const c = trainee.category ? `[${trainee.category}] ` : ''; 
                 let base = `【${L.appTitle}】\n\n${L.name}：${trainee.name}\n${L.school}：${c}${trainee.team}\n${L.mainPos}：${trainee.primaryPosition}\n${L.age}：${trainee.age} | ${L.height}：${trainee.height||'-'}cm | ${L.weight}：${trainee.weight||'-'}kg\n${L.attendance}：${trainee.attendance||0}%\n\n`;
                 if(trainee.parentName) base += `${L.parentName}: ${trainee.parentName}\n`;
                 if(trainee.phone) base += `${L.phone}: ${trainee.phone}\n`;
@@ -411,8 +425,33 @@
                 base += `📊 ${L.stats.pace}: ${trainee.stats.pace} | ${L.stats.shooting}: ${trainee.stats.shooting}\n${L.stats.passing}: ${trainee.stats.passing} | ${L.stats.dribbling}: ${trainee.stats.dribbling}\n${L.stats.defending}: ${trainee.stats.defending} | ${L.stats.physical}: ${trainee.stats.physical}`;
                 return base;
             };
+
+            // 🔥 核心：系统级分享 (尝试唤起 WhatsApp 发送图片)
+            const handleSystemShare = async (trainee) => { 
+                const text = generateShareText(trainee);
+                const shareData = { title: trainee.name, text: text };
+                
+                // 尝试附加图片
+                if (trainee.image && trainee.image.startsWith('data:image')) {
+                    const file = dataURLtoFile(trainee.image, `${trainee.name}.jpg`);
+                    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        shareData.files = [file];
+                    }
+                } else if (trainee.image && trainee.image.startsWith('http')) {
+                    // 如果是云端图片，把链接加到文字里，作为兜底
+                    shareData.text += `\n\nPhoto: ${trainee.image}`;
+                }
+
+                try { 
+                    await navigator.share(shareData); 
+                } catch(e) { 
+                    // 失败回退：使用 WhatsApp 纯文本链接
+                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text)}`;
+                    window.open(whatsappUrl, '_blank');
+                } 
+            };
+
             const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('alerts', 'copied')); } } catch(e){} };
-            const handleSystemShare = async (trainee) => { try{await navigator.share({title:trainee.name, text:generateShareText(trainee)})}catch(e){alert(t('alerts', 'useWhatsapp'));} };
             const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(trainee => attendanceList.includes(trainee.id)).map(trainee => trainee.name); const aNames = reportFiltered.filter(trainee => !attendanceList.includes(trainee.id)).map(trainee => trainee.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
             const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(trainee => { const status = attendanceList.includes(trainee.id) ? "Present" : "Absent"; csvContent += `${trainee.name.replace(/,/g," ")},${trainee.team.replace(/,/g," ")},${trainee.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
 
@@ -434,6 +473,7 @@
                 trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) || trainee.team.toLowerCase().includes(searchTerm.toLowerCase())
             ), [reportFiltered, searchTerm]);
 
+            // 🔥 财务过滤
             const financeFiltered = useMemo(() => reportFiltered.filter(trainee => 
                 trainee.name.toLowerCase().includes(financeSearchTerm.toLowerCase()) || 
                 trainee.team.toLowerCase().includes(financeSearchTerm.toLowerCase()) ||
