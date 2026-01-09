@@ -27,14 +27,13 @@
         .hidden { opacity: 0; pointer-events: none; }
         /* 日期选择器深色模式适配 */
         input[type="date"], input[type="month"] { color-scheme: dark; }
-        input[type="date"]::-webkit-calendar-picker-indicator, input[type="month"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; opacity: 0.8; }
     </style>
 </head>
 <body>
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Updating Player Cards...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Updating Card Labels...</p>
     </div>
 
     <div id="root"></div>
@@ -84,7 +83,7 @@
                 attCount: "出席次数", totalCount: "年度目标", coachReport: "教练报告", editReport: "编辑报告",
                 edit: "编辑", delete: "删除", aiAnalyze: "教练分析", updateProfile: "更新档案", newPlayer: "新球员",
                 name: "姓名", nationality: "国籍", school: "所属学校", mainPos: "主位置", subPos: "副位置",
-                parentName: "家长", phone: "电话", email: "电邮", tin: "TIN",
+                parentName: "家长", phone: "电话", email: "电邮", tin: "TIN", // 简短标签
                 save: "保存", cancel: "取消", addSchool: "新增学校", backupTools: "备份工具",
                 backupToDrive: "备份到 Google Drive", exportDesc: "生成备份文件并自动打开你的云端文件夹。",
                 restoreData: "恢复数据", restoreDesc: "从手机文件夹中选择之前的备份文件 (.json)。",
@@ -404,7 +403,14 @@
             const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
             const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
             const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
-            const generateShareText = (trainee) => { const L = TRANSLATIONS[lang]; const c = trainee.category ? `[${trainee.category}] ` : ''; return `【${L.appTitle}】\n\n${L.name}：${trainee.name}\n${L.school}：${c}${trainee.team}\n${L.mainPos}：${trainee.primaryPosition}\n${L.age}：${trainee.age} | ${L.height}：${trainee.height||'-'}cm | ${L.weight}：${trainee.weight||'-'}kg\n${L.attendance}：${trainee.attendance||0}%\n\n📊 ${L.stats.pace}: ${trainee.stats.pace} | ${L.stats.shooting}: ${trainee.stats.shooting}\n${L.stats.passing}: ${trainee.stats.passing} | ${L.stats.dribbling}: ${trainee.stats.dribbling}\n${L.stats.defending}: ${trainee.stats.defending} | ${L.stats.physical}: ${trainee.stats.physical}`; };
+            const generateShareText = (trainee) => { const L = TRANSLATIONS[lang]; const c = trainee.category ? `[${trainee.category}] ` : ''; 
+                let base = `【${L.appTitle}】\n\n${L.name}：${trainee.name}\n${L.school}：${c}${trainee.team}\n${L.mainPos}：${trainee.primaryPosition}\n${L.age}：${trainee.age} | ${L.height}：${trainee.height||'-'}cm | ${L.weight}：${trainee.weight||'-'}kg\n${L.attendance}：${trainee.attendance||0}%\n\n`;
+                if(trainee.parentName) base += `${L.parentName}: ${trainee.parentName}\n`;
+                if(trainee.phone) base += `${L.phone}: ${trainee.phone}\n`;
+                if(trainee.email) base += `${L.email}: ${trainee.email}\n\n`;
+                base += `📊 ${L.stats.pace}: ${trainee.stats.pace} | ${L.stats.shooting}: ${trainee.stats.shooting}\n${L.stats.passing}: ${trainee.stats.passing} | ${L.stats.dribbling}: ${trainee.stats.dribbling}\n${L.stats.defending}: ${trainee.stats.defending} | ${L.stats.physical}: ${trainee.stats.physical}`;
+                return base;
+            };
             const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('alerts', 'copied')); } } catch(e){} };
             const handleSystemShare = async (trainee) => { try{await navigator.share({title:trainee.name, text:generateShareText(trainee)})}catch(e){alert(t('alerts', 'useWhatsapp'));} };
             const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(trainee => attendanceList.includes(trainee.id)).map(trainee => trainee.name); const aNames = reportFiltered.filter(trainee => !attendanceList.includes(trainee.id)).map(trainee => trainee.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
@@ -414,7 +420,6 @@
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
                 const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
                 
-                // 🔥 超级搜索
                 const searchLower = searchTerm.toLowerCase();
                 const matchSearch = searchTerm === '' || 
                                     trainee.name.toLowerCase().includes(searchLower) || 
@@ -519,11 +524,10 @@
                 const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
                 alert(t('finCopied'));
             };
-            
-            // 🔥 核心：智能分校财务报表导出
             const exportFinanceExcel = () => {
                 const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
                 
+                // 1. Group Data
                 const teamsMap = {};
                 financeFiltered.forEach(trainee => {
                     if (!teamsMap[trainee.team]) teamsMap[trainee.team] = [];
@@ -587,7 +591,6 @@
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a"); link.href = url; link.download = `CFC_Fin_${targetSchool}_${financeMonth}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
             };
-
             const getFinanceSummary = () => {
                 const paidCount = financeFiltered.filter(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]).length;
                 const totalAmount = paidCount * monthlyFee;
@@ -665,10 +668,10 @@
                                 <div className="p-4 flex-1 flex flex-col">
                                     {/* Personal Info Block (New) */}
                                     <div className="bg-zinc-950/50 rounded-lg p-2 mb-3 text-[10px] text-zinc-400 space-y-1">
-                                        <div className="flex items-center gap-2"><i className="fa-solid fa-user text-zinc-500 w-4 text-center"></i><span className="text-zinc-300">{trainee.parentName || '-'}</span></div>
-                                        <div className="flex items-center gap-2"><i className="fa-solid fa-phone text-zinc-500 w-4 text-center"></i><span className="text-zinc-300">{trainee.phone || '-'}</span></div>
-                                        <div className="flex items-center gap-2"><i className="fa-solid fa-envelope text-zinc-500 w-4 text-center"></i><span className="truncate">{trainee.email || '-'}</span></div>
-                                        <div className="flex items-center gap-2"><i className="fa-solid fa-id-card text-zinc-500 w-4 text-center"></i><span>TIN: {trainee.tin || '-'}</span></div>
+                                        <div className="flex items-center gap-2"><i className="fa-solid fa-user text-zinc-500 w-4 text-center"></i><span className="text-zinc-500 text-[9px]">{t('parentName')}:</span><span className="text-zinc-300 truncate">{trainee.parentName || '-'}</span></div>
+                                        <div className="flex items-center gap-2"><i className="fa-solid fa-phone text-zinc-500 w-4 text-center"></i><span className="text-zinc-500 text-[9px]">{t('phone')}:</span><span className="text-zinc-300 truncate">{trainee.phone || '-'}</span></div>
+                                        <div className="flex items-center gap-2"><i className="fa-solid fa-envelope text-zinc-500 w-4 text-center"></i><span className="text-zinc-500 text-[9px]">{t('email')}:</span><span className="truncate text-zinc-300">{trainee.email || '-'}</span></div>
+                                        <div className="flex items-center gap-2"><i className="fa-solid fa-id-card text-zinc-500 w-4 text-center"></i><span className="text-zinc-500 text-[9px]">{t('tin')}:</span><span className="text-zinc-300 truncate">{trainee.tin || '-'}</span></div>
                                     </div>
                                     <div className="mb-3 px-1"><div className="flex justify-between text-[10px] text-zinc-500 mb-1 font-bold"><span>{t('attendance')}</span><span className={trainee.attendance >= 90 ? 'text-emerald-500' : 'text-zinc-300'}>{trainee.attendance || 0}%</span></div><div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden"><div className={`h-full ${getAttendanceColor(trainee.attendance || 0)}`} style={{width: `${trainee.attendance || 0}%`}}></div></div></div>
                                     <div className="space-y-1.5 mb-4">{['pace', 'shooting', 'passing'].map(s => { const val = (trainee.stats && trainee.stats[s]) || 0; return (<div key={s} className="flex items-center gap-2"><span className="text-[9px] text-zinc-500 uppercase w-10">{t('stats', s)}</span><div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden"><div className="h-full bg-indigo-500" style={{width: `${val}%`}}></div></div><span className="text-[9px] font-bold text-zinc-400 w-4 text-right">{val}</span></div>); })}</div>
