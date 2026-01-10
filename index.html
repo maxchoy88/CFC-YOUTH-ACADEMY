@@ -32,7 +32,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Securing Images...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Fixing Share Logic...</p>
     </div>
     <div id="error-box"></div>
 
@@ -153,7 +153,8 @@
                     fileError: "❌ 文件错误", deleteConfirm: "删除此项？",
                     resetConfirm: "⚠️ 确定要重置此球员的考勤数据吗？", updated: "✅ 数据已更新！", copied: "已复制！", useWhatsapp: "请使用 WhatsApp 按钮",
                     attConfirmMsg: "确认提交考勤？\n\n📅 日期: {date}\n👦 学员实到: {sCount}\n👨‍🏫 教练实到: {cCount}",
-                    finConfirmAll: "⚠️ 确定要把列表中的所有人标记为 [{status}] 吗？"
+                    finConfirmAll: "⚠️ 确定要把列表中的所有人标记为 [{status}] 吗？",
+                    imgLocalWarning: "⚠️ 照片是本地数据，无法通过网页自动附加。\n\n已为您生成文字报告并打开 WhatsApp，请您手动从相册发送照片。🙏🏻"
                 }
             },
             en: {
@@ -205,7 +206,8 @@
                     overwriteConfirm: "⚠️ Overwrite data?", fileError: "❌ File Error", deleteConfirm: "Delete?",
                     resetConfirm: "⚠️ Reset stats?", updated: "✅ Data Updated!", copied: "Copied!", useWhatsapp: "Use WhatsApp Button",
                     attConfirmMsg: "Confirm attendance for [{date}]?\n\nTotal: {total}\nPresent: {present}\nAbsent: {absent}",
-                    finConfirmAll: "⚠️ Mark ALL displayed as [{status}]?"
+                    finConfirmAll: "⚠️ Mark ALL displayed as [{status}]?",
+                    imgLocalWarning: "⚠️ Image is local. Text will be copied. Please attach image manually."
                 },
                 stats: { pace: "PAC", shooting: "SHO", passing: "PAS", dribbling: "DRI", defending: "DEF", physical: "PHY" },
                 ai: { analyzing: "Analyzing...", reportTitle: "Coach Report", position: "Role", rating: "Rating", strength: "Strength", suggestion: "Advice", comment: "Comment", template: "Balanced", advice: "Observe.", commentText: "Good potential." }
@@ -319,7 +321,7 @@
             const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
             const [isEditingReport, setIsEditingReport] = useState(false);
             const [isCropperOpen, setIsCropperOpen] = useState(false);
-            const [isLogoCrop, setIsLogoCrop] = useState(false); // 🔥 Explicit state for Logo Crop mode
+            const [isLogoCrop, setIsLogoCrop] = useState(false); 
             const [isCoachOpen, setIsCoachOpen] = useState(false);
             const [coachView, setCoachView] = useState('list');
 
@@ -465,14 +467,12 @@
 
             // --- Central Update ---
             const updateData = (newData) => {
-                // 1. Update React State
                 if (newData.trainees) setTrainees(newData.trainees);
                 if (newData.teams) setTeams(newData.teams);
                 if (newData.leagueName) setLeagueName(newData.leagueName);
                 if (newData.appLogo !== undefined) setAppLogo(newData.appLogo);
                 if (newData.coaches) setCoaches(newData.coaches);
 
-                // 2. Prepare Data
                 const currentData = { 
                     trainees: newData.trainees !== undefined ? newData.trainees : trainees, 
                     teams: newData.teams !== undefined ? newData.teams : teams, 
@@ -480,15 +480,11 @@
                     appLogo: newData.appLogo !== undefined ? newData.appLogo : appLogo,
                     coaches: newData.coaches !== undefined ? newData.coaches : coaches,
                 };
-
-                // 3. Save to Local Storage (Protected)
                 try {
                     localStorage.setItem('cfc_local_db', JSON.stringify(currentData));
                 } catch (e) {
-                    alert(t('alerts', 'storageFull'));
+                    alert("Storage full! Please clean up or enable Cloud.");
                 }
-
-                // 4. Sync to Cloud
                 if (isCloudConnected) { 
                     syncToCloud(currentData); 
                 }
@@ -525,7 +521,6 @@
                     if (c.id === coachId) {
                         const history = c.attendanceHistory || [];
                         const isPresentHere = history.some(h => h.date === coachAttDate && h.school === coachAttSchool);
-                        
                         let newHistory;
                         if (isPresentHere) {
                             newHistory = history.filter(h => !(h.date === coachAttDate && h.school === coachAttSchool));
@@ -546,13 +541,7 @@
                         const currentStatus = history[financeMonth]?.status === 'paid';
                         const sessions = (c.attendanceHistory || []).filter(h => h.date.startsWith(financeMonth)).length;
                         const total = sessions * (c.rate || 0);
-                        return { 
-                            ...c, 
-                            paymentHistory: { 
-                                ...history, 
-                                [financeMonth]: { status: currentStatus ? 'unpaid' : 'paid', amount: total } 
-                            } 
-                        };
+                        return { ...c, paymentHistory: { ...history, [financeMonth]: { status: currentStatus ? 'unpaid' : 'paid', amount: total } } };
                     }
                     return c;
                 });
@@ -588,8 +577,7 @@
                     return t; 
                 });
                 // 🔥 CRITICAL: We ALLOW appLogo to be Base64 in cloud.
-                // This ensures logo persistence across devices even without Cloudinary.
-                // JSONBin limit risk is accepted for this feature.
+                // if (cleanData.appLogo && cleanData.appLogo.startsWith('data:image')) cleanData.appLogo = null;
                 return cleanData;
             };
 
@@ -655,7 +643,7 @@
                              });
                         } else { mergedTrainees = INITIAL_TRAINEES; }
                         
-                        // 🔥 Smart Merge for Logo: Use local if cloud is null
+                        // 🔥 Smart Merge for Logo
                         let finalLogo = data.appLogo;
                         if (!finalLogo && localData.appLogo && localData.appLogo.startsWith('data:')) {
                             finalLogo = localData.appLogo;
@@ -687,7 +675,6 @@
             const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo, coaches},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(t('alerts', 'backupDownloaded'))) window.open(DRIVE_LINK, '_blank'); }, 500); };
             const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(t('alerts', 'overwriteConfirm'))) { updateData(p); alert(t('alerts', 'updated')); setIsDataToolsOpen(false); } } catch (e) { alert(t('alerts', 'fileError')); } e.target.value=null; }; r.readAsText(f); };
             
-            // 🔥 SPLIT HANDLERS (The Fix)
             const handleLogoFile = (e) => {
                  const f = e.target.files?.[0]; if(!f) return; 
                  const r = new FileReader(); 
@@ -714,11 +701,10 @@
 
             useEffect(() => { if (isCropperOpen && cropperImageRef.current) { if (cropperRef.current) cropperRef.current.destroy(); cropperRef.current = new Cropper(cropperImageRef.current, { aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8 }); } }, [isCropperOpen, tempImage]);
             
-            // 🔥 Stronger Compression for Base64 (Resize to 250x250, Quality 0.6)
             const handleCropConfirm = async () => { 
                 if (cropperRef.current) { 
-                    const c = cropperRef.current.getCroppedCanvas({ width: 250, height: 250 }); // Reduced from 400
-                    const base64Url = c.toDataURL('image/jpeg', 0.6); // Reduced quality from 0.8
+                    const c = cropperRef.current.getCroppedCanvas({ width: 250, height: 250 }); 
+                    const base64Url = c.toDataURL('image/jpeg', 0.6); 
                     
                     let finalUrl = base64Url;
                     if (imgConfig.cloudName && imgConfig.uploadPreset) {
@@ -728,8 +714,6 @@
                     if (isLogoCrop) { 
                         setAppLogo(finalUrl); 
                         updateData({ appLogo: finalUrl }); 
-                        // 🔥 Force local storage backup just in case
-                        localStorage.setItem('cfc_logo_backup', finalUrl);
                     } 
                     else { 
                         setFormData(p => ({ ...p, image: finalUrl })); 
@@ -737,6 +721,8 @@
                     setIsCropperOpen(false); setTempImage(null); if(fileInputRef.current) fileInputRef.current.value=''; if(logoInputRef.current) logoInputRef.current.value=''; 
                 } 
             };
+
+            // ... (Rest of handlers: handleRotate, handleAttendanceChange, etc. - Same as previous version) ...
             const handleRotate = () => { if (cropperRef.current) cropperRef.current.rotate(90); };
             const handleAttendanceChange = (field, value) => { const val = parseInt(value) || 0; let newData = { ...formData, [field]: val }; const att = field === 'attendedSessions' ? val : formData.attendedSessions; const tot = field === 'totalSessions' ? val : formData.totalSessions; const newRate = tot === 0 ? 0 : Math.round((att / tot) * 100); newData.attendance = newRate; setFormData(newData); };
             const resetPlayerStats = () => { if(!confirm(t('alerts', 'resetConfirm'))) return; const data = { ...formData, totalSessions: PRESET_YEARLY_TOTAL, attendedSessions: 0, attendance: 0, attendanceHistory: [] }; setFormData(data); };
@@ -761,7 +747,19 @@
             const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
             const dataURLtoFile = (dataurl, filename) => { try { let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n); while(n--){ u8arr[n] = bstr.charCodeAt(n); } return new File([u8arr], filename, {type:mime}); } catch(e) { return null; } };
             const generateShareText = (trainee) => { const L = TRANSLATIONS[lang]; const c = trainee.category ? `[${trainee.category}] ` : ''; let base = `【${L.appTitle}】\n\n${L.name}：${trainee.name}\n${L.school}：${c}${trainee.team}\n${L.mainPos}：${trainee.primaryPosition}\n${L.age}：${trainee.age} | ${L.height}：${trainee.height||'-'}cm | ${L.weight}：${trainee.weight||'-'}kg\n${L.attendance}：${trainee.attendance||0}%\n\n📊 ${L.stats.pace}: ${trainee.stats.pace} | ${L.stats.shooting}: ${trainee.stats.shooting}\n${L.stats.passing}: ${trainee.stats.passing} | ${L.stats.dribbling}: ${trainee.stats.dribbling}\n${L.stats.defending}: ${trainee.stats.defending} | ${L.stats.physical}: ${trainee.stats.physical}`; return base; };
-            const handleSystemShare = async (trainee) => { const text = generateShareText(trainee); const shareData = { title: trainee.name, text: text }; if (trainee.image && trainee.image.startsWith('data:image')) { const file = dataURLtoFile(trainee.image, `${trainee.name}.jpg`); if (file && navigator.canShare && navigator.canShare({ files: [file] })) { shareData.files = [file]; } } else if (trainee.image && trainee.image.startsWith('http')) { shareData.text += `\n\nPhoto: ${trainee.image}`; } try { await navigator.share(shareData); } catch(e) { const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text)}`; window.open(whatsappUrl, '_blank'); } };
+            // 🔥 Updated System Share Logic
+            const handleSystemShare = async (trainee) => {
+                let text = generateShareText(trainee);
+                const shareData = { title: trainee.name, text: text };
+                let file = null;
+                const isUrl = trainee.image && trainee.image.startsWith('http');
+                const isBase64 = trainee.image && trainee.image.startsWith('data:image');
+                if (isUrl) { text += `\n\n🖼️ Photo: ${trainee.image}`; shareData.text = text; }
+                if (isBase64) { file = dataURLtoFile(trainee.image, `${trainee.name}.jpg`); if (file && navigator.canShare && navigator.canShare({ files: [file] })) { shareData.files = [file]; } }
+                try { if (navigator.share && (shareData.files || isUrl)) { await navigator.share(shareData); return; } throw new Error("Web Share Fail"); } 
+                catch (e) { if (isBase64) alert(t('alerts', 'imgLocalWarning')); const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text)}`; window.open(whatsappUrl, '_blank'); }
+            };
+
             const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('alerts', 'copied')); } } catch(e){} };
             const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(trainee => attendanceList.includes(trainee.id)).map(trainee => trainee.name); const aNames = reportFiltered.filter(trainee => !attendanceList.includes(trainee.id)).map(trainee => trainee.name); let text = `📅 *CFCYA Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
             const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(trainee => { const status = attendanceList.includes(trainee.id) ? "Present" : "Absent"; csvContent += `${trainee.name.replace(/,/g," ")},${trainee.team.replace(/,/g," ")},${trainee.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
@@ -916,7 +914,6 @@
                     <header className="flex flex-col xl:flex-row justify-between items-center gap-4 md:gap-6 mb-6 md:mb-8">
                         <div className="w-full xl:w-auto flex justify-between xl:justify-start items-center gap-4">
                             <div className="flex items-center gap-4">
-                                {/* 🔥 CLICK LOGO TO UPLOAD */}
                                 <div className="relative group w-14 h-14 md:w-16 md:h-16 bg-zinc-800 rounded-xl flex items-center justify-center cursor-pointer border border-zinc-700 overflow-hidden shrink-0 shadow-lg" onClick={() => logoInputRef.current.click()}>
                                     {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-3xl"></i>}
                                     <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoFile} />
@@ -1241,6 +1238,7 @@
                                             <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 mb-4 sticky top-0 z-10 flex gap-2">
                                                 <input type="date" className="flex-1 bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 outline-none focus:border-blue-500" value={coachAttDate} onChange={e => setCoachAttDate(e.target.value)} />
                                                 <select className="flex-1 bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 outline-none focus:border-blue-500 text-xs" value={coachAttSchool} onChange={e => setCoachAttSchool(e.target.value)}>
+                                                    <option value="" disabled>{t('selectSchool')}</option>
                                                     {teams.map(t => <option key={t} value={t}>{t}</option>)}
                                                 </select>
                                             </div>
