@@ -25,14 +25,16 @@
         #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 50; transition: opacity 0.5s; }
         .hidden { opacity: 0; pointer-events: none; }
         input[type="date"], input[type="month"] { color-scheme: dark; }
+        #error-box { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #ef4444; color: white; padding: 10px; z-index: 100; text-align: center; font-size: 12px; }
     </style>
 </head>
 <body>
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Connecting...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Initializing Coach Module...</p>
     </div>
+    <div id="error-box"></div>
 
     <div id="root"></div>
 
@@ -42,9 +44,15 @@
             const root = document.getElementById('root');
             if (loader && !loader.classList.contains('hidden') && (!root || root.innerHTML.trim() === "")) {
                 document.getElementById('loading-text').innerHTML = 
-                    `<span style="color:#ef4444">⚠️ Timeout. Check Internet.</span>`;
+                    `<span style="color:#ef4444">⚠️ Timeout. Please refresh.</span>`;
             }
         }, 5000);
+        window.onerror = function(msg, url, line) {
+            const errBox = document.getElementById('error-box');
+            errBox.style.display = 'block';
+            errBox.innerText = `Error: ${msg} (Line: ${line})`;
+            return false; 
+        };
     </script>
 
     <script type="text/babel">
@@ -70,10 +78,16 @@
             stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50},
             parentName: '', phone: '', email: '', tin: ''
         };
+
+        const INITIAL_COACHES = [
+            { id: 'c1', name: 'Coach Mourinho', role: 'Head Coach', rate: 200, phone: '012-3456789', attendanceHistory: [], paymentHistory: {} },
+            { id: 'c2', name: 'Coach Pep', role: 'Assistant', rate: 100, phone: '019-8765432', attendanceHistory: [], paymentHistory: {} }
+        ];
         // =================================================================
 
         const { useState, useEffect, useRef, useMemo } = React;
 
+        // 移除加载动画
         setTimeout(() => {
             const loader = document.getElementById('static-loading');
             if(loader) loader.classList.add('hidden');
@@ -84,6 +98,7 @@
             zh: {
                 appTitle: "CFC YOUTH ACADEMY", systemName: "青训学院系统", localMode: "本地版", cloudMode: "云端同步",
                 backupRestore: "备份/恢复", manageSchools: "学校", attendanceTool: "出席库", financeTool: "财务", 
+                coachTool: "教练中心", // 🔥 New
                 register: "注册", searchPlaceholder: "搜索姓名、学校...", noData: "暂无球员数据",
                 age: "年龄", category: "组别", height: "身高", weight: "体重", attendance: "出席率",
                 attCount: "出席次数", totalCount: "年度目标", coachReport: "教练报告", editReport: "编辑报告",
@@ -109,6 +124,13 @@
                 finTotal: "总收入", finPending: "待收", finRemind: "催费", finExport: "导出财务表",
                 finBank: "银行户口", finCopy: "复制", finCopied: "已复制！", finToggleAll: "一键全选",
                 finSearch: "搜索财务名单...",
+                
+                // Coach Module
+                coachTitle: "教练管理中心", coachList: "名单", coachAtt: "考勤", coachPay: "薪资",
+                coachRole: "职位", coachRate: "单场津贴 (RM)", coachSessions: "场次", coachTotal: "应付工资",
+                coachPaid: "已发", coachUnpaid: "未发", addCoach: "新增教练",
+                coachExport: "导出薪资表", coachTotalPayout: "总支出",
+
                 imgCloudSetup: "📷 图片云 (Cloudinary)", imgCloudName: "Cloud Name", imgUploadPreset: "Upload Preset", imgSave: "保存图片配置",
                 imgCloudDesc: "配置后，照片将自动上传云端 (需开启 Unsigned 模式)。", uploading: "☁️ 上传中...", imgTest: "测试连接",
                 msgTemplates: { gentle: "🌸 温柔提醒", friendly: "🤝 朋友语气", soft: "🍃 婉转提醒", formal: "👔 正式通知" },
@@ -125,8 +147,9 @@
                 alerts: {
                     fillImgConfig: "请填写 Cloud Name 和 Upload Preset", imgCloudConnected: "✅ 图片云已连接！",
                     fillMasterKey: "请先填入 Master Key", cloudCreated: "✅ 云端数据库创建成功！\n\nBin ID: {binId}\n\n请务必复制这个 ID，在其他手机填入即可同步数据。",
-                    fillCloudConfig: "请填写 Master Key 和 Bin ID", backupDownloaded: "✅ 备份已下载！",
-                    overwriteConfirm: "⚠️ 覆盖当前数据？", fileError: "❌ 文件错误", deleteConfirm: "删除此项？",
+                    fillCloudConfig: "请填写 Master Key 和 Bin ID", backupDownloaded: "✅ 备份已下载！\n(包含所有图片)\n\n点击“确定”将跳转到 Google Drive。",
+                    overwriteConfirm: "⚠️ 覆盖当前数据？\n这将恢复所有内容(含图片)。",
+                    fileError: "❌ 文件错误", deleteConfirm: "删除此项？",
                     resetConfirm: "⚠️ 确定要重置此球员的考勤数据吗？", updated: "✅ 数据已更新！", copied: "已复制！", useWhatsapp: "请使用 WhatsApp 按钮",
                     attConfirmMsg: "确认提交 / 更新 [{date}] 的考勤？\n\n总人数: {total}\n出席: {present}\n缺席: {absent}",
                     finConfirmAll: "⚠️ 确定要把列表中的所有人标记为 [{status}] 吗？"
@@ -135,6 +158,7 @@
             en: {
                 appTitle: "CFC YOUTH ACADEMY", systemName: "ACADEMY SYSTEM", localMode: "Local", cloudMode: "Cloud Sync",
                 backupRestore: "Backup", manageSchools: "Schools", attendanceTool: "Attendance", financeTool: "Finance",
+                coachTool: "Coach Hub",
                 register: "Register", searchPlaceholder: "Search name, parent, phone...", noData: "No Data",
                 age: "Age", category: "Category", height: "Height", weight: "Weight", attendance: "Att.",
                 attCount: "Attended", totalCount: "Goal", coachReport: "Report", editReport: "Edit",
@@ -155,6 +179,12 @@
                 finTitle: "Finance Hub", finMonth: "Month", finFee: "Fee (RM)", finPaid: "Paid", finUnpaid: "Unpaid",
                 finTotal: "Revenue", finPending: "Pending", finRemind: "Remind", finExport: "Export Report",
                 finBank: "Bank Info", finCopy: "Copy", finCopied: "Copied!", finToggleAll: "Toggle All", finSearch: "Search Finance...",
+                
+                coachTitle: "Coach Manager", coachList: "List", coachAtt: "Attendance", coachPay: "Payroll",
+                coachRole: "Role", coachRate: "Rate/Session", coachSessions: "Sessions", coachTotal: "Total Due",
+                coachPaid: "Paid", coachUnpaid: "Pending", addCoach: "Add Coach",
+                coachExport: "Export Payroll", coachTotalPayout: "Total Payout",
+
                 imgCloudSetup: "📷 Image Cloud (Cloudinary)", imgCloudName: "Cloud Name", imgUploadPreset: "Upload Preset", imgSave: "Save Config",
                 imgCloudDesc: "Photos will be uploaded to cloud (Unsigned mode required).", uploading: "☁️ Uploading...", imgTest: "Test Connection",
                 msgTemplates: { gentle: "Gentle", friendly: "Friendly", soft: "Soft Nudge", formal: "Formal" },
@@ -181,6 +211,7 @@
             ms: {
                 appTitle: "AKADEMI BELIA CFC", systemName: "SISTEM AKADEMI", localMode: "Tempatan", cloudMode: "Awan",
                 backupRestore: "Sandaran", manageSchools: "Sekolah", attendanceTool: "Kehadiran", financeTool: "Kewangan",
+                coachTool: "Jurulatih",
                 register: "Daftar", searchPlaceholder: "Cari nama, ibu bapa, tel...", noData: "Tiada Data",
                 age: "Umur", category: "Kategori", height: "Tinggi", weight: "Berat", attendance: "Kehadiran",
                 attCount: "Hadir", totalCount: "Sasaran", coachReport: "Laporan", editReport: "Sunting",
@@ -201,6 +232,12 @@
                 finTitle: "Pusat Kewangan", finMonth: "Bulan", finFee: "Yuran (RM)", finPaid: "Bayar", finUnpaid: "Belum",
                 finTotal: "Hasil", finPending: "Tunggakan", finRemind: "Ingatkan", finExport: "Eksport Laporan",
                 finBank: "Bank", finCopy: "Salin", finCopied: "Disalin!", finToggleAll: "Tanda Semua", finSearch: "Cari...",
+                
+                coachTitle: "Pengurusan Jurulatih", coachList: "Senarai", coachAtt: "Kehadiran", coachPay: "Gaji",
+                coachRole: "Jawatan", coachRate: "Kadar/Sesi", coachSessions: "Sesi", coachTotal: "Jumlah",
+                coachPaid: "Dibayar", coachUnpaid: "Belum", addCoach: "Tambah Jurulatih",
+                coachExport: "Eksport Gaji", coachTotalPayout: "Jumlah Bayaran",
+
                 imgCloudSetup: "Awan Gambar (Cloudinary)", imgCloudName: "Nama Cloud", imgUploadPreset: "Preset Muat Naik", imgSave: "Simpan Tetapan",
                 imgCloudDesc: "Foto akan dimuat naik ke awan. Guna preset 'Unsigned'.", uploading: "☁️ Sedang Muat Naik...", imgTest: "Uji Sambungan",
                 msgTemplates: { gentle: "Lembut", friendly: "Mesra", soft: "Santai", formal: "Rasmi" },
@@ -255,6 +292,9 @@
 
             const [teams, setTeams] = useState(INITIAL_TEAMS);
             const [trainees, setTrainees] = useState([]);
+            // 🔥 Coach State
+            const [coaches, setCoaches] = useState(INITIAL_COACHES);
+            
             const [leagueName, setLeagueName] = useState('CFC YOUTH ACADEMY');
             const [appLogo, setAppLogo] = useState(null);
             
@@ -274,6 +314,8 @@
             const [isDataToolsOpen, setIsDataToolsOpen] = useState(false); 
             const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
             const [isFinanceOpen, setIsFinanceOpen] = useState(false); 
+            const [isCoachOpen, setIsCoachOpen] = useState(false); // 🔥 Coach Modal
+            const [coachView, setCoachView] = useState('list'); // 'list' | 'attendance' | 'finance'
             const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
             const [isEditingReport, setIsEditingReport] = useState(false);
             const [isCropperOpen, setIsCropperOpen] = useState(false);
@@ -285,6 +327,10 @@
             const [editingTrainee, setEditingTrainee] = useState(null);
             const [isEditingTitle, setIsEditingTitle] = useState(false);
             
+            // Coach Edit
+            const [editingCoach, setEditingCoach] = useState(null);
+            const [coachForm, setCoachForm] = useState({ name: '', role: 'Assistant', rate: 100, phone: '' });
+
             const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
             
             const [renamingTeam, setRenamingTeam] = useState({ original: '', current: '' });
@@ -297,6 +343,9 @@
             const [attendanceDate, setAttendanceDate] = useState(""); 
             const [attendanceSearchTerm, setAttendanceSearchTerm] = useState(''); 
             
+            // Coach Attendance
+            const [coachAttDate, setCoachAttDate] = useState(new Date().toISOString().slice(0, 10));
+
             // Finance
             const [financeMonth, setFinanceMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
             const [monthlyFee, setMonthlyFee] = useState(DEFAULT_MONTHLY_FEE);
@@ -344,6 +393,12 @@
                 } else {
                     setTrainees(INITIAL_TRAINEES);
                 }
+                
+                // Load Coaches
+                if (localData.coaches) {
+                    setCoaches(localData.coaches);
+                }
+
                 if (localData.teams) setTeams(localData.teams);
                 if (localData.leagueName) setLeagueName(localData.leagueName);
                 if (localData.appLogo) setAppLogo(localData.appLogo);
@@ -361,11 +416,10 @@
                 }
             }, []);
 
-            // --- ALL FILTERS MUST BE DEFINED HERE BEFORE RENDER ---
+            // --- ALL FILTERS ---
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
                 const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
-                
                 const searchLower = searchTerm.toLowerCase();
                 const matchSearch = searchTerm === '' || 
                                     (trainee.name || '').toLowerCase().includes(searchLower) || 
@@ -389,7 +443,100 @@
                 (trainee.team || '').toLowerCase().includes(attendanceSearchTerm.toLowerCase())
             ), [reportFiltered, attendanceSearchTerm]);
 
-            // --- FUNCTIONS ---
+            // --- Central Update ---
+            const updateData = (newData) => {
+                if (newData.trainees) setTrainees(newData.trainees);
+                if (newData.teams) setTeams(newData.teams);
+                if (newData.leagueName) setLeagueName(newData.leagueName);
+                if (newData.appLogo) setAppLogo(newData.appLogo);
+                if (newData.coaches) setCoaches(newData.coaches); // 🔥 Added Coaches Update
+
+                const currentData = { 
+                    trainees: newData.trainees !== undefined ? newData.trainees : trainees, 
+                    teams: newData.teams !== undefined ? newData.teams : teams, 
+                    leagueName: newData.leagueName !== undefined ? newData.leagueName : leagueName, 
+                    appLogo: newData.appLogo !== undefined ? newData.appLogo : appLogo,
+                    coaches: newData.coaches !== undefined ? newData.coaches : coaches,
+                };
+                localStorage.setItem('cfc_local_db', JSON.stringify(currentData));
+                if (isCloudConnected) { 
+                    syncToCloud(currentData); 
+                }
+            };
+
+            // --- Coach Functions ---
+            const saveCoach = () => {
+                if(!coachForm.name) return;
+                let newCoaches;
+                if(editingCoach) {
+                    newCoaches = coaches.map(c => c.id === editingCoach.id ? { ...c, ...coachForm } : c);
+                } else {
+                    newCoaches = [...coaches, { ...coachForm, id: Date.now().toString(), attendanceHistory: [], paymentHistory: {} }];
+                }
+                updateData({ coaches: newCoaches });
+                setEditingCoach(null);
+                setCoachForm({ name: '', role: 'Assistant', rate: 100, phone: '' });
+            };
+
+            const deleteCoach = (id) => {
+                if(!confirm(t('deleteConfirm'))) return;
+                const newCoaches = coaches.filter(c => c.id !== id);
+                updateData({ coaches: newCoaches });
+            };
+
+            const toggleCoachAttendance = (coachId) => {
+                const newCoaches = coaches.map(c => {
+                    if (c.id === coachId) {
+                        const history = c.attendanceHistory || [];
+                        const isPresent = history.some(h => h.date === coachAttDate);
+                        let newHistory;
+                        if (isPresent) {
+                            newHistory = history.filter(h => h.date !== coachAttDate);
+                        } else {
+                            newHistory = [...history, { date: coachAttDate, status: 'present' }];
+                        }
+                        return { ...c, attendanceHistory: newHistory };
+                    }
+                    return c;
+                });
+                updateData({ coaches: newCoaches });
+            };
+
+            const toggleCoachPayment = (coachId) => {
+                const newCoaches = coaches.map(c => {
+                    if (c.id === coachId) {
+                        const history = c.paymentHistory || {};
+                        const currentStatus = history[financeMonth]?.status === 'paid';
+                        // Calculate amount
+                        const sessions = (c.attendanceHistory || []).filter(h => h.date.startsWith(financeMonth)).length;
+                        const total = sessions * (c.rate || 0);
+
+                        return { 
+                            ...c, 
+                            paymentHistory: { 
+                                ...history, 
+                                [financeMonth]: { status: currentStatus ? 'unpaid' : 'paid', amount: total } 
+                            } 
+                        };
+                    }
+                    return c;
+                });
+                updateData({ coaches: newCoaches });
+            };
+
+            const getCoachPayrollStats = () => {
+                let totalPayout = 0;
+                const list = coaches.map(c => {
+                    const sessions = (c.attendanceHistory || []).filter(h => h.date.startsWith(financeMonth)).length;
+                    const amount = sessions * (c.rate || 0);
+                    const isPaid = c.paymentHistory?.[financeMonth]?.status === 'paid';
+                    if(isPaid) totalPayout += amount;
+                    return { ...c, sessions, amount, isPaid };
+                });
+                return { list, totalPayout };
+            };
+
+            // ... (Cloud Logic: stripImages, syncFromCloud, syncToCloud, createCloudBin, handleConnectCloud, saveToLocal - Same as before) ...
             const stripImages = (data) => {
                 const cleanData = JSON.parse(JSON.stringify(data));
                 if (cleanData.trainees) cleanData.trainees = cleanData.trainees.map(t => { 
@@ -441,35 +588,6 @@
                 }
             };
 
-            // 🔥 Central Data Update Function (The Fix)
-            const updateData = (newData) => {
-                // 1. Update React State (UI)
-                if (newData.trainees) setTrainees(newData.trainees);
-                if (newData.teams) setTeams(newData.teams);
-                if (newData.leagueName) setLeagueName(newData.leagueName);
-                if (newData.appLogo) setAppLogo(newData.appLogo);
-
-                // 2. Prepare Data for Storage
-                const currentData = { 
-                    trainees: newData.trainees !== undefined ? newData.trainees : trainees, 
-                    teams: newData.teams !== undefined ? newData.teams : teams, 
-                    leagueName: newData.leagueName !== undefined ? newData.leagueName : leagueName, 
-                    appLogo: newData.appLogo !== undefined ? newData.appLogo : appLogo 
-                };
-
-                // 3. Save to Local Storage
-                localStorage.setItem('cfc_local_db', JSON.stringify(currentData));
-
-                // 4. Sync to Cloud
-                if (isCloudConnected) { 
-                    syncToCloud({ 
-                        trainees: currentData.trainees, 
-                        teams: currentData.teams, 
-                        leagueName: currentData.leagueName 
-                    }); 
-                }
-            };
-
             const syncFromCloud = async (key, binId) => {
                 setCloudStatus(t('status', 'syncing'));
                 try {
@@ -490,12 +608,7 @@
                              });
                         } else { mergedTrainees = INITIAL_TRAINEES; }
                         
-                        // Update state and storage
-                        setTrainees(mergedTrainees);
-                        if(data.teams) setTeams(data.teams);
-                        if(data.leagueName) setLeagueName(data.leagueName);
-                        
-                        localStorage.setItem('cfc_local_db', JSON.stringify({ ...data, trainees: mergedTrainees }));
+                        updateData({ ...data, trainees: mergedTrainees }); // Use updateData
                         setIsCloudConnected(true); setCloudStatus(t('status', 'ready')); setTimeout(() => setCloudStatus(""), 2000);
                     } else { setCloudStatus(t('status', 'fail')); setIsCloudConnected(false); }
                 } catch (e) { setCloudStatus(t('status', 'netError')); setIsCloudConnected(false); }
@@ -504,21 +617,22 @@
             const syncToCloud = async (dataOverride = null) => {
                 if (!isCloudConnected || !cloudConfig.key || !cloudConfig.binId) return;
                 setCloudStatus(t('status', 'saving'));
-                const rawData = dataOverride || { trainees, teams, leagueName }; 
+                const currentData = { trainees, teams, leagueName, coaches }; // Include coaches
+                const rawData = dataOverride || currentData; 
                 const cleanData = stripImages(rawData);
                 try { await fetch(`${JSONBIN_URL}/${cloudConfig.binId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': cloudConfig.key }, body: JSON.stringify(cleanData) }); setCloudStatus(t('status', 'saved')); setTimeout(() => setCloudStatus(""), 2000); } catch (e) { setCloudStatus(t('status', 'saveFail')); }
             };
 
             const createCloudBin = async () => {
                 if (!cloudConfig.key) return alert(t('alerts', 'fillMasterKey')); setCloudStatus(t('status', 'creating'));
-                const cleanData = stripImages({ trainees, teams, leagueName, note: "Created by CFC App" });
+                const cleanData = stripImages({ trainees, teams, leagueName, coaches, note: "Created by CFC App" });
                 try { const res = await fetch(JSONBIN_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Master-Key": cloudConfig.key, "X-Bin-Name": "CFC_League_Data" }, body: JSON.stringify(cleanData) }); if (res.ok) { const json = await res.json(); const newBinId = json.metadata.id; setCloudConfig(prev => ({ ...prev, binId: newBinId })); localStorage.setItem('cfc_jsonbin_config', JSON.stringify({ key: cloudConfig.key, binId: newBinId })); setIsCloudConnected(true); setCloudStatus(t('status', 'created')); alert(t('alerts', 'cloudCreated').replace('{binId}', newBinId)); setTimeout(() => setCloudStatus(""), 2000); } else { throw new Error("Failed"); } } catch (e) { alert(t('status', 'error')); setCloudStatus(t('status', 'error')); }
             };
 
             const handleConnectCloud = () => { if (cloudConfig.key && cloudConfig.binId) { localStorage.setItem('cfc_jsonbin_config', JSON.stringify(cloudConfig)); syncFromCloud(cloudConfig.key, cloudConfig.binId); setIsCloudModalOpen(false); } else { alert(t('alerts', 'fillCloudConfig')); } };
 
             // Handlers
-            const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(t('alerts', 'backupDownloaded'))) window.open(DRIVE_LINK, '_blank'); }, 500); };
+            const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo, coaches},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(t('alerts', 'backupDownloaded'))) window.open(DRIVE_LINK, '_blank'); }, 500); };
             const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(t('alerts', 'overwriteConfirm'))) { updateData(p); alert(t('alerts', 'updated')); setIsDataToolsOpen(false); } } catch (e) { alert(t('alerts', 'fileError')); } e.target.value=null; }; r.readAsText(f); };
             const handleFile = (e, isLogo) => { const f = e.target.files?.[0]; if(!f) return; const r = new FileReader(); r.onloadend = () => { setTempImage(r.result); setIsLogoCrop(isLogo); setIsCropperOpen(true); }; r.readAsDataURL(f); };
             useEffect(() => { if (isCropperOpen && cropperImageRef.current) { if (cropperRef.current) cropperRef.current.destroy(); cropperRef.current = new Cropper(cropperImageRef.current, { aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8 }); } }, [isCropperOpen, tempImage]);
@@ -542,7 +656,7 @@
             const handleSave = () => { if(!formData.name) return; const data = { ...formData, image: formData.image || DEFAULT_IMAGE }; const finalData = { ...data }; let newTrainees; if(editingTrainee) { const oldT = trainees.find(t => t.id === editingTrainee.id); newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...finalData, attendanceHistory: oldT.attendanceHistory, feeHistory: oldT.feeHistory, id: t.id } : t); } else { newTrainees = [{ ...finalData, id: Date.now().toString(), attendanceHistory: [], feeHistory: {} }, ...trainees]; } updateData({ trainees: newTrainees }); setIsModalOpen(false); };
             const deleteTrainee = (id) => { if(confirm(t('alerts', 'deleteConfirm'))) { const newT = trainees.filter(t => t.id !== id); updateData({ trainees: newT }); } };
             
-            // 🔥 School Manager Logic (Fixed)
+            // 🔥 School Manager Logic
             const handleRenameTeam = (old) => { 
                 const n = renamingTeam.current.trim(); 
                 if(!n || n===old) return setRenamingTeam({original:'',current:''}); 
@@ -564,7 +678,6 @@
             const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('alerts', 'copied')); } } catch(e){} };
             const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(trainee => attendanceList.includes(trainee.id)).map(trainee => trainee.name); const aNames = reportFiltered.filter(trainee => !attendanceList.includes(trainee.id)).map(trainee => trainee.name); let text = `📅 *CFCYA Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
             
-            // Export Logic (Consolidated)
             const handleExportAttendanceExcel = () => {
                 const date = attendanceDate || new Date().toISOString().slice(0, 10);
                 const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
@@ -708,6 +821,8 @@
                                 <button onClick={openAttendanceModal} className="bg-emerald-900 text-emerald-100 px-4 py-3 rounded-xl font-bold border border-emerald-700 whitespace-nowrap"><i className="fa-solid fa-calendar-check mr-2"></i>{t('attendanceTool')}</button>
                                 <button onClick={() => setIsDataToolsOpen(true)} className="bg-indigo-900 text-indigo-100 px-4 py-3 rounded-xl font-bold border border-indigo-700 whitespace-nowrap"><i className="fa-solid fa-cloud-arrow-up"></i></button>
                                 <button onClick={() => setIsSchoolManagerOpen(true)} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-3 rounded-xl font-bold border border-zinc-700 whitespace-nowrap"><i className="fa-solid fa-gear"></i>{t('manageSchools')}</button>
+                                {/* 🔥 Coach Manager Button */}
+                                <button onClick={() => { setIsCoachOpen(true); setCoachView('list'); }} className="flex-1 bg-blue-900 hover:bg-blue-800 text-blue-200 px-4 py-3 rounded-xl font-bold border border-blue-700 whitespace-nowrap"><i className="fa-solid fa-user-tie"></i> {t('coachTool')}</button>
                                 <button onClick={handleRegister} className="flex-[2] bg-zinc-100 hover:bg-white text-zinc-900 px-6 py-3 rounded-xl font-bold whitespace-nowrap shadow-lg"><i className="fa-solid fa-plus mr-2"></i>{t('register')}</button>
                             </div>
                         </div>
@@ -848,10 +963,146 @@
                             </div>
                         </div>
                     )}
+                    {/* 🔥 Coach Manager Modal (New!) */}
+                    {isCoachOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
+                            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-blue-900 shadow-2xl p-6 h-[85vh] flex flex-col">
+                                <div className="flex justify-between items-center mb-4 shrink-0">
+                                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <i className="fa-solid fa-user-tie text-blue-500"></i> {t('coachTitle')}
+                                    </h2>
+                                    <button onClick={() => setIsCoachOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button>
+                                </div>
+                                
+                                {/* Tabs */}
+                                <div className="flex bg-zinc-950 rounded-lg p-1 mb-4 shrink-0 border border-zinc-800">
+                                    {['list', 'attendance', 'finance'].map(v => (
+                                        <button key={v} onClick={() => setCoachView(v)} 
+                                            className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${coachView === v ? 'bg-blue-900 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                            {v === 'list' && <><i className="fa-solid fa-list mr-1"></i> {t('coachList')}</>}
+                                            {v === 'attendance' && <><i className="fa-solid fa-calendar-check mr-1"></i> {t('coachAtt')}</>}
+                                            {v === 'finance' && <><i className="fa-solid fa-money-bill-wave mr-1"></i> {t('coachPay')}</>}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Content Area */}
+                                <div className="flex-1 overflow-y-auto pr-1">
+                                    {/* LIST VIEW */}
+                                    {coachView === 'list' && (
+                                        <div className="space-y-3">
+                                            {/* Add Form */}
+                                            <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4">
+                                                <div className="grid grid-cols-2 gap-2 mb-2">
+                                                    <input className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white" placeholder="Name" value={coachForm.name} onChange={e => setCoachForm({...coachForm, name: e.target.value})} />
+                                                    <input className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white" placeholder="Phone" value={coachForm.phone} onChange={e => setCoachForm({...coachForm, phone: e.target.value})} />
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                                    <select className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white" value={coachForm.role} onChange={e => setCoachForm({...coachForm, role: e.target.value})}>
+                                                        <option value="Head Coach">Head Coach</option>
+                                                        <option value="Assistant">Assistant</option>
+                                                        <option value="GK Coach">GK Coach</option>
+                                                        <option value="Fitness">Fitness</option>
+                                                    </select>
+                                                    <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded px-2">
+                                                        <span className="text-xs text-zinc-500">RM</span>
+                                                        <input type="number" className="bg-transparent w-full py-1.5 text-sm text-white outline-none" placeholder="Rate" value={coachForm.rate} onChange={e => setCoachForm({...coachForm, rate: parseInt(e.target.value) || 0})} />
+                                                    </div>
+                                                </div>
+                                                <button onClick={saveCoach} className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg transition-colors">
+                                                    {editingCoach ? t('save') : t('addCoach')}
+                                                </button>
+                                                {editingCoach && <button onClick={() => {setEditingCoach(null); setCoachForm({name:'', role:'Assistant', rate:100, phone:''})}} className="w-full mt-2 py-1 text-xs text-zinc-500 hover:text-white">Cancel Edit</button>}
+                                            </div>
+
+                                            {/* List */}
+                                            {coaches.map(c => (
+                                                <div key={c.id} className="bg-zinc-800 p-3 rounded-xl border border-zinc-700 flex justify-between items-center">
+                                                    <div>
+                                                        <h4 className="font-bold text-white">{c.name}</h4>
+                                                        <div className="text-xs text-zinc-400 flex gap-2 mt-1">
+                                                            <span className="bg-zinc-700 px-1.5 rounded text-blue-300">{c.role}</span>
+                                                            <span>RM {c.rate}/ses</span>
+                                                            <span>{c.phone}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => { setEditingCoach(c); setCoachForm(c); }} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 rounded-full text-zinc-300"><i className="fa-solid fa-pen"></i></button>
+                                                        <button onClick={() => deleteCoach(c.id)} className="w-8 h-8 bg-red-900/30 hover:bg-red-900/50 border border-red-900 rounded-full text-red-500"><i className="fa-solid fa-trash"></i></button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* ATTENDANCE VIEW */}
+                                    {coachView === 'attendance' && (
+                                        <div>
+                                            <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 mb-4 sticky top-0 z-10">
+                                                <input type="date" className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 outline-none focus:border-blue-500" value={coachAttDate} onChange={e => setCoachAttDate(e.target.value)} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                {coaches.map(c => {
+                                                    const isPresent = (c.attendanceHistory || []).some(h => h.date === coachAttDate);
+                                                    return (
+                                                        <div key={c.id} onClick={() => toggleCoachAttendance(c.id)} className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${isPresent ? 'bg-emerald-900/30 border-emerald-500' : 'bg-zinc-800 border-zinc-700'}`}>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`w-6 h-6 rounded flex items-center justify-center border ${isPresent ? 'bg-emerald-500 border-emerald-500 text-black' : 'border-zinc-500'}`}>
+                                                                    {isPresent && <i className="fa-solid fa-check text-sm"></i>}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-bold text-white">{c.name}</p>
+                                                                    <p className="text-xs text-zinc-500">{c.role}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* FINANCE VIEW */}
+                                    {coachView === 'finance' && (
+                                        <div>
+                                            <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 mb-4 sticky top-0 z-10 flex justify-between items-center">
+                                                <input type="month" className="bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 outline-none focus:border-blue-500 text-sm" value={financeMonth} onChange={e => setFinanceMonth(e.target.value)} />
+                                                <div className="text-right">
+                                                    <p className="text-[10px] text-zinc-500 uppercase">{t('coachTotalPayout')}</p>
+                                                    <p className="text-lg font-bold text-emerald-400">RM {getCoachPayrollStats().totalPayout}</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {getCoachPayrollStats().list.map(c => (
+                                                    <div key={c.id} className="bg-zinc-800 p-3 rounded-xl border border-zinc-700 flex justify-between items-center">
+                                                        <div>
+                                                            <p className="font-bold text-white">{c.name}</p>
+                                                            <div className="text-xs text-zinc-400 mt-1">
+                                                                {c.sessions} sessions x RM{c.rate}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right flex flex-col items-end gap-1">
+                                                            <span className="text-sm font-bold text-white">RM {c.amount}</span>
+                                                            <button onClick={() => toggleCoachPayment(c.id)} className={`px-2 py-1 rounded text-[10px] font-bold border ${c.isPaid ? 'bg-emerald-600 text-white border-emerald-600' : 'text-zinc-500 border-zinc-600 hover:border-yellow-500 hover:text-yellow-500'}`}>
+                                                                {c.isPaid ? t('coachPaid') : t('coachUnpaid')}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {/* 🔥 Updated Edit/Register Modal (Clean & Safe) */}
                     {isModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-white">{editingTrainee ? t('updateProfile') : t('newPlayer')}</h2><button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4 mb-6"><div className="flex items-center gap-4"><div className="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center overflow-hidden border border-zinc-700 shrink-0 cursor-pointer relative" onClick={() => fileInputRef.current.click()}>{formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <i className="fa-solid fa-camera text-zinc-600"></i>}<input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFile} /></div><div className="flex-1 space-y-2"><input className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('name')} value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} /><div className="flex gap-2"><input type="number" className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('age')} value={formData.age || ''} onChange={e => setFormData({...formData, age: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('nationality')} value={formData.nationality || ''} onChange={e => setFormData({...formData, nationality: e.target.value})} /></div>
+                    
+                    {/* 🔥 新增档案字段 (父母/电话/邮件/TIN) */}
                     <div className="flex gap-2"><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('parentName')} value={formData.parentName || ''} onChange={e => setFormData({...formData, parentName: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('phone')} value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
                     <div className="flex gap-2"><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('email')} value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('tin')} value={formData.tin || ''} onChange={e => setFormData({...formData, tin: e.target.value})} /></div>
+                    
                     <div className="flex gap-2"><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('height')} value={formData.height || ''} onChange={e => setFormData({...formData, height: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">cm</span></div><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('weight')} value={formData.weight || ''} onChange={e => setFormData({...formData, weight: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">kg</span></div><div className="w-1/3"><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.category || 'U18'} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div></div></div></div><div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><div className="flex flex-col"><span className="text-xs font-bold text-zinc-400">{t('attendance')}</span><span className={formData.attendance >= 90 ? 'text-emerald-500 font-bold' : 'text-white font-bold'}>{formData.attendance || 0}%</span></div><div className="flex items-center gap-2"><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('attCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.attendedSessions || 0} onChange={(e) => handleAttendanceChange('attendedSessions', e.target.value)} /></div><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('totalCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.totalSessions || PRESET_YEARLY_TOTAL} onChange={(e) => handleAttendanceChange('totalSessions', e.target.value)} /></div><button onClick={resetPlayerStats} className="ml-2 bg-red-900/30 hover:bg-red-900/50 text-red-500 text-[10px] px-2 py-2 rounded border border-red-900/50 h-full flex items-center justify-center" title={t('resetStats')}><i className="fa-solid fa-rotate-right"></i></button></div></div><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}>{teams.map(teamItem => <option key={teamItem} value={teamItem}>{teamItem}</option>)}</select><div className="grid grid-cols-2 gap-2"><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.primaryPosition} onChange={e => setFormData({...formData, primaryPosition: e.target.value})}>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.secondaryPosition} onChange={e => setFormData({...formData, secondaryPosition: e.target.value})}><option value="无">无</option>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-800 p-4 rounded-xl mb-4">{Object.keys(formData.stats).map(s => (<div key={s}><div className="flex justify-between text-[10px] text-zinc-400 uppercase mb-1"><span>{t('stats', s)}</span> <span>{formData.stats[s]}</span></div><input type="range" min="0" max="99" className="w-full accent-white h-1 bg-zinc-600 rounded-lg appearance-none" value={formData.stats[s]} onChange={e => setFormData({...formData, stats: {...formData.stats, [s]: parseInt(e.target.value)}})} /></div>))}</div></div><div className="flex gap-2"><button onClick={handleSave} className="flex-1 py-3 bg-zinc-100 hover:bg-white text-zinc-900 font-bold rounded-xl transition-colors">{t('save')}</button><button onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-colors">{t('cancel')}</button></div></div></div>)}
                     {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
                 </div>
