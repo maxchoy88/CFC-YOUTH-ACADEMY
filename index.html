@@ -24,8 +24,6 @@
         .cropper-container { max-height: 60vh; background-color: #000; }
         #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 50; transition: opacity 0.5s; }
         .hidden { opacity: 0; pointer-events: none; }
-        /* 优化移动端输入体验 */
-        input, select, textarea { font-size: 16px !important; } 
         input[type="date"], input[type="month"] { color-scheme: dark; }
         #error-box { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #ef4444; color: white; padding: 10px; z-index: 100; text-align: center; font-size: 12px; }
     </style>
@@ -34,7 +32,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Compacting UI...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Securing Data...</p>
     </div>
     <div id="error-box"></div>
 
@@ -467,12 +465,7 @@
 
             // --- Central Update ---
             const updateData = (newData) => {
-                if (newData.trainees) setTrainees(newData.trainees);
-                if (newData.teams) setTeams(newData.teams);
-                if (newData.leagueName) setLeagueName(newData.leagueName);
-                if (newData.appLogo) setAppLogo(newData.appLogo);
-                if (newData.coaches) setCoaches(newData.coaches);
-
+                // 1. Calculate merged state first to ensure consistency
                 const currentData = { 
                     trainees: newData.trainees !== undefined ? newData.trainees : trainees, 
                     teams: newData.teams !== undefined ? newData.teams : teams, 
@@ -480,7 +473,18 @@
                     appLogo: newData.appLogo !== undefined ? newData.appLogo : appLogo,
                     coaches: newData.coaches !== undefined ? newData.coaches : coaches,
                 };
+
+                // 2. Update React State
+                if (newData.trainees) setTrainees(newData.trainees);
+                if (newData.teams) setTeams(newData.teams);
+                if (newData.leagueName) setLeagueName(newData.leagueName);
+                if (newData.appLogo !== undefined) setAppLogo(newData.appLogo);
+                if (newData.coaches) setCoaches(newData.coaches);
+
+                // 3. Save to Local Storage
                 localStorage.setItem('cfc_local_db', JSON.stringify(currentData));
+
+                // 4. Sync to Cloud
                 if (isCloudConnected) { 
                     syncToCloud(currentData); 
                 }
@@ -583,7 +587,12 @@
                     if (t.image && t.image.startsWith('data:image')) t.image = DEFAULT_IMAGE; 
                     return t; 
                 });
-                if (cleanData.appLogo && cleanData.appLogo.startsWith('data:image')) cleanData.appLogo = null;
+                
+                // 🔥 CRITICAL FIX: DO NOT STRIP APP LOGO if it's base64, unless we want to rely on local merge.
+                // To force persistence, we ALLOW base64 to go to cloud for Logo only.
+                // The risk is JSONBin limit. But user asked for it.
+                // if (cleanData.appLogo && cleanData.appLogo.startsWith('data:image')) cleanData.appLogo = null;
+                
                 return cleanData;
             };
 
@@ -649,6 +658,7 @@
                              });
                         } else { mergedTrainees = INITIAL_TRAINEES; }
                         
+                        // 🔥 Smart Merge for Logo: If cloud is null, keep local
                         let finalLogo = data.appLogo;
                         if (!finalLogo && localData.appLogo && localData.appLogo.startsWith('data:')) {
                             finalLogo = localData.appLogo;
@@ -663,14 +673,14 @@
             const syncToCloud = async (dataOverride = null) => {
                 if (!isCloudConnected || !cloudConfig.key || !cloudConfig.binId) return;
                 setCloudStatus(t('status', 'saving'));
-                const rawData = dataOverride || { trainees, teams, leagueName, coaches }; 
+                const rawData = dataOverride || { trainees, teams, leagueName, coaches, appLogo }; 
                 const cleanData = stripImages(rawData);
                 try { await fetch(`${JSONBIN_URL}/${cloudConfig.binId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': cloudConfig.key }, body: JSON.stringify(cleanData) }); setCloudStatus(t('status', 'saved')); setTimeout(() => setCloudStatus(""), 2000); } catch (e) { setCloudStatus(t('status', 'saveFail')); }
             };
 
             const createCloudBin = async () => {
                 if (!cloudConfig.key) return alert(t('alerts', 'fillMasterKey')); setCloudStatus(t('status', 'creating'));
-                const cleanData = stripImages({ trainees, teams, leagueName, coaches, note: "Created by CFC App" });
+                const cleanData = stripImages({ trainees, teams, leagueName, coaches, appLogo, note: "Created by CFC App" });
                 try { const res = await fetch(JSONBIN_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Master-Key": cloudConfig.key, "X-Bin-Name": "CFC_League_Data" }, body: JSON.stringify(cleanData) }); if (res.ok) { const json = await res.json(); const newBinId = json.metadata.id; setCloudConfig(prev => ({ ...prev, binId: newBinId })); localStorage.setItem('cfc_jsonbin_config', JSON.stringify({ key: cloudConfig.key, binId: newBinId })); setIsCloudConnected(true); setCloudStatus(t('status', 'created')); alert(t('alerts', 'cloudCreated').replace('{binId}', newBinId)); setTimeout(() => setCloudStatus(""), 2000); } else { throw new Error("Failed"); } } catch (e) { alert(t('status', 'error')); setCloudStatus(t('status', 'error')); }
             };
 
