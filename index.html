@@ -32,7 +32,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Integrating WhatsApp...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Merging Systems...</p>
     </div>
     <div id="error-box"></div>
 
@@ -116,6 +116,7 @@
                 attShare: "分享出席表", attWhatsapp: "WhatsApp", attExcel: "导出专业报表", 
                 attTotal: "总人数", attPresent: "出席", resetStats: "重置数据", 
                 attSearch: "搜索考勤名单...", attToggleAll: "一键全选",
+                attTabTrainees: "学员考勤", attTabCoaches: "教练考勤", // 🔥 New
                 cloudSetup: "云端同步设置 (JSONBin)", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "连接云端", cloudCreate: "✨ 自动创建新数据库", 
                 cloudDesc: "输入 Key 即可自动创建并连接云数据库，实现多设备同步。",
@@ -140,7 +141,6 @@
                     formal: "【CFC 财务通知】您好，请查收 {name} {month} 月份的学费单 (RM{amount})。请在近期内完成缴费，感谢配合。"
                 },
                 bankDetails: "\n\n🏦 汇款资料:\n{bankName}\n{accNum}\n{holder}\n\n汇款后请发收据，谢谢！",
-                
                 stats: { pace: "速度", shooting: "射门", passing: "传球", dribbling: "盘带", defending: "防守", physical: "体能" },
                 ai: { analyzing: "分析中...", reportTitle: "教练深度评估报告", position: "球员定位", rating: "综合评级", strength: "核心竞争力", suggestion: "战术建议", comment: "教练评语", template: "均衡型球员", advice: "需进一步观察。", commentText: "潜力不错，建议继续观察。" },
                 status: { syncing: "⏳ 同步中...", ready: "✅ 就绪", fail: "❌ 失败", netError: "❌ 网络错误", saving: "☁️ 保存中...", saved: "✅ 已保存", saveFail: "❌ 保存失败", creating: "创建中...", created: "✅ 已创建", error: "❌ 错误" },
@@ -151,7 +151,7 @@
                     overwriteConfirm: "⚠️ 覆盖当前数据？\n这将恢复所有内容(含图片)。",
                     fileError: "❌ 文件错误", deleteConfirm: "删除此项？",
                     resetConfirm: "⚠️ 确定要重置此球员的考勤数据吗？", updated: "✅ 数据已更新！", copied: "已复制！", useWhatsapp: "请使用 WhatsApp 按钮",
-                    attConfirmMsg: "确认提交 / 更新 [{date}] 的考勤？\n\n总人数: {total}\n出席: {present}\n缺席: {absent}",
+                    attConfirmMsg: "确认提交考勤？\n\n📅 日期: {date}\n👦 学员实到: {sCount}\n👨‍🏫 教练实到: {cCount}",
                     finConfirmAll: "⚠️ 确定要把列表中的所有人标记为 [{status}] 吗？"
                 }
             },
@@ -172,7 +172,8 @@
                 attTitle: "Attendance", attDate: "Date", attPaste: "Paste List", attPasteDesc: "Auto-check",
                 attPlaceholder: "Names...", attConfirm: "Submit", attShare: "Share", attWhatsapp: "WhatsApp",
                 attExcel: "Export Report", attTotal: "Total", attPresent: "Present", resetStats: "Reset",
-                attSearch: "Search Attendance...", attToggleAll: "Toggle All", 
+                attSearch: "Search Attendance...", attToggleAll: "Toggle All",
+                attTabTrainees: "Trainees", attTabCoaches: "Coaches",
                 cloudSetup: "Cloud Setup", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "Connect", cloudCreate: "✨ Auto Create DB", cloudDesc: "Enter Key to sync.",
                 finTitle: "Finance Hub", finMonth: "Month", finFee: "Fee (RM)", finPaid: "Paid", finUnpaid: "Unpaid",
@@ -224,7 +225,8 @@
                 attTitle: "Pusat Kehadiran", attDate: "Tarikh", attPaste: "Tampal Senarai", attPasteDesc: "Auto-tanda",
                 attPlaceholder: "Contoh: Hadir: Arthur...", attConfirm: "Hantar",
                 attShare: "Kongsi", attWhatsapp: "WhatsApp", attExcel: "Eksport Laporan", attTotal: "Jumlah", attPresent: "Hadir",
-                resetStats: "Tetap Semula", attSearch: "Cari...", attToggleAll: "Pilih Semua", // New
+                resetStats: "Tetap Semula", attSearch: "Cari...", attToggleAll: "Pilih Semua",
+                attTabTrainees: "Pemain", attTabCoaches: "Jurulatih", // New
                 cloudSetup: "Tetapan Awan", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "Sambung", cloudCreate: "✨ Cipta DB Baru", cloudDesc: "Masukkan Key untuk auto-cipta.",
                 finTitle: "Pusat Kewangan", finMonth: "Bulan", finFee: "Yuran (RM)", finPaid: "Bayar", finUnpaid: "Belum",
@@ -312,11 +314,11 @@
             const [isDataToolsOpen, setIsDataToolsOpen] = useState(false); 
             const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
             const [isFinanceOpen, setIsFinanceOpen] = useState(false); 
-            const [isCoachOpen, setIsCoachOpen] = useState(false); // 🔥 Coach Modal
-            const [coachView, setCoachView] = useState('list'); // 'list' | 'attendance' | 'finance'
             const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
             const [isEditingReport, setIsEditingReport] = useState(false);
             const [isCropperOpen, setIsCropperOpen] = useState(false);
+            const [isCoachOpen, setIsCoachOpen] = useState(false);
+            const [coachView, setCoachView] = useState('list');
 
             const [shareTarget, setShareTarget] = useState(null);
             const [searchTerm, setSearchTerm] = useState('');
@@ -336,14 +338,14 @@
             const [aiLoading, setAiLoading] = useState(false);
             
             // Attendance
-            const [attendanceList, setAttendanceList] = useState([]); 
+            const [attendanceList, setAttendanceList] = useState([]); // Player IDs
+            const [coachAttendanceList, setCoachAttendanceList] = useState([]); // 🔥 Coach IDs
+            const [attTab, setAttTab] = useState('trainees'); // 'trainees' | 'coaches'
+            
             const [importText, setImportText] = useState("");
             const [attendanceDate, setAttendanceDate] = useState(""); 
             const [attendanceSearchTerm, setAttendanceSearchTerm] = useState(''); 
             
-            // Coach Attendance
-            const [coachAttDate, setCoachAttDate] = useState(new Date().toISOString().slice(0, 10));
-
             // Finance
             const [financeMonth, setFinanceMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
             const [monthlyFee, setMonthlyFee] = useState(DEFAULT_MONTHLY_FEE);
@@ -414,7 +416,7 @@
                 }
             }, []);
 
-            // --- ALL FILTERS ---
+            // --- FILTERS ---
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
                 const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
@@ -436,10 +438,19 @@
                 (trainee.parentName || '').toLowerCase().includes(financeSearchTerm.toLowerCase())
             ), [reportFiltered, financeSearchTerm]);
 
-            const attendanceFiltered = useMemo(() => reportFiltered.filter(trainee => 
-                (trainee.name || '').toLowerCase().includes(attendanceSearchTerm.toLowerCase()) || 
-                (trainee.team || '').toLowerCase().includes(attendanceSearchTerm.toLowerCase())
-            ), [reportFiltered, attendanceSearchTerm]);
+            const attendanceFiltered = useMemo(() => {
+                const term = attendanceSearchTerm.toLowerCase();
+                if (attTab === 'trainees') {
+                    return reportFiltered.filter(trainee => 
+                        (trainee.name || '').toLowerCase().includes(term) || 
+                        (trainee.team || '').toLowerCase().includes(term)
+                    );
+                } else {
+                    return coaches.filter(coach => 
+                        (coach.name || '').toLowerCase().includes(term)
+                    );
+                }
+            }, [reportFiltered, coaches, attendanceSearchTerm, attTab]);
 
             // --- Central Update ---
             const updateData = (newData) => {
@@ -447,7 +458,7 @@
                 if (newData.teams) setTeams(newData.teams);
                 if (newData.leagueName) setLeagueName(newData.leagueName);
                 if (newData.appLogo) setAppLogo(newData.appLogo);
-                if (newData.coaches) setCoaches(newData.coaches); // 🔥 Added Coaches Update
+                if (newData.coaches) setCoaches(newData.coaches);
 
                 const currentData = { 
                     trainees: newData.trainees !== undefined ? newData.trainees : trainees, 
@@ -482,22 +493,13 @@
                 updateData({ coaches: newCoaches });
             };
 
-            const toggleCoachAttendance = (coachId) => {
-                const newCoaches = coaches.map(c => {
-                    if (c.id === coachId) {
-                        const history = c.attendanceHistory || [];
-                        const isPresent = history.some(h => h.date === coachAttDate);
-                        let newHistory;
-                        if (isPresent) {
-                            newHistory = history.filter(h => h.date !== coachAttDate);
-                        } else {
-                            newHistory = [...history, { date: coachAttDate, status: 'present' }];
-                        }
-                        return { ...c, attendanceHistory: newHistory };
-                    }
-                    return c;
-                });
-                updateData({ coaches: newCoaches });
+            // 🔥 Coach specific attendance toggle inside modal
+            const toggleCoachAttendanceInModal = (id) => {
+                if (coachAttendanceList.includes(id)) {
+                    setCoachAttendanceList(coachAttendanceList.filter(cid => cid !== id));
+                } else {
+                    setCoachAttendanceList([...coachAttendanceList, id]);
+                }
             };
 
             const toggleCoachPayment = (coachId) => {
@@ -505,10 +507,8 @@
                     if (c.id === coachId) {
                         const history = c.paymentHistory || {};
                         const currentStatus = history[financeMonth]?.status === 'paid';
-                        // Calculate amount
                         const sessions = (c.attendanceHistory || []).filter(h => h.date.startsWith(financeMonth)).length;
                         const total = sessions * (c.rate || 0);
-
                         return { 
                             ...c, 
                             paymentHistory: { 
@@ -534,7 +534,6 @@
                 return { list, totalPayout };
             };
             
-            // 🔥 Coach WhatsApp Helpers
             const sendCoachMessage = (coach) => {
                 const msg = `Hi Coach ${coach.name}, 👋`;
                 window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -545,8 +544,7 @@
                 window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
             };
 
-
-            // ... (Cloud Logic: stripImages, syncFromCloud, syncToCloud, createCloudBin, handleConnectCloud, saveToLocal - Same as before) ...
+            // ... (Cloud Logic) ...
             const stripImages = (data) => {
                 const cleanData = JSON.parse(JSON.stringify(data));
                 if (cleanData.trainees) cleanData.trainees = cleanData.trainees.map(t => { 
@@ -567,7 +565,6 @@
                 const formData = new FormData();
                 formData.append('file', base64Image);
                 formData.append('upload_preset', imgConfig.uploadPreset);
-
                 try {
                     const response = await fetch(url, { method: 'POST', body: formData });
                     const data = await response.json();
@@ -617,8 +614,7 @@
                                  return { ...ct, image: finalImg || DEFAULT_IMAGE };
                              });
                         } else { mergedTrainees = INITIAL_TRAINEES; }
-                        
-                        updateData({ ...data, trainees: mergedTrainees }); // Use updateData
+                        updateData({ ...data, trainees: mergedTrainees }); 
                         setIsCloudConnected(true); setCloudStatus(t('status', 'ready')); setTimeout(() => setCloudStatus(""), 2000);
                     } else { setCloudStatus(t('status', 'fail')); setIsCloudConnected(false); }
                 } catch (e) { setCloudStatus(t('status', 'netError')); setIsCloudConnected(false); }
@@ -627,8 +623,7 @@
             const syncToCloud = async (dataOverride = null) => {
                 if (!isCloudConnected || !cloudConfig.key || !cloudConfig.binId) return;
                 setCloudStatus(t('status', 'saving'));
-                const currentData = { trainees, teams, leagueName, coaches }; // Include coaches
-                const rawData = dataOverride || currentData; 
+                const rawData = dataOverride || { trainees, teams, leagueName, coaches }; 
                 const cleanData = stripImages(rawData);
                 try { await fetch(`${JSONBIN_URL}/${cloudConfig.binId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': cloudConfig.key }, body: JSON.stringify(cleanData) }); setCloudStatus(t('status', 'saved')); setTimeout(() => setCloudStatus(""), 2000); } catch (e) { setCloudStatus(t('status', 'saveFail')); }
             };
@@ -691,19 +686,31 @@
             const handleExportAttendanceExcel = () => {
                 const date = attendanceDate || new Date().toISOString().slice(0, 10);
                 const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
-                const teamsMap = {}; let grandTotal = 0; let grandPresent = 0;
-                reportFiltered.forEach(trainee => { if (!teamsMap[trainee.team]) teamsMap[trainee.team] = []; teamsMap[trainee.team].push(trainee); });
-                let csvContent = "\uFEFF"; csvContent += `CFC YOUTH ACADEMY ATTENDANCE REPORT\nDate:,${date}\nScope:,${targetSchool}\n\n`;
-                Object.keys(teamsMap).sort().forEach(school => {
-                    const students = teamsMap[school]; const presentCount = students.filter(t => attendanceList.includes(t.id)).length; const absentCount = students.length - presentCount; const schoolRate = students.length === 0 ? 0 : Math.round((presentCount / students.length) * 100);
-                    grandTotal += students.length; grandPresent += presentCount;
-                    csvContent += `------------------------------------------------\nSCHOOL:,${school.replace(/,/g, " ")}\nStats:,Total: ${students.length}, Present: ${presentCount}, Absent: ${absentCount}, Rate: ${schoolRate}%\n------------------------------------------------\nName,Category,Position,Status,Yearly Att. %\n`;
-                    students.sort((a,b) => { if (a.category !== b.category) return (a.category || '').localeCompare(b.category || ''); return a.name.localeCompare(b.name); });
-                    students.forEach(trainee => { const status = attendanceList.includes(trainee.id) ? "Present" : "Absent"; csvContent += `${trainee.name.replace(/,/g," ")},${trainee.category||"-"},${trainee.primaryPosition.split(' ')[0]},${status},${trainee.attendance}%\n`; });
-                    csvContent += `\n\n`;
-                });
-                if (selectedTeam === '全部') { const grandAbsent = grandTotal - grandPresent; const grandRate = grandTotal === 0 ? 0 : Math.round((grandPresent / grandTotal) * 100); csvContent += `================================================\nGRAND TOTAL SUMMARY\nTotal Students:,${grandTotal}\nTotal Present:,${grandPresent}\nTotal Absent:,${grandAbsent}\nOverall Rate:,${grandRate}%\n================================================\n`; }
-                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                
+                // Export based on active Tab
+                if (attTab === 'trainees') {
+                    // Export Trainees
+                    const teamsMap = {}; let grandTotal = 0; let grandPresent = 0;
+                    reportFiltered.forEach(trainee => { if (!teamsMap[trainee.team]) teamsMap[trainee.team] = []; teamsMap[trainee.team].push(trainee); });
+                    let csvContent = "\uFEFF"; csvContent += `CFC YOUTH ACADEMY TRAINEE ATTENDANCE\nDate:,${date}\nScope:,${targetSchool}\n\n`;
+                    Object.keys(teamsMap).sort().forEach(school => {
+                        const students = teamsMap[school]; const presentCount = students.filter(t => attendanceList.includes(t.id)).length; const absentCount = students.length - presentCount; const schoolRate = students.length === 0 ? 0 : Math.round((presentCount / students.length) * 100);
+                        grandTotal += students.length; grandPresent += presentCount;
+                        csvContent += `------------------------------------------------\nSCHOOL:,${school.replace(/,/g, " ")}\nStats:,Total: ${students.length}, Present: ${presentCount}, Absent: ${absentCount}, Rate: ${schoolRate}%\n------------------------------------------------\nName,Category,Position,Status,Yearly Att. %\n`;
+                        students.sort((a,b) => { if (a.category !== b.category) return (a.category || '').localeCompare(b.category || ''); return a.name.localeCompare(b.name); });
+                        students.forEach(trainee => { const status = attendanceList.includes(trainee.id) ? "Present" : "Absent"; csvContent += `${trainee.name.replace(/,/g," ")},${trainee.category||"-"},${trainee.primaryPosition.split(' ')[0]},${status},${trainee.attendance}%\n`; });
+                        csvContent += `\n\n`;
+                    });
+                    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Trainees_Att_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                } else {
+                    // Export Coaches
+                    let csvContent = "\uFEFF"; csvContent += `CFC YOUTH ACADEMY COACH ATTENDANCE\nDate:,${date}\n\nName,Role,Phone,Status\n`;
+                    coaches.forEach(c => {
+                         const status = coachAttendanceList.includes(c.id) ? "Present" : "Absent";
+                         csvContent += `${c.name},${c.role},${c.phone},${status}\n`;
+                    });
+                    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Coaches_Att_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                }
             };
 
             const exportFinanceExcel = () => {
@@ -725,50 +732,111 @@
 
             const toggleFeeStatus = (traineeId) => { const newTrainees = trainees.map(trainee => { if (trainee.id === traineeId) { const history = trainee.feeHistory || {}; const currentStatus = history[financeMonth] || false; return { ...trainee, feeHistory: { ...history, [financeMonth]: !currentStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
             const toggleAllFeeStatus = () => { const allPaid = financeFiltered.every(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]); const targetStatus = !allPaid; const statusText = targetStatus ? (lang === 'zh' ? "已交 (PAID)" : "PAID") : (lang === 'zh' ? "未交 (UNPAID)" : "UNPAID"); if (!confirm(t('alerts', 'finConfirmAll').replace('{status}', statusText))) return; const newTrainees = trainees.map(trainee => { if (financeFiltered.some(rt => rt.id === trainee.id)) { const history = trainee.feeHistory || {}; return { ...trainee, feeHistory: { ...history, [financeMonth]: targetStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
-            const toggleAllAttendanceStatus = () => { const allPresent = attendanceFiltered.every(t => attendanceList.includes(t.id)); if (allPresent) { const idsToRemove = attendanceFiltered.map(t => t.id); setAttendanceList(attendanceList.filter(id => !idsToRemove.includes(id))); } else { const idsToAdd = attendanceFiltered.map(t => t.id); setAttendanceList([...new Set([...attendanceList, ...idsToAdd])]); } };
+            
+            // 🔥 Toggle All for Attendance (Both Modes)
+            const toggleAllAttendanceStatus = () => { 
+                if (attTab === 'trainees') {
+                    const allPresent = attendanceFiltered.every(t => attendanceList.includes(t.id)); 
+                    if (allPresent) { const idsToRemove = attendanceFiltered.map(t => t.id); setAttendanceList(attendanceList.filter(id => !idsToRemove.includes(id))); } 
+                    else { const idsToAdd = attendanceFiltered.map(t => t.id); setAttendanceList([...new Set([...attendanceList, ...idsToAdd])]); }
+                } else {
+                    const allPresent = attendanceFiltered.every(c => coachAttendanceList.includes(c.id));
+                    if (allPresent) { const idsToRemove = attendanceFiltered.map(c => c.id); setCoachAttendanceList(coachAttendanceList.filter(id => !idsToRemove.includes(id))); }
+                    else { const idsToAdd = attendanceFiltered.map(c => c.id); setCoachAttendanceList([...new Set([...coachAttendanceList, ...idsToAdd])]); }
+                }
+            };
+
             const sendFeeReminder = (trainee) => { const dict = TRANSLATIONS[lang]; const template = dict.msgs[msgTemplate] || dict.msgs['gentle']; const bankInfo = dict.bankDetails.replace('{bankName}', BANK_INFO.bankName).replace('{accNum}', BANK_INFO.accNum).replace('{holder}', BANK_INFO.holder); const msgBody = template.replace('{name}', trainee.name).replace('{month}', financeMonth).replace('{amount}', monthlyFee); const fullMsg = msgBody + bankInfo; window.open(`https://wa.me/?text=${encodeURIComponent(fullMsg)}`, '_blank'); };
             const copyBankInfo = () => { const text = `${BANK_INFO.bankName}\n${BANK_INFO.accNum}\n${BANK_INFO.holder}`; const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('finCopied')); };
             const getFinanceSummary = () => { const paidCount = financeFiltered.filter(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]).length; const totalAmount = paidCount * monthlyFee; const pendingAmount = (financeFiltered.length - paidCount) * monthlyFee; return { paidCount, totalAmount, pendingAmount }; };
 
-            // 🔥 Attendance Functions (Restored)
+            // 🔥 Attendance Functions (Restored & Upgraded)
             const openAttendanceModal = () => {
                 const today = new Date().toISOString().slice(0, 10);
                 setAttendanceDate(today);
-                setAttendanceSearchTerm(''); 
-                const alreadyRecorded = reportFiltered.some(trainee => trainee.attendanceHistory && trainee.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today));
-                if (alreadyRecorded) {
-                    const presentIds = reportFiltered.filter(trainee => trainee.attendanceHistory.some(h => {
-                         const hDate = typeof h === 'string' ? h : h.date;
-                         const hStatus = typeof h === 'string' ? 'present' : h.status; 
-                         return hDate === today && hStatus === 'present';
-                    })).map(trainee => trainee.id);
-                    setAttendanceList(presentIds);
-                } else { setAttendanceList(reportFiltered.map(trainee => trainee.id)); }
+                setAttendanceSearchTerm('');
+                setAttTab('trainees'); // Reset to default tab
+
+                // 1. Players Init
+                const presentPlayerIds = reportFiltered.filter(t => 
+                    t.attendanceHistory && t.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today && (typeof h === 'string' || h.status === 'present'))
+                ).map(t => t.id);
+                // If records exist for anyone in view, use records. Else default all? No, default empty for safety.
+                const playerRecordExists = reportFiltered.some(t => t.attendanceHistory?.some(h => (typeof h === 'string' ? h : h.date) === today));
+                if (playerRecordExists) { setAttendanceList(presentPlayerIds); } 
+                else { setAttendanceList(reportFiltered.map(t => t.id)); } // Auto-select all if new day
+
+                // 2. Coaches Init
+                const presentCoachIds = coaches.filter(c => c.attendanceHistory && c.attendanceHistory.some(h => h.date === today)).map(c => c.id);
+                const coachRecordExists = coaches.some(c => c.attendanceHistory?.some(h => h.date === today));
+                if (coachRecordExists) { setCoachAttendanceList(presentCoachIds); }
+                else { setCoachAttendanceList(coaches.map(c => c.id)); }
+
                 setImportText(""); setIsAttendanceOpen(true);
             };
-            const toggleAttendance = (id) => { if (attendanceList.includes(id)) setAttendanceList(attendanceList.filter(pid => pid !== id)); else setAttendanceList([...attendanceList, id]); };
-            const parseImportText = () => { if (!importText) return; const text = importText.toLowerCase(); const matchedIds = reportFiltered.filter(trainee => text.includes(trainee.name.toLowerCase())).map(trainee => trainee.id); if (matchedIds.length > 0) { setAttendanceList(matchedIds); alert(`✅ ID: ${matchedIds.length}`); } else { alert("⚠️ No match"); } };
+
+            const toggleAttendance = (id) => { 
+                if (attTab === 'trainees') {
+                    if (attendanceList.includes(id)) setAttendanceList(attendanceList.filter(pid => pid !== id)); 
+                    else setAttendanceList([...attendanceList, id]); 
+                } else {
+                    if (coachAttendanceList.includes(id)) setCoachAttendanceList(coachAttendanceList.filter(cid => cid !== id));
+                    else setCoachAttendanceList([...coachAttendanceList, id]);
+                }
+            };
+
+            const parseImportText = () => { 
+                if (!importText) return; 
+                const text = importText.toLowerCase(); 
+                const targetList = attTab === 'trainees' ? reportFiltered : coaches;
+                
+                const matchedIds = targetList.filter(item => text.includes(item.name.toLowerCase())).map(item => item.id); 
+                
+                if (matchedIds.length > 0) { 
+                    if(attTab === 'trainees') setAttendanceList(matchedIds);
+                    else setCoachAttendanceList(matchedIds);
+                    alert(`✅ ID: ${matchedIds.length}`); 
+                } else { alert("⚠️ No match"); } 
+            };
+
             const submitAttendance = () => {
-                const totalCount = reportFiltered.length; const presentCount = attendanceList.filter(id => reportFiltered.some(r => r.id === id)).length;
-                const absentCount = totalCount - presentCount;
-                const msg = t('alerts', 'attConfirmMsg').replace('{date}', attendanceDate).replace('{total}', totalCount).replace('{present}', presentCount).replace('{absent}', absentCount);
+                const sCount = attendanceList.length;
+                const cCount = coachAttendanceList.length;
+                const msg = t('alerts', 'attConfirmMsg').replace('{date}', attendanceDate).replace('{sCount}', sCount).replace('{cCount}', cCount);
                 if (!confirm(msg)) return;
-                const newTrainees = trainees.map(trainee => {
-                    if (reportFiltered.some(r => r.id === trainee.id)) {
-                        let history = Array.isArray(trainee.attendanceHistory) ? [...trainee.attendanceHistory] : [];
-                        const isPresent = attendanceList.includes(trainee.id);
+
+                // 1. Update Trainees
+                const newTrainees = trainees.map(t => {
+                    if (reportFiltered.some(r => r.id === t.id)) {
+                        let history = Array.isArray(t.attendanceHistory) ? [...t.attendanceHistory] : [];
+                        const isPresent = attendanceList.includes(t.id);
                         const newStatus = isPresent ? 'present' : 'absent';
-                        const todayIndex = history.findIndex(h => (typeof h === 'string' ? h : h.date) === attendanceDate);
-                        let newHistory = [...history];
-                        if (todayIndex !== -1) { newHistory[todayIndex] = { date: attendanceDate, status: newStatus }; } else { newHistory.push({ date: attendanceDate, status: newStatus }); }
-                        const newAttended = newHistory.filter(h => (typeof h === 'string' ? 'present' : h.status) === 'present').length;
-                        const currentTotal = trainee.totalSessions > 0 ? trainee.totalSessions : PRESET_YEARLY_TOTAL;
+                        
+                        // Remove today's entry if exists to replace it
+                        history = history.filter(h => (typeof h === 'string' ? h : h.date) !== attendanceDate);
+                        history.push({ date: attendanceDate, status: newStatus });
+
+                        const newAttended = history.filter(h => (typeof h === 'string' ? 'present' : h.status) === 'present').length;
+                        const currentTotal = t.totalSessions > 0 ? t.totalSessions : PRESET_YEARLY_TOTAL;
                         const newRate = Math.round((newAttended / currentTotal) * 100);
-                        return { ...trainee, totalSessions: currentTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: newHistory };
+                        
+                        return { ...t, totalSessions: currentTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: history };
                     }
-                    return trainee;
+                    return t;
                 });
-                updateData({ trainees: newTrainees }); setIsAttendanceOpen(false); alert(t('alerts', 'updated'));
+
+                // 2. Update Coaches
+                const newCoaches = coaches.map(c => {
+                     let history = [...(c.attendanceHistory || [])];
+                     const isPresent = coachAttendanceList.includes(c.id);
+                     history = history.filter(h => h.date !== attendanceDate); // Remove old
+                     if (isPresent) history.push({ date: attendanceDate, status: 'present' });
+                     return { ...c, attendanceHistory: history };
+                });
+
+                updateData({ trainees: newTrainees, coaches: newCoaches }); 
+                setIsAttendanceOpen(false); 
+                alert(t('alerts', 'updated'));
             };
             
             // 🔥 Edit & Register Helpers
@@ -893,19 +961,33 @@
                     <button onClick={handleConnectCloud} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition-transform active:scale-95 mt-2">{t('cloudConnect')}</button></div></div></div>)}
                     
                     {/* Attendance Modal */}
-                    {isAttendanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-calendar-check text-emerald-500"></i> {t('attTitle')}</h2><div className="flex items-center gap-2"><input type="date" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-emerald-500 outline-none" value={attendanceDate} onChange={(e) => setAttendanceDate(e.target.value)} /><button onClick={() => setIsAttendanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4"><label className="text-zinc-400 text-xs font-bold block mb-2">{t('attPaste')}</label><textarea className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-xs text-white h-20 mb-2 focus:border-emerald-500 outline-none" placeholder={t('attPlaceholder')} value={importText} onChange={e => setImportText(e.target.value)}></textarea><button onClick={parseImportText} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-900/30 rounded-lg text-xs font-bold">{t('attPasteDesc')}</button></div>
+                    {isAttendanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-calendar-check text-emerald-500"></i> {t('attTitle')}</h2><div className="flex items-center gap-2"><input type="date" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-emerald-500 outline-none" value={attendanceDate} onChange={(e) => setAttendanceDate(e.target.value)} /><button onClick={() => setIsAttendanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div>
+                    {/* 🔥 Tabs for Attendance */}
+                    <div className="flex bg-zinc-950 rounded-lg p-1 mb-4 border border-zinc-700">
+                        <button onClick={() => setAttTab('trainees')} className={`flex-1 py-2 text-xs font-bold rounded ${attTab === 'trainees' ? 'bg-emerald-600 text-white' : 'text-zinc-500'}`}>{t('attTabTrainees')}</button>
+                        <button onClick={() => setAttTab('coaches')} className={`flex-1 py-2 text-xs font-bold rounded ${attTab === 'coaches' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>{t('attTabCoaches')}</button>
+                    </div>
+                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4"><label className="text-zinc-400 text-xs font-bold block mb-2">{t('attPaste')}</label><textarea className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-xs text-white h-20 mb-2 focus:border-emerald-500 outline-none" placeholder={t('attPlaceholder')} value={importText} onChange={e => setImportText(e.target.value)}></textarea><button onClick={parseImportText} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-900/30 rounded-lg text-xs font-bold">{t('attPasteDesc')}</button></div>
                     {/* 🔥 考勤搜索栏 */}
                     <div className="mb-2 px-1">
                         <input className="w-full bg-black/50 border border-zinc-700 rounded-lg text-xs px-2 py-1.5 text-white focus:border-emerald-500 outline-none" placeholder={t('attSearch')} value={attendanceSearchTerm} onChange={e => setAttendanceSearchTerm(e.target.value)} />
                     </div>
                     <div className="flex justify-between items-center mb-2 px-1">
-                        <span className="text-xs text-zinc-500">Selected: {attendanceList.length}</span>
-                        {/* 🔥 考勤一键全选 */}
+                        <span className="text-xs text-zinc-500">Selected: {attTab === 'trainees' ? attendanceList.length : coachAttendanceList.length}</span>
                         <button onClick={toggleAllAttendanceStatus} className="text-xs text-indigo-400 hover:text-indigo-300 font-bold border border-indigo-500/30 px-2 py-1 rounded">
                             {t('attToggleAll')}
                         </button>
                     </div>
-                    <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">{attendanceFiltered.map(trainee => (<div key={trainee.id} onClick={() => toggleAttendance(trainee.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${attendanceList.includes(trainee.id) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}><div className="flex items-center gap-3"><div className={`w-5 h-5 rounded-full flex items-center justify-center border ${attendanceList.includes(trainee.id) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>{attendanceList.includes(trainee.id) && <i className="fa-solid fa-check text-black text-xs"></i>}</div><div><p className="text-sm font-bold text-white">{trainee.name}</p><p className="text-[10px] text-zinc-500">{trainee.team}</p></div></div><div className="text-xs text-zinc-400">{trainee.attendance}%</div></div>))}</div><div className="flex gap-2"><button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button><button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button><button onClick={handleWhatsappShare} className="px-4 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl shadow-lg" title={t('attWhatsapp')}><i className="fa-brands fa-whatsapp text-xl"></i></button></div></div></div>)}
+                    <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">
+                        {attendanceFiltered.map(item => (
+                            <div key={item.id} onClick={() => toggleAttendance(item.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${(attTab === 'trainees' ? attendanceList.includes(item.id) : coachAttendanceList.includes(item.id)) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${(attTab === 'trainees' ? attendanceList.includes(item.id) : coachAttendanceList.includes(item.id)) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>{(attTab === 'trainees' ? attendanceList.includes(item.id) : coachAttendanceList.includes(item.id)) && <i className="fa-solid fa-check text-black text-xs"></i>}</div>
+                                    <div><p className="text-sm font-bold text-white">{item.name}</p><p className="text-[10px] text-zinc-500">{item.team || item.role}</p></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div><div className="flex gap-2"><button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button><button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button><button onClick={handleWhatsappShare} className="px-4 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl shadow-lg" title={t('attWhatsapp')}><i className="fa-brands fa-whatsapp text-xl"></i></button></div></div></div>)}
                     {/* Finance Modal */}
                     {isFinanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-yellow-600 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-sack-dollar text-yellow-500"></i> {t('finTitle')}</h2><div className="flex items-center gap-2"><input type="month" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-yellow-500 outline-none" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} /><button onClick={() => setIsFinanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-yellow-900/20 border border-yellow-800 p-3 rounded-xl mb-4 flex justify-between items-center relative group"><div className="text-xs text-yellow-200"><p className="font-bold">{BANK_INFO.bankName}</p><p className="font-mono text-yellow-400 text-sm my-0.5">{BANK_INFO.accNum}</p><p className="text-[10px] opacity-70">{BANK_INFO.holder}</p></div><button onClick={copyBankInfo} className="bg-yellow-700/50 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1"><i className="fa-regular fa-copy"></i> {t('finCopy')}</button></div><div className="grid grid-cols-2 gap-3 mb-4"><div className="bg-emerald-900/30 border border-emerald-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-emerald-400 uppercase">{t('finTotal')}</span><span className="text-xl font-bold text-white">RM {getFinanceSummary().totalAmount}</span><span className="text-[10px] text-zinc-400">({getFinanceSummary().paidCount} pax)</span></div><div className="bg-red-900/30 border border-red-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-red-400 uppercase">{t('finPending')}</span><span className="text-xl font-bold text-white">RM {getFinanceSummary().pendingAmount}</span><span className="text-[10px] text-zinc-400">({reportFiltered.length - getFinanceSummary().paidCount} pax)</span></div></div>
                     <div className="mb-2 px-1">
