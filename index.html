@@ -25,54 +25,54 @@
         #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 50; transition: opacity 0.5s; }
         .hidden { opacity: 0; pointer-events: none; }
         input[type="date"], input[type="month"] { color-scheme: dark; }
-        #error-box { display: none; position: fixed; inset: 0; background: #000; color: #ef4444; padding: 20px; z-index: 100; overflow: auto; font-family: monospace; white-space: pre-wrap; }
     </style>
 </head>
 <body>
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Adding Attendance Search...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Reorganizing Logic...</p>
     </div>
-    
-    <div id="error-box"></div>
+
     <div id="root"></div>
 
     <script>
-        window.onerror = function(msg, url, line, col, error) {
-            document.getElementById('static-loading').style.display = 'none';
-            const box = document.getElementById('error-box');
-            box.style.display = 'block';
-            box.innerHTML = `⚠️ SYSTEM ERROR:\n\n${msg}\n\nLine: ${line}, Col: ${col}\n\nPlease verify your code.`;
-            return false;
-        };
         setTimeout(() => {
-            const root = document.getElementById('root');
             const loader = document.getElementById('static-loading');
-            if (root && root.innerHTML.trim() === "" && loader && !loader.classList.contains('hidden')) {
-                document.getElementById('loading-text').innerHTML = "<span style='color:red'>⚠️ Loading Timeout. Network issue?</span>";
+            const root = document.getElementById('root');
+            if (loader && !loader.classList.contains('hidden') && (!root || root.innerHTML.trim() === "")) {
+                document.getElementById('loading-text').innerHTML = 
+                    `<span style="color:#ef4444">⚠️ Timeout. Please refresh.</span>`;
             }
-        }, 8000);
+        }, 5000);
     </script>
 
     <script type="text/babel">
         // =================================================================
-        // 🔑 基础配置
+        // 🔑 你的专属配置
         // =================================================================
         const MY_MASTER_KEY = "$2a$10$JuGSKsBRirNG95vYP0fbSuotikgzUSy8nphUaCtjGq0qsdCalvBo2"; 
         const JSONBIN_URL = "https://api.jsonbin.io/v3/b";
+        const MY_CLOUD_NAME = "dtlsbbj1v"; 
         const PRESET_YEARLY_TOTAL = 52;
         const DEFAULT_MONTHLY_FEE = 150;
-        const BANK_INFO = { bankName: "OCBC BANK", accNum: "7091258844", holder: "CFC YOUTH ACADEMY SB" };
+
+        const BANK_INFO = {
+            bankName: "OCBC BANK",
+            accNum: "7091258844",
+            holder: "CFC YOUTH ACADEMY SB"
+        };
+        // =================================================================
 
         const { useState, useEffect, useRef, useMemo } = React;
 
+        // 移除加载动画
         setTimeout(() => {
             const loader = document.getElementById('static-loading');
             if(loader) loader.classList.add('hidden');
-        }, 1000);
+        }, 1500); 
 
-        // --- 翻译字典 ---
+        // --- 多语言字典 ---
         const TRANSLATIONS = {
             zh: {
                 appTitle: "CFC YOUTH ACADEMY", systemName: "青训学院系统", localMode: "本地版", cloudMode: "云端同步",
@@ -87,14 +87,15 @@
                 backupToDrive: "备份到 Google Drive", exportDesc: "生成备份文件并自动打开你的云端文件夹。",
                 restoreData: "恢复数据", restoreDesc: "从手机文件夹中选择之前的备份文件 (.json)。",
                 selectFile: "选择备份文件", shareProfile: "分享档案", sendToParents: "发送给家长 (含照片)",
-                textOnly: "仅发送文字报告", cropTitle: "裁剪头像", rotate: "旋转", confirmCrop: "确认裁剪 (上传云端)",
-                attTitle: "智能出席库", attDate: "记录日期", attPaste: "📄 粘贴名单导入", attPasteDesc: "识别名字并勾选",
+                textOnly: "仅发送文字报告", cropTitle: "裁剪头像", rotate: "旋转", confirmCrop: "确认裁剪",
+                attTitle: "智能出席库", attDate: "记录日期", attPaste: "📄 粘贴名单导入 (WhatsApp/Excel)",
+                attPasteDesc: "直接粘贴文字，系统会自动识别名单中的名字并勾选。",
                 attPlaceholder: "例如：今日出席：Arthur, Stella, Money...",
                 attConfirm: "提交 / 更新记录",
                 attShare: "分享出席表", attWhatsapp: "WhatsApp", attExcel: "导出专业报表", 
                 attTotal: "总人数", attPresent: "出席", resetStats: "重置数据", 
-                attSearch: "搜索考勤名单...", attToggleAll: "一键全选", // 🔥 New
-                cloudSetup: "云端同步设置", cloudKey: "Master Key", cloudBin: "Bin ID",
+                attSearch: "搜索考勤名单...", attToggleAll: "一键全选",
+                cloudSetup: "云端同步设置 (JSONBin)", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "连接云端", cloudCreate: "✨ 自动创建新数据库", 
                 cloudDesc: "输入 Key 即可自动创建并连接云数据库，实现多设备同步。",
                 finTitle: "财务中心", finMonth: "月份", finFee: "月费标准 (RM)", finPaid: "已交", finUnpaid: "未交",
@@ -142,7 +143,7 @@
                 attTitle: "Attendance", attDate: "Date", attPaste: "Paste List", attPasteDesc: "Auto-check",
                 attPlaceholder: "Names...", attConfirm: "Submit", attShare: "Share", attWhatsapp: "WhatsApp",
                 attExcel: "Export Report", attTotal: "Total", attPresent: "Present", resetStats: "Reset",
-                attSearch: "Search Attendance...", attToggleAll: "Toggle All", // New
+                attSearch: "Search Attendance...", attToggleAll: "Toggle All", 
                 cloudSetup: "Cloud Setup", cloudKey: "Master Key", cloudBin: "Bin ID",
                 cloudConnect: "Connect", cloudCreate: "✨ Auto Create DB", cloudDesc: "Enter Key to sync.",
                 finTitle: "Finance Hub", finMonth: "Month", finFee: "Fee (RM)", finPaid: "Paid", finUnpaid: "Unpaid",
@@ -183,7 +184,7 @@
                 save: "Simpan", cancel: "Batal", addSchool: "Tambah", backupTools: "Alat",
                 backupToDrive: "Sandaran Drive", exportDesc: "Jana fail sandaran.",
                 restoreData: "Pulihkan", restoreDesc: "Pilih fail .json.", selectFile: "Pilih Fail",
-                shareProfile: "Kongsi", sendToParents: "📲 Hantar Foto (WhatsApp)", textOnly: "Teks Sahaja",
+                shareProfile: "Kongsi", sendToParents: "Hantar (Foto)", textOnly: "Teks Sahaja",
                 cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Muat Naik & Simpan",
                 attTitle: "Pusat Kehadiran", attDate: "Tarikh", attPaste: "Tampal Senarai", attPasteDesc: "Auto-tanda",
                 attPlaceholder: "Contoh: Hadir: Arthur...", attConfirm: "Hantar",
@@ -229,7 +230,7 @@
             { 
                 id: '1', name: 'Arthur Pendragon', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', 
                 age: '17', category: 'U18', height: '182', weight: '76', 
-                attendance: 98, totalSessions: 52, attendedSessions: 49, attendanceHistory: [], feeHistory: {}, 
+                attendance: 0, totalSessions: 52, attendedSessions: 0, attendanceHistory: [], feeHistory: {}, 
                 nationality: '英国', team: '皇家书院', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop', 
                 stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 },
                 parentName: 'Uther', phone: '012-3456789', email: 'uther@camelot.com', tin: 'TIN-001'
@@ -238,7 +239,6 @@
 
         const App = () => {
             const [lang, setLang] = useState('zh');
-            
             const t = (key, subKey) => {
                 const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh'];
                 if (subKey) {
@@ -247,6 +247,7 @@
                 return dict[key] || key;
             };
 
+            // State
             const [teams, setTeams] = useState(INITIAL_TEAMS);
             const [trainees, setTrainees] = useState([]);
             const [leagueName, setLeagueName] = useState('CFC YOUTH ACADEMY');
@@ -255,8 +256,8 @@
             const [cloudConfig, setCloudConfig] = useState({ key: MY_MASTER_KEY || '', binId: '' });
             const [isCloudConnected, setIsCloudConnected] = useState(false);
             const [cloudStatus, setCloudStatus] = useState("");
-
-            const [imgConfig, setImgConfig] = useState({ cloudName: "dtlsbbj1v", uploadPreset: "" });
+            
+            const [imgConfig, setImgConfig] = useState({ cloudName: MY_CLOUD_NAME, uploadPreset: '' });
             const [isImgCloudReady, setIsImgCloudReady] = useState(false);
             const [uploadingStatus, setUploadingStatus] = useState("");
 
@@ -291,7 +292,7 @@
             const [attendanceList, setAttendanceList] = useState([]); 
             const [importText, setImportText] = useState("");
             const [attendanceDate, setAttendanceDate] = useState(""); 
-            const [attendanceSearchTerm, setAttendanceSearchTerm] = useState(''); // 🔥 Attendance Search State
+            const [attendanceSearchTerm, setAttendanceSearchTerm] = useState(''); 
             
             const [financeMonth, setFinanceMonth] = useState(new Date().toISOString().slice(0, 7)); 
             const [monthlyFee, setMonthlyFee] = useState(DEFAULT_MONTHLY_FEE);
@@ -307,6 +308,7 @@
             const logoInputRef = useRef(null);
             const backupInputRef = useRef(null);
 
+            // --- Effects ---
             useEffect(() => {
                 const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
                 const savedCloud = JSON.parse(localStorage.getItem('cfc_jsonbin_config') || '{}');
@@ -347,44 +349,48 @@
                     setCloudConfig({ key: activeKey, binId: activeBin || '' });
                     if (activeBin) syncFromCloud(activeKey, activeBin);
                 }
-
                 if (savedImgCloud.cloudName && savedImgCloud.uploadPreset) {
                     setImgConfig(savedImgCloud);
                     setIsImgCloudReady(true);
                 }
             }, []);
 
-            // 🔥 核心：所有筛选器
+            useEffect(() => {
+                if (isCropperOpen && cropperImageRef.current) {
+                    if (cropperRef.current) cropperRef.current.destroy();
+                    cropperRef.current = new Cropper(cropperImageRef.current, {
+                        aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8
+                    });
+                }
+            }, [isCropperOpen, tempImage]);
+
+            // --- FILTERS (Must be defined before usage) ---
             const reportFiltered = useMemo(() => trainees.filter(trainee => {
                 const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
                 const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
-                
                 const searchLower = searchTerm.toLowerCase();
                 const matchSearch = searchTerm === '' || 
                                     trainee.name.toLowerCase().includes(searchLower) || 
                                     trainee.team.toLowerCase().includes(searchLower) ||
                                     (trainee.parentName && trainee.parentName.toLowerCase().includes(searchLower)) ||
                                     (trainee.phone && trainee.phone.includes(searchLower));
-
                 return matchPos && matchTeam && matchSearch;
             }), [trainees, selectedPosition, selectedTeam, searchTerm]);
 
-            const uiFiltered = useMemo(() => reportFiltered.filter(trainee => 
-                trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) || trainee.team.toLowerCase().includes(searchTerm.toLowerCase())
-            ), [reportFiltered, searchTerm]);
+            const uiFiltered = reportFiltered;
 
             const financeFiltered = useMemo(() => reportFiltered.filter(trainee => 
                 trainee.name.toLowerCase().includes(financeSearchTerm.toLowerCase()) || 
                 trainee.team.toLowerCase().includes(financeSearchTerm.toLowerCase()) ||
                 (trainee.parentName && trainee.parentName.toLowerCase().includes(financeSearchTerm.toLowerCase()))
             ), [reportFiltered, financeSearchTerm]);
-            
-            // 🔥 新增：考勤过滤 (Attendance Search)
+
             const attendanceFiltered = useMemo(() => reportFiltered.filter(trainee => 
                 trainee.name.toLowerCase().includes(attendanceSearchTerm.toLowerCase()) || 
                 trainee.team.toLowerCase().includes(attendanceSearchTerm.toLowerCase())
             ), [reportFiltered, attendanceSearchTerm]);
 
+            // --- Logic Functions ---
             const stripImages = (data) => {
                 const cleanData = JSON.parse(JSON.stringify(data));
                 if (cleanData.trainees) cleanData.trainees = cleanData.trainees.map(t => { 
@@ -394,6 +400,39 @@
                 if (cleanData.appLogo && cleanData.appLogo.startsWith('data:image')) cleanData.appLogo = null;
                 return cleanData;
             };
+
+            const uploadToCloudinary = async (base64Image) => {
+                if (!imgConfig.cloudName || !imgConfig.uploadPreset) {
+                    alert(t('alerts', 'fillImgConfig')); return null;
+                }
+                setUploadingStatus(t('uploading'));
+                const url = `https://api.cloudinary.com/v1_1/${imgConfig.cloudName}/image/upload`;
+                const formData = new FormData();
+                formData.append('file', base64Image);
+                formData.append('upload_preset', imgConfig.uploadPreset);
+                try {
+                    const response = await fetch(url, { method: 'POST', body: formData });
+                    const data = await response.json();
+                    setUploadingStatus("");
+                    if (data.error) { alert(`❌ Cloudinary: ${data.error.message}`); return null; }
+                    return data.secure_url;
+                } catch (error) { alert("⚠️ Network Error"); setUploadingStatus(""); return null; }
+            };
+
+            const saveImgConfig = () => {
+                if(imgConfig.cloudName && imgConfig.uploadPreset) {
+                    localStorage.setItem('cfc_cloudinary_config', JSON.stringify(imgConfig));
+                    setIsImgCloudReady(true);
+                    alert(t('alerts', 'imgCloudConnected'));
+                } else { alert(t('alerts', 'fillImgConfig')); }
+            };
+            
+            const testCloudinary = async () => {
+                const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+                const url = await uploadToCloudinary(testPixel);
+                if (url) alert(`✅ OK! URL: ${url}`);
+            };
+
             const syncFromCloud = async (key, binId) => {
                 setCloudStatus(t('status', 'syncing'));
                 try {
@@ -401,8 +440,23 @@
                     if (res.ok) {
                         const json = await res.json();
                         const data = json.record;
-                        if (data.trainees) setTrainees(data.trainees); if (data.teams) setTeams(data.teams); if (data.leagueName) setLeagueName(data.leagueName);
-                        const merged = { ...JSON.parse(localStorage.getItem('cfc_local_db') || '{}'), ...data };
+                        // Image merge logic
+                        const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
+                        let mergedTrainees = [];
+                        if (data.trainees) {
+                             mergedTrainees = data.trainees.map(ct => {
+                                 const localT = localData.trainees ? localData.trainees.find(lt => lt.id === ct.id) : null;
+                                 let finalImg = ct.image;
+                                 if (!finalImg || finalImg === DEFAULT_IMAGE) {
+                                     if (localT && localT.image && localT.image.startsWith('data:')) finalImg = localT.image;
+                                 }
+                                 return { ...ct, image: finalImg || DEFAULT_IMAGE };
+                             });
+                        } else { mergedTrainees = localData.trainees || INITIAL_TRAINEES; }
+                        setTrainees(mergedTrainees);
+                        if (data.teams) setTeams(data.teams);
+                        if (data.leagueName) setLeagueName(data.leagueName);
+                        const merged = { ...localData, ...data, trainees: mergedTrainees };
                         localStorage.setItem('cfc_local_db', JSON.stringify(merged));
                         setIsCloudConnected(true); setCloudStatus(t('status', 'ready')); setTimeout(() => setCloudStatus(""), 2000);
                     } else { setCloudStatus(t('status', 'fail')); setIsCloudConnected(false); }
@@ -416,7 +470,8 @@
             };
             const createCloudBin = async () => {
                 if (!cloudConfig.key) return alert(t('alerts', 'fillMasterKey')); setCloudStatus(t('status', 'creating'));
-                try { const res = await fetch(JSONBIN_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Master-Key": cloudConfig.key, "X-Bin-Name": "CFC_League_Data" }, body: JSON.stringify({ trainees, teams, leagueName, note: "Created by CFC App" }) }); if (res.ok) { const json = await res.json(); const newBinId = json.metadata.id; setCloudConfig(prev => ({ ...prev, binId: newBinId })); localStorage.setItem('cfc_jsonbin_config', JSON.stringify({ key: cloudConfig.key, binId: newBinId })); setIsCloudConnected(true); setCloudStatus(t('status', 'created')); alert(t('alerts', 'cloudCreated').replace('{binId}', newBinId)); setTimeout(() => setCloudStatus(""), 2000); } else { throw new Error("Failed"); } } catch (e) { alert(t('status', 'error')); setCloudStatus(t('status', 'error')); }
+                const cleanData = stripImages({ trainees, teams, leagueName, note: "Created by CFC App" });
+                try { const res = await fetch(JSONBIN_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Master-Key": cloudConfig.key, "X-Bin-Name": "CFC_League_Data" }, body: JSON.stringify(cleanData) }); if (res.ok) { const json = await res.json(); const newBinId = json.metadata.id; setCloudConfig(prev => ({ ...prev, binId: newBinId })); localStorage.setItem('cfc_jsonbin_config', JSON.stringify({ key: cloudConfig.key, binId: newBinId })); setIsCloudConnected(true); setCloudStatus(t('status', 'created')); alert(t('alerts', 'cloudCreated').replace('{binId}', newBinId)); setTimeout(() => setCloudStatus(""), 2000); } else { throw new Error("Failed"); } } catch (e) { alert(t('status', 'error')); setCloudStatus(t('status', 'error')); }
             };
             const handleConnectCloud = () => { if (cloudConfig.key && cloudConfig.binId) { localStorage.setItem('cfc_jsonbin_config', JSON.stringify(cloudConfig)); syncFromCloud(cloudConfig.key, cloudConfig.binId); setIsCloudModalOpen(false); } else { alert(t('alerts', 'fillCloudConfig')); } };
             const saveToLocal = (newData) => {
@@ -426,51 +481,10 @@
                 if (isCloudConnected) { syncToCloud({ trainees: currentData.trainees, teams: currentData.teams, leagueName: currentData.leagueName }); }
             };
 
-            const uploadToCloudinary = async (base64Image) => {
-                if (!imgConfig.cloudName || !imgConfig.uploadPreset) {
-                    alert(t('alerts', 'fillImgConfig'));
-                    return null;
-                }
-                setUploadingStatus(t('uploading'));
-                const url = `https://api.cloudinary.com/v1_1/${imgConfig.cloudName}/image/upload`;
-                const formData = new FormData();
-                formData.append('file', base64Image);
-                formData.append('upload_preset', imgConfig.uploadPreset);
-                try {
-                    const response = await fetch(url, { method: 'POST', body: formData });
-                    const data = await response.json();
-                    setUploadingStatus("");
-                    if (data.error) {
-                        alert(`❌ Cloudinary Error: ${data.error.message}`);
-                        return null;
-                    }
-                    if (data.secure_url) return data.secure_url;
-                    return null;
-                } catch (error) {
-                    alert("⚠️ Network Error. Using local storage.");
-                    setUploadingStatus("");
-                    return null;
-                }
-            };
-            const testCloudinary = async () => {
-                const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
-                const url = await uploadToCloudinary(testPixel);
-                if (url) alert(`✅ Connection Success!\nURL: ${url}`);
-            };
-            const saveImgConfig = () => {
-                if(imgConfig.cloudName && imgConfig.uploadPreset) {
-                    localStorage.setItem('cfc_cloudinary_config', JSON.stringify(imgConfig));
-                    setIsImgCloudReady(true);
-                    alert(t('alerts', 'imgCloudConnected'));
-                } else {
-                    alert(t('alerts', 'fillImgConfig'));
-                }
-            };
-
             const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(t('alerts', 'backupDownloaded'))) window.open(DRIVE_LINK, '_blank'); }, 500); };
             const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(t('alerts', 'overwriteConfirm'))) { saveToLocal(p); alert(t('alerts', 'updated')); setIsDataToolsOpen(false); } } catch (e) { alert(t('alerts', 'fileError')); } e.target.value=null; }; r.readAsText(f); };
             const handleFile = (e, isLogo) => { const f = e.target.files?.[0]; if(!f) return; const r = new FileReader(); r.onloadend = () => { setTempImage(r.result); setIsLogoCrop(isLogo); setIsCropperOpen(true); }; r.readAsDataURL(f); };
-            useEffect(() => { if (isCropperOpen && cropperImageRef.current) { if (cropperRef.current) cropperRef.current.destroy(); cropperRef.current = new Cropper(cropperImageRef.current, { aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8 }); } }, [isCropperOpen, tempImage]);
+            
             const handleCropConfirm = async () => { 
                 if (cropperRef.current) { 
                     const c = cropperRef.current.getCroppedCanvas({ width: 400, height: 400 }); 
@@ -501,14 +515,12 @@
             const generateShareText = (trainee) => { const L = TRANSLATIONS[lang]; const c = trainee.category ? `[${trainee.category}] ` : ''; let base = `【${L.appTitle}】\n\n${L.name}：${trainee.name}\n${L.school}：${c}${trainee.team}\n${L.mainPos}：${trainee.primaryPosition}\n${L.age}：${trainee.age} | ${L.height}：${trainee.height||'-'}cm | ${L.weight}：${trainee.weight||'-'}kg\n${L.attendance}：${trainee.attendance||0}%\n\n`; if(trainee.parentName) base += `${L.parentName}: ${trainee.parentName}\n`; if(trainee.phone) base += `${L.phone}: ${trainee.phone}\n`; if(trainee.email) base += `${L.email}: ${trainee.email}\n\n`; base += `📊 ${L.stats.pace}: ${trainee.stats.pace} | ${L.stats.shooting}: ${trainee.stats.shooting}\n${L.stats.passing}: ${trainee.stats.passing} | ${L.stats.dribbling}: ${trainee.stats.dribbling}\n${L.stats.defending}: ${trainee.stats.defending} | ${L.stats.physical}: ${trainee.stats.physical}`; return base; };
             const handleSystemShare = async (trainee) => { const text = generateShareText(trainee); const shareData = { title: trainee.name, text: text }; if (trainee.image && trainee.image.startsWith('data:image')) { const file = dataURLtoFile(trainee.image, `${trainee.name}.jpg`); if (file && navigator.canShare && navigator.canShare({ files: [file] })) { shareData.files = [file]; } } else if (trainee.image && trainee.image.startsWith('http')) { shareData.text += `\n\nPhoto: ${trainee.image}`; } try { await navigator.share(shareData); } catch(e) { const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text)}`; window.open(whatsappUrl, '_blank'); } };
             const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('alerts', 'copied')); } } catch(e){} };
-            const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(trainee => attendanceList.includes(trainee.id)).map(trainee => trainee.name); const aNames = reportFiltered.filter(trainee => !attendanceList.includes(trainee.id)).map(trainee => trainee.name); let text = `📅 *CFC Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
-            const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(trainee => { const status = attendanceList.includes(trainee.id) ? "Present" : "Absent"; csvContent += `${trainee.name.replace(/,/g," ")},${trainee.team.replace(/,/g," ")},${trainee.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
-
-            // Attendance Logic
+            const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(trainee => attendanceList.includes(trainee.id)).map(trainee => trainee.name); const aNames = reportFiltered.filter(trainee => !attendanceList.includes(trainee.id)).map(trainee => trainee.name); let text = `📅 *CFCYA Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
+            
             const openAttendanceModal = () => {
                 const today = new Date().toISOString().slice(0, 10);
                 setAttendanceDate(today);
-                setAttendanceSearchTerm(''); // 🔥 Reset search on open
+                setAttendanceSearchTerm(''); 
                 const alreadyRecorded = reportFiltered.some(trainee => trainee.attendanceHistory && trainee.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today));
                 if (alreadyRecorded) {
                     const presentIds = reportFiltered.filter(trainee => trainee.attendanceHistory.some(h => {
@@ -533,151 +545,61 @@
                         const isPresent = attendanceList.includes(trainee.id);
                         const newStatus = isPresent ? 'present' : 'absent';
                         const todayIndex = history.findIndex(h => (typeof h === 'string' ? h : h.date) === attendanceDate);
-                        let newTotal = trainee.totalSessions || PRESET_YEARLY_TOTAL; let newAttended = trainee.attendedSessions || 0; let newHistory = [...history];
-                        if (todayIndex !== -1) {
-                            const oldStatus = typeof newHistory[todayIndex] === 'string' ? 'present' : newHistory[todayIndex].status;
-                            if (oldStatus !== newStatus) { if (newStatus === 'present') newAttended++; else newAttended--; }
-                            newHistory[todayIndex] = { date: attendanceDate, status: newStatus };
-                        } else {
-                            if (isPresent) newAttended++;
-                            newHistory.push({ date: attendanceDate, status: newStatus });
-                        }
-                        const newRate = newTotal === 0 ? 0 : Math.round((newAttended / newTotal) * 100);
-                        return { ...trainee, totalSessions: newTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: newHistory };
+                        let newHistory = [...history];
+                        if (todayIndex !== -1) { newHistory[todayIndex] = { date: attendanceDate, status: newStatus }; } else { newHistory.push({ date: attendanceDate, status: newStatus }); }
+                        const newAttended = newHistory.filter(h => (typeof h === 'string' ? 'present' : h.status) === 'present').length;
+                        const currentTotal = trainee.totalSessions > 0 ? trainee.totalSessions : PRESET_YEARLY_TOTAL;
+                        const newRate = Math.round((newAttended / currentTotal) * 100);
+                        return { ...trainee, totalSessions: currentTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: newHistory };
                     }
                     return trainee;
                 });
                 saveToLocal({ trainees: newTrainees }); setIsAttendanceOpen(false); alert(t('alerts', 'updated'));
             };
 
-            // Finance Logic
-            const toggleFeeStatus = (traineeId) => {
-                const newTrainees = trainees.map(trainee => {
-                    if (trainee.id === traineeId) {
-                        const history = trainee.feeHistory || {};
-                        const currentStatus = history[financeMonth] || false;
-                        return { ...trainee, feeHistory: { ...history, [financeMonth]: !currentStatus } };
-                    }
-                    return trainee;
-                });
-                saveToLocal({ trainees: newTrainees });
-            };
-            const toggleAllFeeStatus = () => {
-                const allPaid = financeFiltered.every(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]);
-                const targetStatus = !allPaid; 
-                const statusText = targetStatus ? (lang === 'zh' ? "已交 (PAID)" : "PAID") : (lang === 'zh' ? "未交 (UNPAID)" : "UNPAID");
-                if (!confirm(t('alerts', 'finConfirmAll').replace('{status}', statusText))) return;
-                const newTrainees = trainees.map(trainee => {
-                    if (financeFiltered.some(rt => rt.id === trainee.id)) {
-                        const history = trainee.feeHistory || {};
-                        return { ...trainee, feeHistory: { ...history, [financeMonth]: targetStatus } };
-                    }
-                    return trainee;
-                });
-                saveToLocal({ trainees: newTrainees });
-            };
-            // 🔥 出席一键全选逻辑 (Attendance Toggle All)
-            const toggleAllAttendanceStatus = () => {
-                const allPresent = attendanceFiltered.every(t => attendanceList.includes(t.id));
-                
-                if (allPresent) {
-                    // 全部反选 (只针对当前筛选列表)
-                    const idsToRemove = attendanceFiltered.map(t => t.id);
-                    setAttendanceList(attendanceList.filter(id => !idsToRemove.includes(id)));
-                } else {
-                    // 全部选中 (保留原有选中，加入当前筛选列表的所有人)
-                    const idsToAdd = attendanceFiltered.map(t => t.id);
-                    // 使用 Set 去重
-                    setAttendanceList([...new Set([...attendanceList, ...idsToAdd])]);
-                }
-            };
-
-            const sendFeeReminder = (trainee) => {
-                const dict = TRANSLATIONS[lang];
-                const template = dict.msgs[msgTemplate] || dict.msgs['gentle'];
-                const bankInfo = dict.bankDetails.replace('{bankName}', BANK_INFO.bankName).replace('{accNum}', BANK_INFO.accNum).replace('{holder}', BANK_INFO.holder);
-                const msgBody = template.replace('{name}', trainee.name).replace('{month}', financeMonth).replace('{amount}', monthlyFee);
-                const fullMsg = msgBody + bankInfo;
-                window.open(`https://wa.me/?text=${encodeURIComponent(fullMsg)}`, '_blank');
-            };
-            const copyBankInfo = () => {
-                const text = `${BANK_INFO.bankName}\n${BANK_INFO.accNum}\n${BANK_INFO.holder}`;
-                const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
-                alert(t('finCopied'));
-            };
-            const exportFinanceExcel = () => {
+            const toggleFeeStatus = (traineeId) => { const newTrainees = trainees.map(trainee => { if (trainee.id === traineeId) { const history = trainee.feeHistory || {}; const currentStatus = history[financeMonth] || false; return { ...trainee, feeHistory: { ...history, [financeMonth]: !currentStatus } }; } return trainee; }); saveToLocal({ trainees: newTrainees }); };
+            const toggleAllFeeStatus = () => { const allPaid = financeFiltered.every(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]); const targetStatus = !allPaid; const statusText = targetStatus ? (lang === 'zh' ? "已交 (PAID)" : "PAID") : (lang === 'zh' ? "未交 (UNPAID)" : "UNPAID"); if (!confirm(t('alerts', 'finConfirmAll').replace('{status}', statusText))) return; const newTrainees = trainees.map(trainee => { if (financeFiltered.some(rt => rt.id === trainee.id)) { const history = trainee.feeHistory || {}; return { ...trainee, feeHistory: { ...history, [financeMonth]: targetStatus } }; } return trainee; }); saveToLocal({ trainees: newTrainees }); };
+            const toggleAllAttendanceStatus = () => { const allPresent = attendanceFiltered.every(t => attendanceList.includes(t.id)); if (allPresent) { const idsToRemove = attendanceFiltered.map(t => t.id); setAttendanceList(attendanceList.filter(id => !idsToRemove.includes(id))); } else { const idsToAdd = attendanceFiltered.map(t => t.id); setAttendanceList([...new Set([...attendanceList, ...idsToAdd])]); } };
+            const sendFeeReminder = (trainee) => { const dict = TRANSLATIONS[lang]; const template = dict.msgs[msgTemplate] || dict.msgs['gentle']; const bankInfo = dict.bankDetails.replace('{bankName}', BANK_INFO.bankName).replace('{accNum}', BANK_INFO.accNum).replace('{holder}', BANK_INFO.holder); const msgBody = template.replace('{name}', trainee.name).replace('{month}', financeMonth).replace('{amount}', monthlyFee); const fullMsg = msgBody + bankInfo; window.open(`https://wa.me/?text=${encodeURIComponent(fullMsg)}`, '_blank'); };
+            const copyBankInfo = () => { const text = `${BANK_INFO.bankName}\n${BANK_INFO.accNum}\n${BANK_INFO.holder}`; const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('finCopied')); };
+            
+            // --- EXPORT FUNCTIONS ---
+            const handleExportAttendanceExcel = () => {
+                const date = attendanceDate || new Date().toISOString().slice(0, 10);
                 const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
-                
-                // 1. Group Data
-                const teamsMap = {};
-                financeFiltered.forEach(trainee => {
-                    if (!teamsMap[trainee.team]) teamsMap[trainee.team] = [];
-                    teamsMap[trainee.team].push(trainee);
-                });
-
-                let csvContent = "\uFEFF"; 
-                csvContent += `CFC YOUTH ACADEMY FINANCE REPORT\n`;
-                csvContent += `Month:,${financeMonth}\n`;
-                csvContent += `Generated:,${new Date().toISOString().slice(0, 10)}\n`;
-                csvContent += `Scope:,${targetSchool}\n`;
-                csvContent += `Fee Standard:,RM ${monthlyFee}\n\n`;
-
-                let grandTotalCollected = 0;
-                let grandTotalPending = 0;
-
+                const teamsMap = {}; let grandTotal = 0; let grandPresent = 0;
+                reportFiltered.forEach(trainee => { if (!teamsMap[trainee.team]) teamsMap[trainee.team] = []; teamsMap[trainee.team].push(trainee); });
+                let csvContent = "\uFEFF"; csvContent += `CFC YOUTH ACADEMY ATTENDANCE REPORT\nDate:,${date}\nScope:,${targetSchool}\n\n`;
                 Object.keys(teamsMap).sort().forEach(school => {
-                    const students = teamsMap[school];
-                    const paidCount = students.filter(t => t.feeHistory && t.feeHistory[financeMonth]).length;
-                    const totalCount = students.length;
-                    const unpaidCount = totalCount - paidCount;
-                    const collected = paidCount * monthlyFee;
-                    const pending = unpaidCount * monthlyFee;
-                    const rate = totalCount === 0 ? 0 : Math.round((paidCount / totalCount) * 100);
-
-                    grandTotalCollected += collected;
-                    grandTotalPending += pending;
-
-                    csvContent += `------------------------------------------------\n`;
-                    csvContent += `SCHOOL:,${school.replace(/,/g, " ")}\n`;
-                    csvContent += `Summary:,${paidCount} Paid / ${totalCount} Total (${rate}%)\n`;
-                    csvContent += `Cash Flow:,Collected: RM ${collected},Pending: RM ${pending}\n`;
-                    csvContent += `------------------------------------------------\n`;
-                    csvContent += `Name,Category,Position,Fee (RM),Status\n`;
-
-                    students.sort((a, b) => {
-                         if (a.category !== b.category) return (a.category || '').localeCompare(b.category || '');
-                         return a.name.localeCompare(b.name);
-                    });
-
-                    students.forEach(t => {
-                        const isPaid = t.feeHistory && t.feeHistory[financeMonth];
-                        const status = isPaid ? "PAID" : "UNPAID";
-                        const safeName = t.name.replace(/,/g, " ");
-                        const safeCat = (t.category || "-").replace(/,/g, " ");
-                        const safePos = (t.primaryPosition || "-").split(' ')[0];
-                        csvContent += `${safeName},${safeCat},${safePos},${monthlyFee},${status}\n`;
-                    });
+                    const students = teamsMap[school]; const presentCount = students.filter(t => attendanceList.includes(t.id)).length; const absentCount = students.length - presentCount; const schoolRate = students.length === 0 ? 0 : Math.round((presentCount / students.length) * 100);
+                    grandTotal += students.length; grandPresent += presentCount;
+                    csvContent += `------------------------------------------------\nSCHOOL:,${school.replace(/,/g, " ")}\nStats:,Total: ${students.length}, Present: ${presentCount}, Absent: ${absentCount}, Rate: ${schoolRate}%\n------------------------------------------------\nName,Category,Position,Status,Yearly Att. %\n`;
+                    students.sort((a,b) => { if (a.category !== b.category) return (a.category || '').localeCompare(b.category || ''); return a.name.localeCompare(b.name); });
+                    students.forEach(trainee => { const status = attendanceList.includes(trainee.id) ? "Present" : "Absent"; csvContent += `${trainee.name.replace(/,/g," ")},${trainee.category||"-"},${trainee.primaryPosition.split(' ')[0]},${status},${trainee.attendance}%\n`; });
                     csvContent += `\n\n`;
                 });
-
-                if (selectedTeam === '全部') {
-                     csvContent += `================================================\n`;
-                     csvContent += `GRAND TOTAL SUMMARY\n`;
-                     csvContent += `Total Collected:,RM ${grandTotalCollected}\n`;
-                     csvContent += `Total Pending:,RM ${grandTotalPending}\n`;
-                     csvContent += `================================================\n`;
-                }
-
-                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a"); link.href = url; link.download = `CFC_Fin_${targetSchool}_${financeMonth}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                if (selectedTeam === '全部') { const grandAbsent = grandTotal - grandPresent; const grandRate = grandTotal === 0 ? 0 : Math.round((grandPresent / grandTotal) * 100); csvContent += `================================================\nGRAND TOTAL SUMMARY\nTotal Students:,${grandTotal}\nTotal Present:,${grandPresent}\nTotal Absent:,${grandAbsent}\nOverall Rate:,${grandRate}%\n================================================\n`; }
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
             };
-            const getFinanceSummary = () => {
-                const paidCount = financeFiltered.filter(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]).length;
-                const totalAmount = paidCount * monthlyFee;
-                const pendingAmount = (financeFiltered.length - paidCount) * monthlyFee;
-                return { paidCount, totalAmount, pendingAmount };
+
+            const exportFinanceExcel = () => {
+                const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
+                const teamsMap = {}; financeFiltered.forEach(trainee => { if (!teamsMap[trainee.team]) teamsMap[trainee.team] = []; teamsMap[trainee.team].push(trainee); });
+                let csvContent = "\uFEFF"; csvContent += `CFC YOUTH ACADEMY FINANCE REPORT\nMonth:,${financeMonth}\nGenerated:,${new Date().toISOString().slice(0, 10)}\nScope:,${targetSchool}\nFee Standard:,RM ${monthlyFee}\n\n`;
+                let grandTotalCollected = 0; let grandTotalPending = 0;
+                Object.keys(teamsMap).sort().forEach(school => {
+                    const students = teamsMap[school]; const paidCount = students.filter(t => t.feeHistory && t.feeHistory[financeMonth]).length; const totalCount = students.length; const unpaidCount = totalCount - paidCount; const collected = paidCount * monthlyFee; const pending = unpaidCount * monthlyFee; const rate = totalCount === 0 ? 0 : Math.round((paidCount / totalCount) * 100);
+                    grandTotalCollected += collected; grandTotalPending += pending;
+                    csvContent += `------------------------------------------------\nSCHOOL:,${school.replace(/,/g, " ")}\nSummary:,${paidCount} Paid / ${totalCount} Total (${rate}%)\nCash Flow:,Collected: RM ${collected},Pending: RM ${pending}\n------------------------------------------------\nName,Category,Position,Fee (RM),Status\n`;
+                    students.sort((a, b) => { if (a.category !== b.category) return (a.category || '').localeCompare(b.category || ''); return a.name.localeCompare(b.name); });
+                    students.forEach(t => { const isPaid = t.feeHistory && t.feeHistory[financeMonth]; const status = isPaid ? "PAID" : "UNPAID"; csvContent += `${t.name.replace(/,/g," ")},${t.category||"-"},${t.primaryPosition.split(' ')[0]},${monthlyFee},${status}\n`; });
+                    csvContent += `\n\n`;
+                });
+                if (selectedTeam === '全部') { csvContent += `================================================\nGRAND TOTAL SUMMARY\nTotal Collected:,RM ${grandTotalCollected}\nTotal Pending:,RM ${grandTotalPending}\n================================================\n`; }
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Fin_${targetSchool}_${financeMonth}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
             };
+
+            const getFinanceSummary = () => { const paidCount = financeFiltered.filter(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]).length; const totalAmount = paidCount * monthlyFee; const pendingAmount = (financeFiltered.length - paidCount) * monthlyFee; return { paidCount, totalAmount, pendingAmount }; };
 
             return (
                 <div className="max-w-7xl mx-auto p-4 md:p-8 pb-20 fade-in">
@@ -747,7 +669,7 @@
                                     <div className="absolute bottom-2 left-3 right-12"><h3 className="text-lg font-bold text-white truncate shadow-black drop-shadow-md leading-tight">{trainee.name}</h3><p className="text-[10px] text-zinc-300 flex items-center gap-1 truncate shadow-black drop-shadow-md"><i className="fa-solid fa-school text-yellow-500"></i> {trainee.team.split(' (')[0]}</p></div>
                                 </div>
                                 <div className="p-4 flex-1 flex flex-col">
-                                    {/* Personal Info Block (New) */}
+                                    {/* Personal Info Block */}
                                     <div className="bg-zinc-950/50 rounded-lg p-2 mb-3 text-[10px] text-zinc-400 space-y-1">
                                         <div className="flex items-center gap-2"><i className="fa-solid fa-user text-zinc-500 w-4 text-center"></i><span className="text-zinc-500 text-[9px]">{t('parentName')}:</span><span className="text-zinc-300 truncate">{trainee.parentName || '-'}</span></div>
                                         <div className="flex items-center gap-2"><i className="fa-solid fa-phone text-zinc-500 w-4 text-center"></i><span className="text-zinc-500 text-[9px]">{t('phone')}:</span><span className="text-zinc-300 truncate">{trainee.phone || '-'}</span></div>
@@ -817,6 +739,7 @@
                     <div className="flex gap-2"><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('email')} value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('tin')} value={formData.tin || ''} onChange={e => setFormData({...formData, tin: e.target.value})} /></div>
                     
                     <div className="flex gap-2"><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('height')} value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">cm</span></div><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('weight')} value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">kg</span></div><div className="w-1/3"><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.category || 'U18'} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div></div></div></div><div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><div className="flex flex-col"><span className="text-xs font-bold text-zinc-400">{t('attendance')}</span><span className={formData.attendance >= 90 ? 'text-emerald-500 font-bold' : 'text-white font-bold'}>{formData.attendance || 0}%</span></div><div className="flex items-center gap-2"><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('attCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.attendedSessions} onChange={(e) => handleAttendanceChange('attendedSessions', e.target.value)} /></div><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('totalCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.totalSessions} onChange={(e) => handleAttendanceChange('totalSessions', e.target.value)} /></div><button onClick={resetPlayerStats} className="ml-2 bg-red-900/30 hover:bg-red-900/50 text-red-500 text-[10px] px-2 py-2 rounded border border-red-900/50 h-full flex items-center justify-center" title={t('resetStats')}><i className="fa-solid fa-rotate-right"></i></button></div></div><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}>{teams.map(teamItem => <option key={teamItem} value={teamItem}>{teamItem}</option>)}</select><div className="grid grid-cols-2 gap-2"><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.primaryPosition} onChange={e => setFormData({...formData, primaryPosition: e.target.value})}>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.secondaryPosition} onChange={e => setFormData({...formData, secondaryPosition: e.target.value})}><option value="无">无</option>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-800 p-4 rounded-xl mb-4">{Object.keys(formData.stats).map(s => (<div key={s}><div className="flex justify-between text-[10px] text-zinc-400 uppercase mb-1"><span>{t('stats', s)}</span> <span>{formData.stats[s]}</span></div><input type="range" min="0" max="99" className="w-full accent-white h-1 bg-zinc-600 rounded-lg appearance-none" value={formData.stats[s]} onChange={e => setFormData({...formData, stats: {...formData.stats, [s]: parseInt(e.target.value)}})} /></div>))}</div></div><div className="flex gap-2"><button onClick={handleSave} className="flex-1 py-3 bg-zinc-100 hover:bg-white text-zinc-900 font-bold rounded-xl transition-colors">{t('save')}</button><button onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-colors">{t('cancel')}</button></div></div></div>)}
+                    {isSchoolManagerOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-lg font-bold text-white">{t('manageSchools')}</h2><button onClick={() => setIsSchoolManagerOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="max-h-[50vh] overflow-y-auto space-y-2 mb-4">{teams.map(teamItem => (<div key={teamItem} className="flex items-center justify-between bg-zinc-800 p-3 rounded-lg border border-zinc-700">{renamingTeam.original === teamItem ? (<div className="flex gap-2 flex-1"><input autoFocus className="flex-1 bg-zinc-950 px-2 py-1 text-sm text-white rounded outline-none border border-emerald-500" value={renamingTeam.current} onChange={e => setRenamingTeam({...renamingTeam, current: e.target.value})} /><button onClick={() => handleRenameTeam(teamItem)} className="text-emerald-500"><i className="fa-solid fa-check"></i></button></div>) : (<><span className="text-sm text-zinc-300">{teamItem}</span><div className="flex gap-2"><button onClick={() => setRenamingTeam({original: teamItem, current: teamItem})} className="text-zinc-500 hover:text-white"><i className="fa-solid fa-pen"></i></button><button onClick={() => handleDeleteTeam(teamItem)} className="text-zinc-500 hover:text-red-500"><i className="fa-solid fa-trash"></i></button></div></>)}</div>))}</div><button onClick={handleAddTeam} className="w-full py-2 bg-zinc-800 text-zinc-300 text-sm font-bold rounded border border-zinc-700 hover:bg-zinc-700 transition-colors">{t('addSchool')}</button></div></div>)}
                 </div>
             );
         };
