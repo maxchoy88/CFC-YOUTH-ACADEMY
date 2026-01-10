@@ -32,7 +32,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Initializing Coach Module...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Integrating WhatsApp...</p>
     </div>
     <div id="error-box"></div>
 
@@ -80,8 +80,8 @@
         };
 
         const INITIAL_COACHES = [
-            { id: 'c1', name: 'Coach Mourinho', role: 'Head Coach', rate: 200, phone: '012-3456789', attendanceHistory: [], paymentHistory: {} },
-            { id: 'c2', name: 'Coach Pep', role: 'Assistant', rate: 100, phone: '019-8765432', attendanceHistory: [], paymentHistory: {} }
+            { id: 'c1', name: 'Coach Mourinho', role: 'Head Coach', rate: 200, phone: '60123456789', attendanceHistory: [], paymentHistory: {} },
+            { id: 'c2', name: 'Coach Pep', role: 'Assistant', rate: 100, phone: '60198765432', attendanceHistory: [], paymentHistory: {} }
         ];
         // =================================================================
 
@@ -98,7 +98,6 @@
             zh: {
                 appTitle: "CFC YOUTH ACADEMY", systemName: "青训学院系统", localMode: "本地版", cloudMode: "云端同步",
                 backupRestore: "备份/恢复", manageSchools: "学校", attendanceTool: "出席库", financeTool: "财务", 
-                coachTool: "教练中心", // 🔥 New
                 register: "注册", searchPlaceholder: "搜索姓名、学校...", noData: "暂无球员数据",
                 age: "年龄", category: "组别", height: "身高", weight: "体重", attendance: "出席率",
                 attCount: "出席次数", totalCount: "年度目标", coachReport: "教练报告", editReport: "编辑报告",
@@ -126,10 +125,10 @@
                 finSearch: "搜索财务名单...",
                 
                 // Coach Module
-                coachTitle: "教练管理中心", coachList: "名单", coachAtt: "考勤", coachPay: "薪资",
+                coachTool: "教练中心", coachTitle: "教练管理中心", coachList: "名单", coachAtt: "考勤", coachPay: "薪资",
                 coachRole: "职位", coachRate: "单场津贴 (RM)", coachSessions: "场次", coachTotal: "应付工资",
                 coachPaid: "已发", coachUnpaid: "未发", addCoach: "新增教练",
-                coachExport: "导出薪资表", coachTotalPayout: "总支出",
+                coachExport: "导出薪资表", coachTotalPayout: "总支出", coachWhatsapp: "发消息", coachPayslip: "发工资单",
 
                 imgCloudSetup: "📷 图片云 (Cloudinary)", imgCloudName: "Cloud Name", imgUploadPreset: "Upload Preset", imgSave: "保存图片配置",
                 imgCloudDesc: "配置后，照片将自动上传云端 (需开启 Unsigned 模式)。", uploading: "☁️ 上传中...", imgTest: "测试连接",
@@ -141,6 +140,7 @@
                     formal: "【CFC 财务通知】您好，请查收 {name} {month} 月份的学费单 (RM{amount})。请在近期内完成缴费，感谢配合。"
                 },
                 bankDetails: "\n\n🏦 汇款资料:\n{bankName}\n{accNum}\n{holder}\n\n汇款后请发收据，谢谢！",
+                
                 stats: { pace: "速度", shooting: "射门", passing: "传球", dribbling: "盘带", defending: "防守", physical: "体能" },
                 ai: { analyzing: "分析中...", reportTitle: "教练深度评估报告", position: "球员定位", rating: "综合评级", strength: "核心竞争力", suggestion: "战术建议", comment: "教练评语", template: "均衡型球员", advice: "需进一步观察。", commentText: "潜力不错，建议继续观察。" },
                 status: { syncing: "⏳ 同步中...", ready: "✅ 就绪", fail: "❌ 失败", netError: "❌ 网络错误", saving: "☁️ 保存中...", saved: "✅ 已保存", saveFail: "❌ 保存失败", creating: "创建中...", created: "✅ 已创建", error: "❌ 错误" },
@@ -158,7 +158,6 @@
             en: {
                 appTitle: "CFC YOUTH ACADEMY", systemName: "ACADEMY SYSTEM", localMode: "Local", cloudMode: "Cloud Sync",
                 backupRestore: "Backup", manageSchools: "Schools", attendanceTool: "Attendance", financeTool: "Finance",
-                coachTool: "Coach Hub",
                 register: "Register", searchPlaceholder: "Search name, parent, phone...", noData: "No Data",
                 age: "Age", category: "Category", height: "Height", weight: "Weight", attendance: "Att.",
                 attCount: "Attended", totalCount: "Goal", coachReport: "Report", editReport: "Edit",
@@ -180,10 +179,10 @@
                 finTotal: "Revenue", finPending: "Pending", finRemind: "Remind", finExport: "Export Report",
                 finBank: "Bank Info", finCopy: "Copy", finCopied: "Copied!", finToggleAll: "Toggle All", finSearch: "Search Finance...",
                 
-                coachTitle: "Coach Manager", coachList: "List", coachAtt: "Attendance", coachPay: "Payroll",
+                coachTool: "Coach Hub", coachTitle: "Coach Manager", coachList: "List", coachAtt: "Attendance", coachPay: "Payroll",
                 coachRole: "Role", coachRate: "Rate/Session", coachSessions: "Sessions", coachTotal: "Total Due",
                 coachPaid: "Paid", coachUnpaid: "Pending", addCoach: "Add Coach",
-                coachExport: "Export Payroll", coachTotalPayout: "Total Payout",
+                coachExport: "Export Payroll", coachTotalPayout: "Total Payout", coachWhatsapp: "Message", coachPayslip: "Send Payslip",
 
                 imgCloudSetup: "📷 Image Cloud (Cloudinary)", imgCloudName: "Cloud Name", imgUploadPreset: "Upload Preset", imgSave: "Save Config",
                 imgCloudDesc: "Photos will be uploaded to cloud (Unsigned mode required).", uploading: "☁️ Uploading...", imgTest: "Test Connection",
@@ -211,7 +210,6 @@
             ms: {
                 appTitle: "AKADEMI BELIA CFC", systemName: "SISTEM AKADEMI", localMode: "Tempatan", cloudMode: "Awan",
                 backupRestore: "Sandaran", manageSchools: "Sekolah", attendanceTool: "Kehadiran", financeTool: "Kewangan",
-                coachTool: "Jurulatih",
                 register: "Daftar", searchPlaceholder: "Cari nama, ibu bapa, tel...", noData: "Tiada Data",
                 age: "Umur", category: "Kategori", height: "Tinggi", weight: "Berat", attendance: "Kehadiran",
                 attCount: "Hadir", totalCount: "Sasaran", coachReport: "Laporan", editReport: "Sunting",
@@ -233,10 +231,10 @@
                 finTotal: "Hasil", finPending: "Tunggakan", finRemind: "Ingatkan", finExport: "Eksport Laporan",
                 finBank: "Bank", finCopy: "Salin", finCopied: "Disalin!", finToggleAll: "Tanda Semua", finSearch: "Cari...",
                 
-                coachTitle: "Pengurusan Jurulatih", coachList: "Senarai", coachAtt: "Kehadiran", coachPay: "Gaji",
+                coachTool: "Jurulatih", coachTitle: "Pengurusan Jurulatih", coachList: "Senarai", coachAtt: "Kehadiran", coachPay: "Gaji",
                 coachRole: "Jawatan", coachRate: "Kadar/Sesi", coachSessions: "Sesi", coachTotal: "Jumlah",
                 coachPaid: "Dibayar", coachUnpaid: "Belum", addCoach: "Tambah Jurulatih",
-                coachExport: "Eksport Gaji", coachTotalPayout: "Jumlah Bayaran",
+                coachExport: "Eksport Gaji", coachTotalPayout: "Jumlah Bayaran", coachWhatsapp: "Mesej", coachPayslip: "Hantar Slip",
 
                 imgCloudSetup: "Awan Gambar (Cloudinary)", imgCloudName: "Nama Cloud", imgUploadPreset: "Preset Muat Naik", imgSave: "Simpan Tetapan",
                 imgCloudDesc: "Foto akan dimuat naik ke awan. Guna preset 'Unsigned'.", uploading: "☁️ Sedang Muat Naik...", imgTest: "Uji Sambungan",
@@ -535,6 +533,18 @@
                 });
                 return { list, totalPayout };
             };
+            
+            // 🔥 Coach WhatsApp Helpers
+            const sendCoachMessage = (coach) => {
+                const msg = `Hi Coach ${coach.name}, 👋`;
+                window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+            };
+
+            const sendCoachPayslip = (coach) => {
+                const msg = `Hi Coach ${coach.name} 👋,\n\n📊 *Payslip for ${financeMonth}*\n\n⚽ Sessions: ${coach.sessions}\n💰 Rate: RM ${coach.rate}\n💵 *Total: RM ${coach.amount}*\n\nStatus: ${coach.isPaid ? '✅ PAID' : '⏳ PENDING'}\n\nThank you for your hard work! 🔥`;
+                window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+            };
+
 
             // ... (Cloud Logic: stripImages, syncFromCloud, syncToCloud, createCloudBin, handleConnectCloud, saveToLocal - Same as before) ...
             const stripImages = (data) => {
@@ -1023,10 +1033,11 @@
                                                         <div className="text-xs text-zinc-400 flex gap-2 mt-1">
                                                             <span className="bg-zinc-700 px-1.5 rounded text-blue-300">{c.role}</span>
                                                             <span>RM {c.rate}/ses</span>
-                                                            <span>{c.phone}</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2">
+                                                        {/* 🔥 New WhatsApp Button */}
+                                                        <button onClick={() => sendCoachMessage(c)} className="w-8 h-8 bg-[#25D366]/20 hover:bg-[#25D366] text-[#25D366] hover:text-white border border-[#25D366]/50 rounded-full flex items-center justify-center transition-all"><i className="fa-brands fa-whatsapp"></i></button>
                                                         <button onClick={() => { setEditingCoach(c); setCoachForm(c); }} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 rounded-full text-zinc-300"><i className="fa-solid fa-pen"></i></button>
                                                         <button onClick={() => deleteCoach(c.id)} className="w-8 h-8 bg-red-900/30 hover:bg-red-900/50 border border-red-900 rounded-full text-red-500"><i className="fa-solid fa-trash"></i></button>
                                                     </div>
@@ -1083,9 +1094,13 @@
                                                         </div>
                                                         <div className="text-right flex flex-col items-end gap-1">
                                                             <span className="text-sm font-bold text-white">RM {c.amount}</span>
-                                                            <button onClick={() => toggleCoachPayment(c.id)} className={`px-2 py-1 rounded text-[10px] font-bold border ${c.isPaid ? 'bg-emerald-600 text-white border-emerald-600' : 'text-zinc-500 border-zinc-600 hover:border-yellow-500 hover:text-yellow-500'}`}>
-                                                                {c.isPaid ? t('coachPaid') : t('coachUnpaid')}
-                                                            </button>
+                                                            <div className="flex gap-2">
+                                                                {/* 🔥 New Payslip Button */}
+                                                                <button onClick={() => sendCoachPayslip(c)} className="w-6 h-6 bg-[#25D366]/20 hover:bg-[#25D366] text-[#25D366] hover:text-white border border-[#25D366]/50 rounded flex items-center justify-center transition-all" title={t('coachPayslip')}><i className="fa-brands fa-whatsapp text-xs"></i></button>
+                                                                <button onClick={() => toggleCoachPayment(c.id)} className={`px-2 py-1 rounded text-[10px] font-bold border ${c.isPaid ? 'bg-emerald-600 text-white border-emerald-600' : 'text-zinc-500 border-zinc-600 hover:border-yellow-500 hover:text-yellow-500'}`}>
+                                                                    {c.isPaid ? t('coachPaid') : t('coachUnpaid')}
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -1104,7 +1119,6 @@
                     <div className="flex gap-2"><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('email')} value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('tin')} value={formData.tin || ''} onChange={e => setFormData({...formData, tin: e.target.value})} /></div>
                     
                     <div className="flex gap-2"><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('height')} value={formData.height || ''} onChange={e => setFormData({...formData, height: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">cm</span></div><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('weight')} value={formData.weight || ''} onChange={e => setFormData({...formData, weight: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">kg</span></div><div className="w-1/3"><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.category || 'U18'} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div></div></div></div><div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><div className="flex flex-col"><span className="text-xs font-bold text-zinc-400">{t('attendance')}</span><span className={formData.attendance >= 90 ? 'text-emerald-500 font-bold' : 'text-white font-bold'}>{formData.attendance || 0}%</span></div><div className="flex items-center gap-2"><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('attCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.attendedSessions || 0} onChange={(e) => handleAttendanceChange('attendedSessions', e.target.value)} /></div><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('totalCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.totalSessions || PRESET_YEARLY_TOTAL} onChange={(e) => handleAttendanceChange('totalSessions', e.target.value)} /></div><button onClick={resetPlayerStats} className="ml-2 bg-red-900/30 hover:bg-red-900/50 text-red-500 text-[10px] px-2 py-2 rounded border border-red-900/50 h-full flex items-center justify-center" title={t('resetStats')}><i className="fa-solid fa-rotate-right"></i></button></div></div><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}>{teams.map(teamItem => <option key={teamItem} value={teamItem}>{teamItem}</option>)}</select><div className="grid grid-cols-2 gap-2"><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.primaryPosition} onChange={e => setFormData({...formData, primaryPosition: e.target.value})}>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.secondaryPosition} onChange={e => setFormData({...formData, secondaryPosition: e.target.value})}><option value="无">无</option>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-800 p-4 rounded-xl mb-4">{Object.keys(formData.stats).map(s => (<div key={s}><div className="flex justify-between text-[10px] text-zinc-400 uppercase mb-1"><span>{t('stats', s)}</span> <span>{formData.stats[s]}</span></div><input type="range" min="0" max="99" className="w-full accent-white h-1 bg-zinc-600 rounded-lg appearance-none" value={formData.stats[s]} onChange={e => setFormData({...formData, stats: {...formData.stats, [s]: parseInt(e.target.value)}})} /></div>))}</div></div><div className="flex gap-2"><button onClick={handleSave} className="flex-1 py-3 bg-zinc-100 hover:bg-white text-zinc-900 font-bold rounded-xl transition-colors">{t('save')}</button><button onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-colors">{t('cancel')}</button></div></div></div>)}
-                    {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
                 </div>
             );
         };
