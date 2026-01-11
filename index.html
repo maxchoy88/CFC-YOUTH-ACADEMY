@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CFCYA</title>
+    <title>CFC YOUTH ACADEMY</title>
     
     <!-- PWA Core (iOS & Android) -->
     <meta name="theme-color" content="#09090b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CFCYA">
+    <meta name="apple-mobile-web-app-title" content="CFC Academy"> <!-- iOS 桌面名 (略短以防截断) -->
     
-    <!-- Dynamic Icons -->
+    <!-- Dynamic Icons (初始默认值，会被 JS 替换为你的 Logo) -->
     <link id="dynamic-favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
     <link id="dynamic-apple-icon" rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
     
-    <!-- Dynamic Manifest -->
-    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDWUEiLCJzaG9ydF9uYW1lIjoiQ0ZDWUEiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA5MDkwYiIsInRoZW1lX2NvbG9yIjoiIzA5MDkwYiIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2N0bi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zMzA5LzMzMDk5OTEucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9LHsic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnYtcG5nLmZsYXRpY29uLmNvbS81MTIvMzMwOS8zMzA5OTkxLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
+    <!-- Dynamic Manifest (初始配置) -->
+    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDIFFvdXRoIEFjYWRlbXkiLCJzaG9ydF9uYW1lIjoiQ0ZDIEFjYWRlbXkiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA5MDkwYiIsInRoZW1lX2NvbG9yIjoiIzA5MDkwYiIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2N0bi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zMzA5LzMzMDk5OTEucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9LHsic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnYtcG5nLmZsYXRpY29uLmNvbS81MTIvMzMwOS8zMzA5OTkxLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
 
     <!-- Libs -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -46,8 +46,8 @@
 <body>
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
-        <h2 class="text-xl font-bold">CFCYA</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Loading System...</p>
+        <h2 class="text-xl font-bold mt-4 tracking-wider">CFC YOUTH ACADEMY</h2>
+        <p id="loading-text" class="text-zinc-500 text-xs mt-2">System Ready...</p>
     </div>
     <div id="error-box"></div>
 
@@ -285,20 +285,6 @@
                 coachPaid: "Dibayar", coachUnpaid: "Belum", addCoach: "Tambah Jurulatih",
                 coachExport: "Eksport Gaji", coachTotalPayout: "Jumlah Bayaran", coachWhatsapp: "Mesej", coachPayslip: "Hantar Slip",
                 selectSchool: "Pilih Sekolah", coachDetails: "Butiran",
-                
-                // Auth
-                auth: {
-                    welcome: "YOUR FUTURE IS NOW!",
-                    selectMode: "Pilih Mod Log Masuk",
-                    adminMode: "MASTER MODE",
-                    userMode: "PLAYER MODE",
-                    enterPin: "Masukkan PIN Admin",
-                    wrongPin: "PIN Salah",
-                    login: "Log Masuk",
-                    logout: "Log Keluar",
-                    adminDesc: "Akses Penuh: Kehadiran, Kewangan, Sunting.",
-                    userDesc: "Baca Sahaja: Lihat statistik, status."
-                },
 
                 imgCloudSetup: "Awan Gambar (Cloudinary)", imgCloudName: "Nama Cloud", imgUploadPreset: "Preset Muat Naik", imgSave: "Simpan Tetapan",
                 imgCloudDesc: "Foto akan dimuat naik ke awan. Guna preset 'Unsigned'.", uploading: "☁️ Sedang Muat Naik...", imgTest: "Uji Sambungan",
@@ -575,8 +561,8 @@
 
                     // Update Manifest
                     const dynamicManifest = {
-                        name: "CFCYA",
-                        short_name: "CFCYA",
+                        name: "CFC YOUTH ACADEMY",
+                        short_name: "CFC Academy",
                         start_url: ".",
                         display: "standalone",
                         background_color: "#09090b",
@@ -768,7 +754,7 @@
                              });
                         } else { mergedTrainees = INITIAL_TRAINEES; }
                         
-                        // 🔥 Smart Merge for Logo: If cloud is null, keep local
+                        // 🔥 Smart Merge for Logo: Use local if cloud is null, otherwise use cloud (which might be base64 now)
                         let finalLogo = data.appLogo;
                         if (!finalLogo && localData.appLogo && localData.appLogo.startsWith('data:')) {
                             finalLogo = localData.appLogo;
@@ -1040,7 +1026,7 @@
                         <div className="w-24 h-24 mb-6 rounded-2xl overflow-hidden shadow-2xl border-2 border-zinc-800">
                              {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-6xl flex items-center justify-center h-full bg-zinc-900"></i>}
                         </div>
-                        <h1 className="text-3xl font-black text-white mb-2 tracking-tight">CFCYA</h1>
+                        <h1 className="text-3xl font-black text-white mb-2 tracking-tight">CFC YOUTH ACADEMY</h1>
                         <p className="text-zinc-500 text-sm mb-10">{t('auth', 'welcome')}</p>
                         
                         <div className="w-full max-w-sm space-y-4">
