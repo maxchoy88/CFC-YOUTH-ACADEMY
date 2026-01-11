@@ -3,30 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CFC Youth Academy</title>
+    <title>CFC</title>
     
-    <!-- PWA 配置 (核心) -->
+    <!-- PWA Core -->
     <meta name="theme-color" content="#09090b">
-    <!-- 开启 iOS 全屏模式 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <!-- 状态栏透明 (沉浸式体验) -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- 桌面图标名称 (缩短为 CFC 以保持简洁) -->
     <meta name="apple-mobile-web-app-title" content="CFC">
     
-    <!-- 默认图标 (会被 JS 动态替换为用户上传的 Logo) -->
+    <!-- Dynamic Icons -->
     <link id="dynamic-favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
     <link id="dynamic-apple-icon" rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
     
-    <!-- 初始 Manifest (会被 JS 动态覆盖) -->
-    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDIFFvdXRoIEFjYWRlbXkiLCJzaG9ydF9uYW1lIjoiQ0ZDIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwOTA5MGIiLCJ0aGVtZV9jb2xvciI6IiMwOTA5MGIiLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnYtcG5nLmZsYXRpY29uLmNvbS81MTIvMzMwOS8zMzA5OTkxLnBuZyIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9wbmcifSx7InNyYyI6Imh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzMzMDkvMzMwOTk5MS5wbmciLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn1dfQ==">
+    <!-- Dynamic Manifest -->
+    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDIiwic2hvcnRfbmFtZSI6IkNGQyIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMDkwOTBiIiwidGhlbWVfY29sb3IiOiIjMDkwOTBiIiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzMzMDkvMzMwOTk5MS5wbmciLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn0seyJzcmMiOiJodHRwczovL2N0bi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zMzA5LzMzMDk5OTEucG5nIiwic2l6ZXMiOiI1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyJ9XX0=">
 
-    <!-- 样式与图标 -->
+    <!-- Libs -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 
-    <!-- React 核心 -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -42,7 +38,7 @@
         .hidden { opacity: 0; pointer-events: none; }
         input[type="date"], input[type="month"] { color-scheme: dark; }
         #error-box { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #ef4444; color: white; padding: 10px; z-index: 100; text-align: center; font-size: 12px; }
-        /* 针对 iOS PWA 顶部的安全区域优化 */
+        /* Safe Area for iOS PWA */
         header { padding-top: env(safe-area-inset-top); }
     </style>
 </head>
@@ -50,7 +46,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">App Mode...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Fixing Storage...</p>
     </div>
     <div id="error-box"></div>
 
@@ -126,7 +122,7 @@
                 backupToDrive: "备份到 Google Drive", exportDesc: "生成备份文件并自动打开你的云端文件夹。",
                 restoreData: "恢复数据", restoreDesc: "从手机文件夹中选择之前的备份文件 (.json)。",
                 selectFile: "选择备份文件", shareProfile: "分享档案", sendToParents: "发送给家长 (含照片)",
-                textOnly: "仅发送文字报告", cropTitle: "裁剪头像", rotate: "旋转", confirmCrop: "确认裁剪",
+                textOnly: "仅发送文字报告", cropTitle: "裁剪头像", rotate: "旋转", confirmCrop: "确认并保存 Logo",
                 attTitle: "智能出席库", attDate: "记录日期", attPaste: "📄 粘贴名单导入 (WhatsApp/Excel)",
                 attPasteDesc: "直接粘贴文字，系统会自动识别名单中的名字并勾选。",
                 attPlaceholder: "例如：今日出席：Arthur, Stella, Money...",
@@ -188,7 +184,7 @@
                 backupToDrive: "Backup to Drive", exportDesc: "Generate backup file.",
                 restoreData: "Restore", restoreDesc: "Restore from file.", selectFile: "Select File",
                 shareProfile: "Share", sendToParents: "📲 Send Photo via WhatsApp", textOnly: "Text Only",
-                cropTitle: "Crop", rotate: "Rotate", confirmCrop: "Upload & Save",
+                cropTitle: "Crop", rotate: "Rotate", confirmCrop: "Confirm & Save Logo",
                 attTitle: "Attendance", attDate: "Date", attPaste: "Paste List", attPasteDesc: "Auto-check",
                 attPlaceholder: "Names...", attConfirm: "Submit", attShare: "Share", attWhatsapp: "WhatsApp",
                 attExcel: "Export Report", attTotal: "Total", attPresent: "Present", resetStats: "Reset",
@@ -243,7 +239,7 @@
                 backupToDrive: "Sandaran Drive", exportDesc: "Jana fail sandaran.",
                 restoreData: "Pulihkan", restoreDesc: "Pilih fail .json.", selectFile: "Pilih Fail",
                 shareProfile: "Kongsi", sendToParents: "Hantar (Foto)", textOnly: "Teks Sahaja",
-                cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Muat Naik & Simpan",
+                cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Sahkan & Simpan Logo",
                 attTitle: "Pusat Kehadiran", attDate: "Tarikh", attPaste: "Tampal Senarai", attPasteDesc: "Auto-tanda",
                 attPlaceholder: "Contoh: Hadir: Arthur...", attConfirm: "Hantar",
                 attShare: "Kongsi", attWhatsapp: "WhatsApp", attExcel: "Eksport Laporan", attTotal: "Jumlah", attPresent: "Hadir",
@@ -488,32 +484,29 @@
 
             // --- Central Update ---
             const updateData = (newData) => {
-                // 1. Calculate merged state first to ensure consistency
-                const currentData = { 
-                    trainees: newData.trainees !== undefined ? newData.trainees : trainees, 
-                    teams: newData.teams !== undefined ? newData.teams : teams, 
-                    leagueName: newData.leagueName !== undefined ? newData.leagueName : leagueName, 
-                    appLogo: newData.appLogo !== undefined ? newData.appLogo : appLogo,
-                    coaches: newData.coaches !== undefined ? newData.coaches : coaches,
-                };
-
-                // 2. Update React State
+                // 1. Get current data from Local Storage (Source of Truth)
+                const currentData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
+                
+                // 2. Merge new data
+                const mergedData = { ...currentData, ...newData };
+                
+                // 3. Update React State
                 if (newData.trainees) setTrainees(newData.trainees);
                 if (newData.teams) setTeams(newData.teams);
                 if (newData.leagueName) setLeagueName(newData.leagueName);
                 if (newData.appLogo !== undefined) setAppLogo(newData.appLogo);
                 if (newData.coaches) setCoaches(newData.coaches);
 
-                // 3. Save to Local Storage
+                // 4. Save to Local Storage
                 try {
-                    localStorage.setItem('cfc_local_db', JSON.stringify(currentData));
+                    localStorage.setItem('cfc_local_db', JSON.stringify(mergedData));
                 } catch (e) {
                     alert("Storage full! Please clean up or enable Cloud.");
                 }
 
-                // 4. Sync to Cloud
+                // 5. Sync to Cloud
                 if (isCloudConnected) { 
-                    syncToCloud(currentData); 
+                    syncToCloud(mergedData); 
                 }
             };
             
@@ -530,7 +523,7 @@
 
                     // Update Manifest
                     const dynamicManifest = {
-                        name: "CFC Youth Academy",
+                        name: "CFC",
                         short_name: "CFC",
                         start_url: ".",
                         display: "standalone",
@@ -653,8 +646,7 @@
                     if (t.image && t.image.startsWith('data:image')) t.image = DEFAULT_IMAGE; 
                     return t; 
                 });
-                // 🔥 CRITICAL FIX: To force persistence of the logo, DO NOT strip it if it's base64.
-                // We rely on "Local-First" logic to keep it safe.
+                // 🔥 CRITICAL FIX: Allow Logo to be saved even if it is Base64
                 // if (cleanData.appLogo && cleanData.appLogo.startsWith('data:image')) cleanData.appLogo = null;
                 
                 return cleanData;
@@ -722,13 +714,23 @@
                              });
                         } else { mergedTrainees = INITIAL_TRAINEES; }
                         
-                        // 🔥 Smart Merge for Logo: Use local if cloud is null, otherwise use cloud
+                        // 🔥 Smart Merge for Logo: Use local if cloud is null
                         let finalLogo = data.appLogo;
                         if (!finalLogo && localData.appLogo && localData.appLogo.startsWith('data:')) {
                             finalLogo = localData.appLogo;
                         }
 
+                        // 🔥 If we used local logo because cloud was null, FORCE push it back to cloud
+                        const needsPush = (!data.appLogo && finalLogo);
+                        
                         updateData({ ...data, trainees: mergedTrainees, appLogo: finalLogo }); 
+                        
+                        if (needsPush) {
+                            setTimeout(() => {
+                                syncToCloud({ ...data, trainees: mergedTrainees, appLogo: finalLogo });
+                            }, 1000);
+                        }
+
                         setIsCloudConnected(true); setCloudStatus(t('status', 'ready')); setTimeout(() => setCloudStatus(""), 2000);
                     } else { setCloudStatus(t('status', 'fail')); setIsCloudConnected(false); }
                 } catch (e) { setCloudStatus(t('status', 'netError')); setIsCloudConnected(false); }
@@ -737,8 +739,11 @@
             const syncToCloud = async (dataOverride = null) => {
                 if (!isCloudConnected || !cloudConfig.key || !cloudConfig.binId) return;
                 setCloudStatus(t('status', 'saving'));
-                const rawData = dataOverride || { trainees, teams, leagueName, coaches, appLogo }; 
-                const cleanData = stripImages(rawData);
+                
+                // Use localStorage as source of truth for full object construction
+                const currentData = dataOverride || JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
+                
+                const cleanData = stripImages(currentData);
                 try { await fetch(`${JSONBIN_URL}/${cloudConfig.binId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': cloudConfig.key }, body: JSON.stringify(cleanData) }); setCloudStatus(t('status', 'saved')); setTimeout(() => setCloudStatus(""), 2000); } catch (e) { setCloudStatus(t('status', 'saveFail')); }
             };
 
@@ -1394,13 +1399,14 @@
                         </div>
                     )}
                     {/* 🔥 Updated Edit/Register Modal (Clean & Safe) */}
-                    {isModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-white">{editingTrainee ? t('updateProfile') : t('newPlayer')}</h2><button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4 mb-6"><div className="flex items-center gap-4"><div className="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center overflow-hidden border border-zinc-700 shrink-0 cursor-pointer relative" onClick={() => fileInputRef.current.click()}>{formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <i className="fa-solid fa-camera text-zinc-600"></i>}<input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFile} /></div><div className="flex-1 space-y-2"><input className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('name')} value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} /><div className="flex gap-2"><input type="number" className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('age')} value={formData.age || ''} onChange={e => setFormData({...formData, age: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('nationality')} value={formData.nationality || ''} onChange={e => setFormData({...formData, nationality: e.target.value})} /></div>
+                    {isModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-white">{editingTrainee ? t('updateProfile') : t('newPlayer')}</h2><button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4 mb-6"><div className="flex items-center gap-4"><div className="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center overflow-hidden border border-zinc-700 shrink-0 cursor-pointer relative" onClick={() => fileInputRef.current.click()}>{formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <i className="fa-solid fa-camera text-zinc-600"></i>}<input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleTraineeFile} /></div><div className="flex-1 space-y-2"><input className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('name')} value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} /><div className="flex gap-2"><input type="number" className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('age')} value={formData.age || ''} onChange={e => setFormData({...formData, age: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('nationality')} value={formData.nationality || ''} onChange={e => setFormData({...formData, nationality: e.target.value})} /></div>
                     
                     {/* 🔥 新增档案字段 (父母/电话/邮件/TIN) */}
                     <div className="flex gap-2"><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('parentName')} value={formData.parentName || ''} onChange={e => setFormData({...formData, parentName: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('phone')} value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
                     <div className="flex gap-2"><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('email')} value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('tin')} value={formData.tin || ''} onChange={e => setFormData({...formData, tin: e.target.value})} /></div>
                     
                     <div className="flex gap-2"><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('height')} value={formData.height || ''} onChange={e => setFormData({...formData, height: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">cm</span></div><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('weight')} value={formData.weight || ''} onChange={e => setFormData({...formData, weight: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">kg</span></div><div className="w-1/3"><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.category || 'U18'} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div></div></div></div><div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><div className="flex flex-col"><span className="text-xs font-bold text-zinc-400">{t('attendance')}</span><span className={formData.attendance >= 90 ? 'text-emerald-500 font-bold' : 'text-white font-bold'}>{formData.attendance || 0}%</span></div><div className="flex items-center gap-2"><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('attCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.attendedSessions || 0} onChange={(e) => handleAttendanceChange('attendedSessions', e.target.value)} /></div><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('totalCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.totalSessions || PRESET_YEARLY_TOTAL} onChange={(e) => handleAttendanceChange('totalSessions', e.target.value)} /></div><button onClick={resetPlayerStats} className="ml-2 bg-red-900/30 hover:bg-red-900/50 text-red-500 text-[10px] px-2 py-2 rounded border border-red-900/50 h-full flex items-center justify-center" title={t('resetStats')}><i className="fa-solid fa-rotate-right"></i></button></div></div><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}>{teams.map(teamItem => <option key={teamItem} value={teamItem}>{teamItem}</option>)}</select><div className="grid grid-cols-2 gap-2"><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.primaryPosition} onChange={e => setFormData({...formData, primaryPosition: e.target.value})}>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.secondaryPosition} onChange={e => setFormData({...formData, secondaryPosition: e.target.value})}><option value="无">无</option>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-800 p-4 rounded-xl mb-4">{Object.keys(formData.stats).map(s => (<div key={s}><div className="flex justify-between text-[10px] text-zinc-400 uppercase mb-1"><span>{t('stats', s)}</span> <span>{formData.stats[s]}</span></div><input type="range" min="0" max="99" className="w-full accent-white h-1 bg-zinc-600 rounded-lg appearance-none" value={formData.stats[s]} onChange={e => setFormData({...formData, stats: {...formData.stats, [s]: parseInt(e.target.value)}})} /></div>))}</div></div><div className="flex gap-2"><button onClick={handleSave} className="flex-1 py-3 bg-zinc-100 hover:bg-white text-zinc-900 font-bold rounded-xl transition-colors">{t('save')}</button><button onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-colors">{t('cancel')}</button></div></div></div>)}
+                    {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
                 </div>
             );
         };
