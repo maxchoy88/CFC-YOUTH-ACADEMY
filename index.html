@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CFC YOUTH ACADEMY</title>
+    <title>CFCYA</title>
     
     <!-- PWA Core (iOS & Android) -->
     <meta name="theme-color" content="#09090b">
-    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- 隐藏 Safari 地址栏 -->
+    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- 隐藏 iOS Safari 地址栏 -->
     <meta name="mobile-web-app-capable" content="yes"> <!-- Android 兼容 -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CFC YOUTH ACADEMY"> <!-- iOS 桌面名称 -->
+    <meta name="apple-mobile-web-app-title" content="CFCYA"> <!-- iOS 桌面名称 -->
     
     <!-- Dynamic Icons -->
     <link id="dynamic-favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
     <link id="dynamic-apple-icon" rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
     
-    <!-- Dynamic Manifest (初始配置 - 已更新名称为 CFC YOUTH ACADEMY) -->
-    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDIFFPVVRIIEFDQURFTVkiLCJzaG9ydF9uYW1lIjoiQ0ZDIFFPVVRIIEFDQURFTVkiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA5MDkwYiIsInRoZW1lX2NvbG9yIjoiIzA5MDkwYiIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2N0bi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zMzA5LzMzMDk5OTEucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9LHsic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnYtcG5nLmZsYXRpY29uLmNvbS81MTIvMzMwOS8zMzA5OTkxLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
+    <!-- Dynamic Manifest (CFCYA 专用配置) -->
+    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDWUEiLCJzaG9ydF9uYW1lIjoiQ0ZDWUEiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA5MDkwYiIsInRoZW1lX2NvbG9yIjoiIzA5MDkwYiIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2N0bi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zMzA5LzMzMDk5OTEucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9LHsic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnYtcG5nLmZsYXRpY29uLmNvbS81MTIvMzMwOS8zMzA5OTkxLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
 
     <!-- Libs -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -46,8 +46,8 @@
 <body>
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
-        <h2 class="text-xl font-bold">CFC YOUTH ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Updating Manifest...</p>
+        <h2 class="text-xl font-bold">CFCYA</h2>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">System Ready...</p>
     </div>
     <div id="error-box"></div>
 
@@ -527,8 +527,8 @@
 
                     // Update Manifest
                     const dynamicManifest = {
-                        name: "CFC YOUTH ACADEMY",
-                        short_name: "CFC YOUTH ACADEMY",
+                        name: "CFCYA",
+                        short_name: "CFCYA",
                         start_url: ".",
                         display: "standalone",
                         background_color: "#09090b",
