@@ -10,14 +10,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CFC Academy"> <!-- iOS 桌面名 (略短以防截断) -->
+    <meta name="apple-mobile-web-app-title" content="CFC YOUTH ACADEMY">
     
-    <!-- Dynamic Icons (初始默认值，会被 JS 替换为你的 Logo) -->
+    <!-- Dynamic Icons -->
     <link id="dynamic-favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
     <link id="dynamic-apple-icon" rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
     
-    <!-- Dynamic Manifest (初始配置) -->
-    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDIFFvdXRoIEFjYWRlbXkiLCJzaG9ydF9uYW1lIjoiQ0ZDIEFjYWRlbXkiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA5MDkwYiIsInRoZW1lX2NvbG9yIjoiIzA5MDkwYiIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2N0bi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zMzA5LzMzMDk5OTEucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9LHsic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnYtcG5nLmZsYXRpY29uLmNvbS81MTIvMzMwOS8zMzA5OTkxLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
+    <!-- Dynamic Manifest -->
+    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDIFFvdXRoIEFjYWRlbXkiLCJzaG9ydF9uYW1lIjoiQ0ZDIFFvdXRoIEFjYWRlbXkiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA5MDkwYiIsInRoZW1lX2NvbG9yIjoiIzA5MDkwYiIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2N0bi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zMzA5LzMzMDk5OTEucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9LHsic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnYtcG5nLmZsYXRpY29uLmNvbS81MTIvMzMwOS8zMzA5OTkxLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
 
     <!-- Libs -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,16 +38,16 @@
         #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 50; transition: opacity 0.5s; }
         .hidden { opacity: 0; pointer-events: none; }
         input[type="date"], input[type="month"] { color-scheme: dark; }
-        #error-box { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #ef4444; color: white; padding: 10px; z-index: 100; text-align: center; font-size: 12px; }
-        /* Safe Area */
+        #error-box { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #ef4444; color: white; padding: 10px; z-index: 200; text-align: center; font-size: 12px; }
         header { padding-top: env(safe-area-inset-top); }
+        .modal-overlay { z-index: 100; }
     </style>
 </head>
 <body>
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold mt-4 tracking-wider">CFC YOUTH ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-xs mt-2">System Ready...</p>
+        <p id="loading-text" class="text-zinc-500 text-xs mt-2">Upgrading Stats...</p>
     </div>
     <div id="error-box"></div>
 
@@ -79,7 +79,7 @@
         const MY_CLOUD_NAME = "dtlsbbj1v"; 
         const PRESET_YEARLY_TOTAL = 52;
         const DEFAULT_MONTHLY_FEE = 150;
-        const ADMIN_PIN = "8888"; // 🔑 管理员密码
+        const ADMIN_PIN = "8888"; 
 
         const BANK_INFO = {
             bankName: "OCBC BANK",
@@ -148,7 +148,7 @@
                 coachExport: "导出薪资表", coachTotalPayout: "总支出", coachWhatsapp: "发消息", coachPayslip: "发工资单",
                 selectSchool: "选择打卡校区", coachDetails: "查看明细",
                 
-                // Auth (Correctly Nested)
+                // Auth
                 auth: {
                     welcome: "YOUR FUTURE IS NOW!",
                     selectMode: "请选择登录模式",
@@ -422,31 +422,36 @@
             const logoInputRef = useRef(null);
             const backupInputRef = useRef(null);
 
-            // --- Init ---
+            // --- Init & Data Sanitation ---
             useEffect(() => {
                 const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
                 const savedCloud = JSON.parse(localStorage.getItem('cfc_jsonbin_config') || '{}');
                 const savedImgCloud = JSON.parse(localStorage.getItem('cfc_cloudinary_config') || '{}');
 
                 if (localData.trainees) {
+                    // 🔥 Data Detox: Fix corrupted strings
                     const sanitized = localData.trainees.map(trainee => {
                         let total = trainee.totalSessions || PRESET_YEARLY_TOTAL;
                         if (total === 0) total = PRESET_YEARLY_TOTAL;
                         let attended = trainee.attendedSessions || 0;
                         if (attended > total) total = attended; 
                         const rate = Math.round((attended / total) * 100);
+                        
+                        // Safety Checks
                         return {
                             ...trainee,
+                            name: typeof trainee.name === 'string' ? trainee.name : 'Unknown',
+                            team: typeof trainee.team === 'string' ? trainee.team : 'Free Agent',
                             totalSessions: total,
                             attendedSessions: attended,
                             attendance: rate,
                             attendanceHistory: Array.isArray(trainee.attendanceHistory) ? trainee.attendanceHistory : [],
                             feeHistory: trainee.feeHistory || {},
                             stats: trainee.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 },
-                            parentName: trainee.parentName || '',
-                            phone: trainee.phone || '',
-                            email: trainee.email || '',
-                            tin: trainee.tin || ''
+                            parentName: typeof trainee.parentName === 'string' ? trainee.parentName : '',
+                            phone: typeof trainee.phone === 'string' ? trainee.phone : '',
+                            email: typeof trainee.email === 'string' ? trainee.email : '',
+                            tin: typeof trainee.tin === 'string' ? trainee.tin : ''
                         };
                     });
                     setTrainees(sanitized);
@@ -454,10 +459,7 @@
                     setTrainees(INITIAL_TRAINEES);
                 }
                 
-                if (localData.coaches) {
-                    setCoaches(localData.coaches);
-                }
-
+                if (localData.coaches) setCoaches(localData.coaches);
                 if (localData.teams) {
                     setTeams(localData.teams);
                     setCoachAttSchool(localData.teams[0] || 'Default');
@@ -562,7 +564,7 @@
                     // Update Manifest
                     const dynamicManifest = {
                         name: "CFC YOUTH ACADEMY",
-                        short_name: "CFC Academy",
+                        short_name: "CFC YOUTH ACADEMY",
                         start_url: ".",
                         display: "standalone",
                         background_color: "#09090b",
@@ -581,8 +583,27 @@
             }, [appLogo]);
 
             // --- FUNCTIONS ---
+            
+            // 🔥 GRADE CALCULATION (NEW!)
+            const getStatGrade = (val) => {
+                const v = parseInt(val) || 0;
+                if (v >= 85) return 'A';
+                if (v >= 70) return 'B';
+                if (v >= 55) return 'C';
+                return 'D';
+            };
+
+            const getGradeColor = (grade) => {
+                switch(grade) {
+                    case 'A': return 'text-emerald-400 font-black';
+                    case 'B': return 'text-blue-400 font-bold';
+                    case 'C': return 'text-yellow-400 font-bold';
+                    default: return 'text-zinc-500 font-medium';
+                }
+            };
+
             const getOptimizedImageUrl = (url) => {
-                if (!url || !url.includes('cloudinary.com')) return url;
+                if (!url || typeof url !== 'string' || !url.includes('cloudinary.com')) return url || DEFAULT_IMAGE;
                 if (url.includes('/f_avif,q_auto/')) return url; 
                 return url.replace('/upload/', '/upload/f_avif,q_auto/');
             };
@@ -835,7 +856,39 @@
             const handleRotate = () => { if (cropperRef.current) cropperRef.current.rotate(90); };
             const handleAttendanceChange = (field, value) => { const val = parseInt(value) || 0; let newData = { ...formData, [field]: val }; const att = field === 'attendedSessions' ? val : formData.attendedSessions; const tot = field === 'totalSessions' ? val : formData.totalSessions; const newRate = tot === 0 ? 0 : Math.round((att / tot) * 100); newData.attendance = newRate; setFormData(newData); };
             const resetPlayerStats = () => { if(!confirm(t('alerts', 'resetConfirm'))) return; const data = { ...formData, totalSessions: PRESET_YEARLY_TOTAL, attendedSessions: 0, attendance: 0, attendanceHistory: [] }; setFormData(data); };
-            const handleSave = () => { if(!formData.name) return; const data = { ...formData, image: formData.image || DEFAULT_IMAGE }; const finalData = { ...data }; let newTrainees; if(editingTrainee) { const oldT = trainees.find(t => t.id === editingTrainee.id); newTrainees = trainees.map(t => t.id === editingTrainee.id ? { ...finalData, attendanceHistory: oldT.attendanceHistory, feeHistory: oldT.feeHistory, id: t.id } : t); } else { newTrainees = [{ ...finalData, id: Date.now().toString(), attendanceHistory: [], feeHistory: {} }, ...trainees]; } updateData({ trainees: newTrainees }); setIsModalOpen(false); };
+            
+            // 🔥 Robust Handle Save (Detox)
+            const handleSave = () => { 
+                if(!formData.name) return; 
+                
+                // Sanitize Data before saving
+                const data = { 
+                    ...formData, 
+                    image: formData.image || DEFAULT_IMAGE,
+                    stats: formData.stats || DEFAULT_FORM_DATA.stats,
+                    name: formData.name || 'Unknown',
+                    team: formData.team || 'Free Agent'
+                }; 
+                
+                let newTrainees; 
+                if(editingTrainee) { 
+                    // Safe Update
+                    const oldT = trainees.find(t => t.id === editingTrainee.id) || editingTrainee; // Fallback to current if not found
+                    newTrainees = trainees.map(t => t.id === editingTrainee.id ? { 
+                        ...data, 
+                        // Preserve history if not in formData
+                        attendanceHistory: oldT.attendanceHistory || [], 
+                        feeHistory: oldT.feeHistory || {}, 
+                        id: t.id 
+                    } : t); 
+                } else { 
+                    newTrainees = [{ ...data, id: Date.now().toString(), attendanceHistory: [], feeHistory: {} }, ...trainees]; 
+                } 
+                
+                updateData({ trainees: newTrainees }); 
+                setIsModalOpen(false); 
+            };
+
             const deleteTrainee = (id) => { if(confirm(t('alerts', 'deleteConfirm'))) { const newT = trainees.filter(t => t.id !== id); updateData({ trainees: newT }); } };
             
             // 🔥 School Manager Logic
@@ -1174,10 +1227,13 @@
                                     </div>
                                 </div>
                                 <div className="p-2 flex-1 flex flex-col">
-                                    <div className="bg-zinc-950/50 rounded-lg p-1.5 mb-2 text-[9px] text-zinc-400 space-y-1 border border-zinc-800/50">
-                                        <div className="flex items-center gap-2"><i className="fa-solid fa-user text-zinc-600 w-3 text-center"></i><span className="text-zinc-300 truncate font-medium">{trainee.parentName || '-'}</span></div>
-                                        <div className="flex items-center gap-2"><i className="fa-solid fa-phone text-zinc-600 w-3 text-center"></i><span className="text-zinc-300 truncate font-mono">{trainee.phone || '-'}</span></div>
-                                    </div>
+                                    {/* Personal Info Block (Privacy Mode) */}
+                                    {userRole === 'admin' && (
+                                        <div className="bg-zinc-950/50 rounded-lg p-1.5 mb-2 text-[9px] text-zinc-400 space-y-1 border border-zinc-800/50">
+                                            <div className="flex items-center gap-2"><i className="fa-solid fa-user text-zinc-600 w-3 text-center"></i><span className="text-zinc-300 truncate font-medium">{trainee.parentName || '-'}</span></div>
+                                            <div className="flex items-center gap-2"><i className="fa-solid fa-phone text-zinc-600 w-3 text-center"></i><span className="text-zinc-300 truncate font-mono">{trainee.phone || '-'}</span></div>
+                                        </div>
+                                    )}
                                     
                                     <div className="mb-2 px-0.5">
                                         <div className="flex justify-between text-[9px] text-zinc-500 mb-0.5 font-bold uppercase tracking-wide">
@@ -1189,10 +1245,18 @@
                                         </div>
                                     </div>
 
+                                    {/* 🔥 Stats Grade Grid */}
                                     <div className="grid grid-cols-3 gap-1 mb-2 text-[9px] font-mono text-zinc-400 text-center bg-zinc-950/30 p-1 rounded border border-zinc-800/30">
-                                        <div><span className="text-zinc-600 block text-[8px]">PAC</span>{trainee.stats?.pace || 50}</div>
-                                        <div><span className="text-zinc-600 block text-[8px]">SHO</span>{trainee.stats?.shooting || 50}</div>
-                                        <div><span className="text-zinc-600 block text-[8px]">PHY</span>{trainee.stats?.physical || 50}</div>
+                                        {['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical'].map(s => {
+                                            const val = trainee.stats?.[s] || 50;
+                                            const grade = getStatGrade(val);
+                                            return (
+                                                <div key={s} className="flex flex-col items-center">
+                                                    <span className="text-zinc-600 text-[8px] uppercase">{t('stats', s).substring(0,3)}</span>
+                                                    <span className={`text-xs ${getGradeColor(grade)}`}>{grade}</span>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
 
                                     {/* Admin Only Actions */}
@@ -1492,13 +1556,14 @@
                         </div>
                     )}
                     {/* 🔥 Updated Edit/Register Modal (Clean & Safe) */}
-                    {isModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-white">{editingTrainee ? t('updateProfile') : t('newPlayer')}</h2><button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4 mb-6"><div className="flex items-center gap-4"><div className="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center overflow-hidden border border-zinc-700 shrink-0 cursor-pointer relative" onClick={() => fileInputRef.current.click()}>{formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <i className="fa-solid fa-camera text-zinc-600"></i>}<input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFile} /></div><div className="flex-1 space-y-2"><input className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('name')} value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} /><div className="flex gap-2"><input type="number" className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('age')} value={formData.age || ''} onChange={e => setFormData({...formData, age: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('nationality')} value={formData.nationality || ''} onChange={e => setFormData({...formData, nationality: e.target.value})} /></div>
+                    {isModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-white">{editingTrainee ? t('updateProfile') : t('newPlayer')}</h2><button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4 mb-6"><div className="flex items-center gap-4"><div className="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center overflow-hidden border border-zinc-700 shrink-0 cursor-pointer relative" onClick={() => fileInputRef.current.click()}>{formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <i className="fa-solid fa-camera text-zinc-600"></i>}<input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleTraineeFile} /></div><div className="flex-1 space-y-2"><input className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('name')} value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} /><div className="flex gap-2"><input type="number" className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('age')} value={formData.age || ''} onChange={e => setFormData({...formData, age: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('nationality')} value={formData.nationality || ''} onChange={e => setFormData({...formData, nationality: e.target.value})} /></div>
                     
                     {/* 🔥 新增档案字段 (父母/电话/邮件/TIN) */}
                     <div className="flex gap-2"><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('parentName')} value={formData.parentName || ''} onChange={e => setFormData({...formData, parentName: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('phone')} value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
                     <div className="flex gap-2"><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('email')} value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('tin')} value={formData.tin || ''} onChange={e => setFormData({...formData, tin: e.target.value})} /></div>
                     
                     <div className="flex gap-2"><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('height')} value={formData.height || ''} onChange={e => setFormData({...formData, height: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">cm</span></div><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('weight')} value={formData.weight || ''} onChange={e => setFormData({...formData, weight: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">kg</span></div><div className="w-1/3"><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.category || 'U18'} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div></div></div></div><div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><div className="flex flex-col"><span className="text-xs font-bold text-zinc-400">{t('attendance')}</span><span className={formData.attendance >= 90 ? 'text-emerald-500 font-bold' : 'text-white font-bold'}>{formData.attendance || 0}%</span></div><div className="flex items-center gap-2"><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('attCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.attendedSessions || 0} onChange={(e) => handleAttendanceChange('attendedSessions', e.target.value)} /></div><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('totalCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.totalSessions || PRESET_YEARLY_TOTAL} onChange={(e) => handleAttendanceChange('totalSessions', e.target.value)} /></div><button onClick={resetPlayerStats} className="ml-2 bg-red-900/30 hover:bg-red-900/50 text-red-500 text-[10px] px-2 py-2 rounded border border-red-900/50 h-full flex items-center justify-center" title={t('resetStats')}><i className="fa-solid fa-rotate-right"></i></button></div></div><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}>{teams.map(teamItem => <option key={teamItem} value={teamItem}>{teamItem}</option>)}</select><div className="grid grid-cols-2 gap-2"><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.primaryPosition} onChange={e => setFormData({...formData, primaryPosition: e.target.value})}>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.secondaryPosition} onChange={e => setFormData({...formData, secondaryPosition: e.target.value})}><option value="无">无</option>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-800 p-4 rounded-xl mb-4">{Object.keys(formData.stats).map(s => (<div key={s}><div className="flex justify-between text-[10px] text-zinc-400 uppercase mb-1"><span>{t('stats', s)}</span> <span>{formData.stats[s]}</span></div><input type="range" min="0" max="99" className="w-full accent-white h-1 bg-zinc-600 rounded-lg appearance-none" value={formData.stats[s]} onChange={e => setFormData({...formData, stats: {...formData.stats, [s]: parseInt(e.target.value)}})} /></div>))}</div></div><div className="flex gap-2"><button onClick={handleSave} className="flex-1 py-3 bg-zinc-100 hover:bg-white text-zinc-900 font-bold rounded-xl transition-colors">{t('save')}</button><button onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-colors">{t('cancel')}</button></div></div></div>)}
+                    {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4 modal-overlay"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
                 </div>
             );
         };
