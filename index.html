@@ -2,21 +2,24 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CFC Youth Academy</title>
     
     <!-- PWA 配置 (核心) -->
     <meta name="theme-color" content="#09090b">
+    <!-- 开启 iOS 全屏模式 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- 状态栏透明 (沉浸式体验) -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CFC Academy">
+    <!-- 桌面图标名称 (缩短为 CFC 以保持简洁) -->
+    <meta name="apple-mobile-web-app-title" content="CFC">
     
     <!-- 默认图标 (会被 JS 动态替换为用户上传的 Logo) -->
     <link id="dynamic-favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
     <link id="dynamic-apple-icon" rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
     
     <!-- 初始 Manifest (会被 JS 动态覆盖) -->
-    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDIFFvdXRoIEFjYWRlbXkiLCJzaG9ydF9uYW1lIjoiQ0ZDIEFjYWRlbXkiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA5MDkwYiIsInRoZW1lX2NvbG9yIjoiIzA5MDkwYiIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2N0bi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zMzA5LzMzMDk5OTEucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9LHsic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnYtcG5nLmZsYXRpY29uLmNvbS81MTIvMzMwOS8zMzA5OTkxLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
+    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDIFFvdXRoIEFjYWRlbXkiLCJzaG9ydF9uYW1lIjoiQ0ZDIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwOTA5MGIiLCJ0aGVtZV9jb2xvciI6IiMwOTA5MGIiLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnYtcG5nLmZsYXRpY29uLmNvbS81MTIvMzMwOS8zMzA5OTkxLnBuZyIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9wbmcifSx7InNyYyI6Imh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzMzMDkvMzMwOTk5MS5wbmciLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn1dfQ==">
 
     <!-- 样式与图标 -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,13 +42,15 @@
         .hidden { opacity: 0; pointer-events: none; }
         input[type="date"], input[type="month"] { color-scheme: dark; }
         #error-box { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #ef4444; color: white; padding: 10px; z-index: 100; text-align: center; font-size: 12px; }
+        /* 针对 iOS PWA 顶部的安全区域优化 */
+        header { padding-top: env(safe-area-inset-top); }
     </style>
 </head>
 <body>
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold">CFC ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-sm mt-2">Syncing Brand...</p>
+        <p id="loading-text" class="text-zinc-500 text-sm mt-2">App Mode...</p>
     </div>
     <div id="error-box"></div>
 
@@ -526,7 +531,7 @@
                     // Update Manifest
                     const dynamicManifest = {
                         name: "CFC Youth Academy",
-                        short_name: "CFC Academy",
+                        short_name: "CFC",
                         start_url: ".",
                         display: "standalone",
                         background_color: "#09090b",
@@ -648,9 +653,8 @@
                     if (t.image && t.image.startsWith('data:image')) t.image = DEFAULT_IMAGE; 
                     return t; 
                 });
-                // 🔥 CRITICAL FIX: DO NOT STRIP APP LOGO if it's base64
-                // To force persistence, we ALLOW base64 to go to cloud for Logo only.
-                // The risk is JSONBin limit. But user asked for it.
+                // 🔥 CRITICAL FIX: To force persistence of the logo, DO NOT strip it if it's base64.
+                // We rely on "Local-First" logic to keep it safe.
                 // if (cleanData.appLogo && cleanData.appLogo.startsWith('data:image')) cleanData.appLogo = null;
                 
                 return cleanData;
@@ -718,7 +722,7 @@
                              });
                         } else { mergedTrainees = INITIAL_TRAINEES; }
                         
-                        // 🔥 Smart Merge for Logo: Use local if cloud is null, otherwise use cloud (which might be base64 now)
+                        // 🔥 Smart Merge for Logo: Use local if cloud is null, otherwise use cloud
                         let finalLogo = data.appLogo;
                         if (!finalLogo && localData.appLogo && localData.appLogo.startsWith('data:')) {
                             finalLogo = localData.appLogo;
