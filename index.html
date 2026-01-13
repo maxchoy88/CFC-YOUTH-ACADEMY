@@ -47,7 +47,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold mt-4 tracking-wider">CFC YOUTH ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-xs mt-2">Checking Links...</p>
+        <p id="loading-text" class="text-zinc-500 text-xs mt-2">Updating Modules...</p>
     </div>
     <div id="error-box"></div>
 
@@ -149,7 +149,7 @@
                 selectSchool: "选择打卡校区", coachDetails: "查看明细",
                 
                 // Share App
-                shareAppTitle: "安装 CFC App", shareAppDesc: "如果使用本地文件(File)，请手动输入部署后的网址。",
+                shareAppTitle: "安装 CFC App", shareAppDesc: "请使用浏览器“添加到主屏幕”功能安装。",
                 copyLink: "复制链接", linkCopied: "链接已复制！", qrLabel: "PWA 安装码",
                 
                 // Auth
@@ -295,7 +295,7 @@
                 selectSchool: "Pilih Sekolah", coachDetails: "Butiran",
 
                 // Share App
-                shareAppTitle: "Pasang App", shareAppDesc: "Imbas kod QR atau masukkan URL jika tempatan.",
+                shareAppTitle: "Pasang App", shareAppDesc: "Gunakan 'Tambah ke Skrin Utama' untuk pasang.",
                 copyLink: "Salin Pautan", linkCopied: "Disalin!", qrLabel: "Kod QR PWA",
 
                 imgCloudSetup: "Awan Gambar (Cloudinary)", imgCloudName: "Nama Cloud", imgUploadPreset: "Preset Muat Naik", imgSave: "Simpan Tetapan",
@@ -840,7 +840,7 @@
                  const r = new FileReader(); 
                  r.onloadend = () => { 
                      setTempImage(r.result); 
-                     setIsLogoCrop(true); // Explicitly Logo
+                     setIsLogoCrop(true); 
                      setIsCropperOpen(true); 
                  }; 
                  r.readAsDataURL(f); 
@@ -852,7 +852,7 @@
                  const r = new FileReader(); 
                  r.onloadend = () => { 
                      setTempImage(r.result); 
-                     setIsLogoCrop(false); // Explicitly Not Logo
+                     setIsLogoCrop(false); 
                      setIsCropperOpen(true); 
                  }; 
                  r.readAsDataURL(f); 
@@ -1621,14 +1621,22 @@
                                                                 {c.sessions} sessions x RM{c.rate}
                                                             </div>
                                                             
-                                                            {/* 🔥 Detailed Date List */}
+                                                            {/* 🔥 Detailed Date List with Delete */}
                                                             {expandedCoachId === c.id && (
                                                                 <div className="mt-2 bg-black/50 p-2 rounded border border-zinc-700/50 text-[10px] text-zinc-300 max-h-32 overflow-y-auto">
                                                                     {c.details && c.details.length > 0 ? (
                                                                         c.details.map((d, idx) => (
-                                                                            <div key={idx} className="flex justify-between border-b border-zinc-800 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
-                                                                                <span>{d.date}</span>
-                                                                                <span className="text-blue-300">{d.school || 'Unknown'}</span>
+                                                                            <div key={idx} className="flex justify-between items-center border-b border-zinc-800 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
+                                                                                <div>
+                                                                                    <span>{d.date}</span>
+                                                                                    <span className="text-blue-300 ml-2">{d.school || '-'}</span>
+                                                                                </div>
+                                                                                <button 
+                                                                                    onClick={(e) => { e.stopPropagation(); removeCoachAttendanceRecord(c.id, d.date, d.school); }}
+                                                                                    className="text-zinc-500 hover:text-red-500 px-1"
+                                                                                >
+                                                                                    <i className="fa-solid fa-trash text-[10px]"></i>
+                                                                                </button>
                                                                             </div>
                                                                         ))
                                                                     ) : (
