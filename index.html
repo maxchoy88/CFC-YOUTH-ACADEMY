@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CFC Academy"> <!-- iOS 桌面名 -->
+    <meta name="apple-mobile-web-app-title" content="CFC Academy">
     
     <!-- Dynamic Icons -->
     <link id="dynamic-favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
@@ -225,7 +225,7 @@
                 // Share App
                 shareAppTitle: "Install App", shareAppDesc: "If using local File, enter hosted URL manually.",
                 copyLink: "Copy Link", linkCopied: "Copied!", qrLabel: "PWA QR Code",
-
+                
                 // Auth
                 auth: {
                     welcome: "YOUR FUTURE IS NOW!",
@@ -618,10 +618,7 @@
 
             const getOptimizedImageUrl = (url) => {
                 if (!url || typeof url !== 'string' || !url.includes('cloudinary.com')) return url || DEFAULT_IMAGE;
-                
-                // 🔥 CRITICAL: Fix double slash issue in Cloudinary URLs
                 let cleanUrl = url.replace(/([^:]\/)\/+/g, "$1"); 
-                
                 if (cleanUrl.includes('/f_avif,q_auto/')) return cleanUrl; 
                 return cleanUrl.replace('/upload/', '/upload/f_avif,q_auto/');
             };
@@ -645,22 +642,35 @@
                 updateData({ coaches: newCoaches });
             };
 
-            // 🔥 Coach Multi-School Logic
+            // 🔥 Coach Multi-School Logic & Delete Record
             const toggleCoachAttendance = (coachId) => {
                 const newCoaches = coaches.map(c => {
                     if (c.id === coachId) {
                         const history = c.attendanceHistory || [];
-                        // Check precise school match
                         const isPresentHere = history.some(h => h.date === coachAttDate && h.school === coachAttSchool);
-                        
                         let newHistory;
                         if (isPresentHere) {
-                            // Remove precise match
                             newHistory = history.filter(h => !(h.date === coachAttDate && h.school === coachAttSchool));
                         } else {
-                            // Add new record with school info
                             newHistory = [...history, { date: coachAttDate, school: coachAttSchool, status: 'present' }];
                         }
+                        return { ...c, attendanceHistory: newHistory };
+                    }
+                    return c;
+                });
+                updateData({ coaches: newCoaches });
+            };
+
+            const removeCoachAttendanceRecord = (coachId, dateToRemove, schoolToRemove) => {
+                if(!confirm(t('deleteConfirm'))) return;
+                const newCoaches = coaches.map(c => {
+                    if (c.id === coachId) {
+                        const newHistory = (c.attendanceHistory || []).filter(h => {
+                            if (h.school && schoolToRemove) {
+                                return !(h.date === dateToRemove && h.school === schoolToRemove);
+                            }
+                            return h.date !== dateToRemove;
+                        });
                         return { ...c, attendanceHistory: newHistory };
                     }
                     return c;
@@ -793,7 +803,7 @@
                              });
                         } else { mergedTrainees = INITIAL_TRAINEES; }
                         
-                        // 🔥 Smart Merge for Logo: Use local if cloud is null, otherwise use cloud (which might be base64 now)
+                        // 🔥 Smart Merge for Logo: If cloud is null, keep local
                         let finalLogo = data.appLogo;
                         if (!finalLogo && localData.appLogo && localData.appLogo.startsWith('data:')) {
                             finalLogo = localData.appLogo;
@@ -905,6 +915,13 @@
                 
                 updateData({ trainees: newTrainees }); 
                 setIsModalOpen(false); 
+            };
+            
+            // 🔥 REGISTER HELPER
+            const handleRegister = () => {
+                setEditingTrainee(null);
+                setFormData(DEFAULT_FORM_DATA);
+                setIsModalOpen(true);
             };
 
             const deleteTrainee = (id) => { if(confirm(t('alerts', 'deleteConfirm'))) { const newT = trainees.filter(t => t.id !== id); updateData({ trainees: newT }); } };
@@ -1088,26 +1105,6 @@
                 alert(t('alerts', 'updated'));
             };
             
-            // 🔥 Edit & Register Helpers
-            const handleEdit = (trainee) => {
-                setEditingTrainee(trainee);
-                setFormData({
-                    ...trainee,
-                    stats: trainee.stats || DEFAULT_FORM_DATA.stats, // Ensure stats exist
-                    parentName: trainee.parentName || '',
-                    phone: trainee.phone || '',
-                    email: trainee.email || '',
-                    tin: trainee.tin || ''
-                });
-                setIsModalOpen(true);
-            };
-
-            const handleRegister = () => {
-                setEditingTrainee(null);
-                setFormData(DEFAULT_FORM_DATA);
-                setIsModalOpen(true);
-            };
-
             // 🔥 Auth Login
             const handleLogin = (role) => {
                 if (role === 'admin') {
@@ -1344,20 +1341,6 @@
                                 <h2 className="text-xl font-bold text-white mb-2">{t('shareAppTitle')}</h2>
                                 <p className="text-sm text-zinc-400 mb-6">{t('shareAppDesc')}</p>
                                 
-                                {/* 🔥 Manual URL Input */}
-                                <div className="mb-4">
-                                    <input 
-                                        type="text" 
-                                        className="w-full bg-black/50 border border-zinc-600 rounded-lg p-2 text-white text-xs" 
-                                        value={shareUrl} 
-                                        onChange={(e) => setShareUrl(e.target.value)} 
-                                        placeholder="https://..."
-                                    />
-                                    {window.location.protocol === 'file:' && (
-                                        <p className="text-[10px] text-yellow-500 mt-1"><i className="fa-solid fa-triangle-exclamation"></i> Local file detected. Please enter hosted URL.</p>
-                                    )}
-                                </div>
-
                                 {/* 🔥 API Generated QR Code with White Background */}
                                 <div className="bg-white p-2 rounded-xl mb-6 mx-auto w-fit shadow-lg shadow-white/10">
                                     <img 
