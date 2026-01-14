@@ -1,1 +1,1710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CFC YOUTH ACADEMY</title>
+    
+    <!-- PWA Core (iOS & Android) -->
+    <meta name="theme-color" content="#09090b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CFC Academy">
+    
+    <!-- Dynamic Icons -->
+    <link id="dynamic-favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
+    <link id="dynamic-apple-icon" rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
+    
+    <!-- Dynamic Manifest -->
+    <link id="dynamic-manifest" rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0ZDIFFvdXRoIEFjYWRlbXkiLCJzaG9ydF9uYW1lIjoiQ0ZDIFFvdXRoIEFjYWRlbXkiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA5MDkwYiIsInRoZW1lX2NvbG9yIjoiIzA5MDkwYiIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2N0bi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zMzA5LzMzMDk5OTEucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9LHsic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnYtcG5nLmZsYXRpY29uLmNvbS81MTIvMzMwOS8zMzA5OTkxLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
+
+    <!-- Libs -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <style>
+        body { background-color: #09090b; color: #fff; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .cropper-container { max-height: 60vh; background-color: #000; }
+        #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 50; transition: opacity 0.5s; }
+        .hidden { opacity: 0; pointer-events: none; }
+        input[type="date"], input[type="month"] { color-scheme: dark; }
+        #error-box { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #ef4444; color: white; padding: 10px; z-index: 200; text-align: center; font-size: 12px; }
+        header { padding-top: env(safe-area-inset-top); }
+        .modal-overlay { z-index: 100; }
+    </style>
+</head>
+<body>
+    <div id="static-loading">
+        <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
+        <h2 class="text-xl font-bold mt-4 tracking-wider">CFC YOUTH ACADEMY</h2>
+        <p id="loading-text" class="text-zinc-500 text-xs mt-2">System Ready...</p>
+    </div>
+    <div id="error-box"></div>
+
+    <div id="root"></div>
+
+    <script>
+        setTimeout(() => {
+            const loader = document.getElementById('static-loading');
+            const root = document.getElementById('root');
+            if (loader && !loader.classList.contains('hidden') && (!root || root.innerHTML.trim() === "")) {
+                document.getElementById('loading-text').innerHTML = 
+                    `<span style="color:#ef4444">⚠️ Timeout. Please refresh.</span>`;
+            }
+        }, 5000);
+        window.onerror = function(msg, url, line) {
+            const errBox = document.getElementById('error-box');
+            errBox.style.display = 'block';
+            errBox.innerText = `Error: ${msg} (Line: ${line})`;
+            return false; 
+        };
+    </script>
+
+    <script type="text/babel">
+        // =================================================================
+        // 🔑 你的专属配置
+        // =================================================================
+        const MY_MASTER_KEY = "$2a$10$JuGSKsBRirNG95vYP0fbSuotikgzUSy8nphUaCtjGq0qsdCalvBo2"; 
+        const JSONBIN_URL = "https://api.jsonbin.io/v3/b";
+        const MY_CLOUD_NAME = "dtlsbbj1v"; 
+        const PRESET_YEARLY_TOTAL = 52;
+        const DEFAULT_MONTHLY_FEE = 150;
+        const ADMIN_PIN = "8888"; 
+
+        const BANK_INFO = {
+            bankName: "OCBC BANK",
+            accNum: "7091258844",
+            holder: "CFC YOUTH ACADEMY SB"
+        };
+        
+        const DEFAULT_FORM_DATA = { 
+            name:'', primaryPosition:'前锋 (FW)', secondaryPosition:'无', age:'16', category: 'U18', height: '', weight: '', 
+            attendance: 0, nationality:'', team:'', image:'', 
+            totalSessions: PRESET_YEARLY_TOTAL, attendedSessions: 0, 
+            stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50},
+            parentName: '', phone: '', email: '', tin: ''
+        };
+
+        const INITIAL_COACHES = [
+            { id: 'c1', name: 'Coach Mourinho', role: 'Head Coach', rate: 200, phone: '60123456789', attendanceHistory: [], paymentHistory: {} },
+            { id: 'c2', name: 'Coach Pep', role: 'Assistant', rate: 100, phone: '60198765432', attendanceHistory: [], paymentHistory: {} }
+        ];
+        // =================================================================
+
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // 移除加载动画
+        setTimeout(() => {
+            const loader = document.getElementById('static-loading');
+            if(loader) loader.classList.add('hidden');
+        }, 1500); 
+
+        // --- 多语言字典 ---
+        const TRANSLATIONS = {
+            zh: {
+                appTitle: "CFC YOUTH ACADEMY", systemName: "青训学院系统", localMode: "本地版", cloudMode: "云端同步",
+                backupRestore: "备份/恢复", manageSchools: "学校", attendanceTool: "出席库", financeTool: "财务", 
+                register: "注册", searchPlaceholder: "搜索姓名、学校...", noData: "暂无球员数据",
+                age: "年龄", category: "组别", height: "身高", weight: "体重", attendance: "出席率",
+                attCount: "出席次数", totalCount: "年度目标", coachReport: "教练报告", editReport: "编辑报告",
+                edit: "编辑", delete: "删除", aiAnalyze: "教练分析", updateProfile: "更新档案", newPlayer: "新球员",
+                name: "姓名", nationality: "国籍", school: "所属学校", mainPos: "主位置", subPos: "副位置",
+                parentName: "家长", phone: "电话", email: "电邮", tin: "TIN",
+                save: "保存", cancel: "取消", addSchool: "新增学校", backupTools: "备份工具",
+                backupToDrive: "备份到 Google Drive", exportDesc: "生成备份文件并自动打开你的云端文件夹。",
+                restoreData: "恢复数据", restoreDesc: "从手机文件夹中选择之前的备份文件 (.json)。",
+                selectFile: "选择备份文件", shareProfile: "分享档案", sendToParents: "发送给家长 (含照片)",
+                textOnly: "仅发送文字报告", cropTitle: "裁剪头像", rotate: "旋转", confirmCrop: "确认裁剪",
+                attTitle: "智能出席库", attDate: "记录日期", attPaste: "📄 粘贴名单导入 (WhatsApp/Excel)",
+                attPasteDesc: "直接粘贴文字，系统会自动识别名单中的名字并勾选。",
+                attPlaceholder: "例如：今日出席：Arthur, Stella, Money...",
+                attConfirm: "提交 / 更新记录",
+                attShare: "分享出席表", attWhatsapp: "WhatsApp", attExcel: "导出专业报表", 
+                attTotal: "总人数", attPresent: "出席", resetStats: "重置数据", 
+                attSearch: "搜索考勤名单...", attToggleAll: "一键全选",
+                attTabTrainees: "学员考勤", attTabCoaches: "教练考勤", 
+                cloudSetup: "云端同步设置 (JSONBin)", cloudKey: "Master Key", cloudBin: "Bin ID",
+                cloudConnect: "连接云端", cloudCreate: "✨ 自动创建新数据库", 
+                cloudDesc: "输入 Key 即可自动创建并连接云数据库，实现多设备同步。",
+                finTitle: "财务中心", finMonth: "月份", finFee: "月费标准 (RM)", finPaid: "已交", finUnpaid: "未交",
+                finTotal: "总收入", finPending: "待收", finRemind: "催费", finExport: "导出财务表",
+                finBank: "银行户口", finCopy: "复制", finCopied: "已复制！", finToggleAll: "一键全选",
+                finSearch: "搜索财务名单...",
+                
+                // Coach Module
+                coachTool: "教练中心", coachTitle: "教练管理中心", coachList: "名单", coachAtt: "考勤", coachPay: "薪资",
+                coachRole: "职位", coachRate: "单场津贴 (RM)", coachSessions: "场次", coachTotal: "应付工资",
+                coachPaid: "已发", coachUnpaid: "未发", addCoach: "新增教练",
+                coachExport: "导出薪资表", coachTotalPayout: "总支出", coachWhatsapp: "发消息", coachPayslip: "发工资单",
+                selectSchool: "选择打卡校区", coachDetails: "查看明细",
+                
+                // Share App
+                shareAppTitle: "安装 CFC App", shareAppDesc: "请使用浏览器“添加到主屏幕”功能安装。",
+                copyLink: "复制链接", linkCopied: "链接已复制！", qrLabel: "PWA 安装码",
+                
+                // Auth
+                auth: {
+                    welcome: "YOUR FUTURE IS NOW!",
+                    selectMode: "请选择登录模式",
+                    adminMode: "MASTER MODE",
+                    userMode: "PLAYER MODE",
+                    enterPin: "请输入管理员密码",
+                    wrongPin: "密码错误",
+                    login: "登录",
+                    logout: "退出",
+                    adminDesc: "完整权限：考勤、财务、编辑、删除。",
+                    userDesc: "只读权限：查看数据、状态、搜索。"
+                },
+
+                imgCloudSetup: "📷 图片云 (Cloudinary)", imgCloudName: "Cloud Name", imgUploadPreset: "Upload Preset", imgSave: "保存图片配置",
+                imgCloudDesc: "配置后，照片将自动上传云端 (需开启 Unsigned 模式)。", uploading: "☁️ 上传中...", imgTest: "测试连接",
+                msgTemplates: { gentle: "🌸 温柔提醒", friendly: "🤝 朋友语气", soft: "🍃 婉转提醒", formal: "👔 正式通知" },
+                msgs: {
+                    gentle: "Hi 家长好 👋，温馨提醒一下，{name} {month} 月份的学费 (RM{amount}) 尚未缴交。方便的话请安排汇款，谢谢您的支持！🙏🏻",
+                    friendly: "Hello! 👋 这是一个关于 {name} {month} 月学费 (RM{amount}) 的小小提醒。如果已经转账请忽略哦，谢谢！⚽️",
+                    soft: "家长好 😊，最近比较忙吧？只是想确认一下 {name} {month} 月的学费 (RM{amount})。有空麻烦处理一下哦，感谢！✨",
+                    formal: "【CFC 财务通知】您好，请查收 {name} {month} 月份的学费单 (RM{amount})。请在近期内完成缴费，感谢配合。"
+                },
+                bankDetails: "\n\n🏦 汇款资料:\n{bankName}\n{accNum}\n{holder}\n\n汇款后请发收据，谢谢！",
+                stats: { pace: "速度", shooting: "射门", passing: "传球", dribbling: "盘带", defending: "防守", physical: "体能" },
+                ai: { analyzing: "教练分析中...", reportTitle: "教练深度评估报告", position: "球员定位", rating: "综合评级", strength: "核心竞争力", suggestion: "战术建议", comment: "教练评语", template: "均衡型球员", advice: "需进一步观察。", commentText: "潜力不错，建议继续观察。" },
+                status: { syncing: "⏳ 同步中...", ready: "✅ 就绪", fail: "❌ 失败", netError: "❌ 网络错误", saving: "☁️ 保存中...", saved: "✅ 已保存", saveFail: "❌ 保存失败", creating: "创建中...", created: "✅ 已创建", error: "❌ 错误" },
+                alerts: {
+                    fillImgConfig: "请填写 Cloud Name 和 Upload Preset", imgCloudConnected: "✅ 图片云已连接！",
+                    fillMasterKey: "请先填入 Master Key", cloudCreated: "✅ 云端数据库创建成功！\n\nBin ID: {binId}\n\n请务必复制这个 ID，在其他手机填入即可同步数据。",
+                    fillCloudConfig: "请填写 Master Key 和 Bin ID", backupDownloaded: "✅ 备份已下载！\n(包含所有图片)\n\n点击“确定”将跳转到 Google Drive。",
+                    overwriteConfirm: "⚠️ 覆盖当前数据？\n这将恢复所有内容(含图片)。",
+                    fileError: "❌ 文件错误", deleteConfirm: "删除此项？",
+                    resetConfirm: "⚠️ 确定要重置此球员的考勤数据吗？", updated: "✅ 数据已更新！", copied: "已复制！", useWhatsapp: "请使用 WhatsApp 按钮",
+                    attConfirmMsg: "确认提交考勤？\n\n📅 日期: {date}\n👦 学员实到: {sCount}\n👨‍🏫 教练实到: {cCount}",
+                    finConfirmAll: "⚠️ 确定要把列表中的所有人标记为 [{status}] 吗？",
+                    imgLocalWarning: "⚠️ 照片是本地数据，无法通过网页自动附加。\n\n已为您生成文字报告并打开 WhatsApp，请您手动从相册发送照片。🙏🏻"
+                }
+            },
+            en: {
+                appTitle: "CFC YOUTH ACADEMY", systemName: "ACADEMY SYSTEM", localMode: "Local", cloudMode: "Cloud Sync",
+                backupRestore: "Backup", manageSchools: "Schools", attendanceTool: "Attendance", financeTool: "Finance",
+                register: "Register", searchPlaceholder: "Search name, parent, phone...", noData: "No Data",
+                age: "Age", category: "Category", height: "Height", weight: "Weight", attendance: "Att.",
+                attCount: "Attended", totalCount: "Goal", coachReport: "Report", editReport: "Edit",
+                edit: "Edit", delete: "Delete", aiAnalyze: "Analysis", updateProfile: "Update", newPlayer: "New Player",
+                name: "Name", nationality: "Nationality", school: "School", mainPos: "Pos", subPos: "Sub-Pos",
+                parentName: "Parent", phone: "Phone", email: "Email", tin: "TIN", 
+                save: "Save", cancel: "Cancel", addSchool: "Add School", backupTools: "Tools",
+                backupToDrive: "Backup to Drive", exportDesc: "Generate backup file.",
+                restoreData: "Restore", restoreDesc: "Restore from file.", selectFile: "Select File",
+                shareProfile: "Share", sendToParents: "📲 Send Photo via WhatsApp", textOnly: "Text Only",
+                cropTitle: "Crop", rotate: "Rotate", confirmCrop: "Upload & Save",
+                attTitle: "Attendance", attDate: "Date", attPaste: "Paste List", attPasteDesc: "Auto-check",
+                attPlaceholder: "Names...", attConfirm: "Submit", attShare: "Share", attWhatsapp: "WhatsApp",
+                attExcel: "Export Report", attTotal: "Total", attPresent: "Present", resetStats: "Reset",
+                attSearch: "Search Attendance...", attToggleAll: "Toggle All",
+                attTabTrainees: "Trainees", attTabCoaches: "Coaches",
+                cloudSetup: "Cloud Setup", cloudKey: "Master Key", cloudBin: "Bin ID",
+                cloudConnect: "Connect", cloudCreate: "✨ Auto Create DB", cloudDesc: "Enter Key to sync.",
+                finTitle: "Finance Hub", finMonth: "Month", finFee: "Fee (RM)", finPaid: "Paid", finUnpaid: "Unpaid",
+                finTotal: "Revenue", finPending: "Pending", finRemind: "Remind", finExport: "Export Report",
+                finBank: "Bank Info", finCopy: "Copy", finCopied: "Copied!", finToggleAll: "Toggle All", finSearch: "Search Finance...",
+                
+                coachTool: "Coach Hub", coachTitle: "Coach Manager", coachList: "List", coachAtt: "Attendance", coachPay: "Payroll",
+                coachRole: "Role", coachRate: "Rate/Session", coachSessions: "Sessions", coachTotal: "Total Due",
+                coachPaid: "Paid", coachUnpaid: "Pending", addCoach: "Add Coach",
+                coachExport: "Export Payroll", coachTotalPayout: "Total Payout", coachWhatsapp: "Message", coachPayslip: "Send Payslip",
+                selectSchool: "Select School", coachDetails: "Details",
+                
+                // Share App
+                shareAppTitle: "Install App", shareAppDesc: "Use 'Add to Home Screen' to install.",
+                copyLink: "Copy Link", linkCopied: "Copied!", qrLabel: "PWA QR Code",
+
+                // Auth
+                auth: {
+                    welcome: "YOUR FUTURE IS NOW!",
+                    selectMode: "Select Login Mode",
+                    adminMode: "MASTER MODE",
+                    userMode: "PLAYER MODE",
+                    enterPin: "Enter Admin PIN",
+                    wrongPin: "Wrong PIN",
+                    login: "Login",
+                    logout: "Logout",
+                    adminDesc: "Full Access: Attendance, Finance, Edit.",
+                    userDesc: "Read Only: View stats, status."
+                },
+
+                imgCloudSetup: "📷 Image Cloud (Cloudinary)", imgCloudName: "Cloud Name", imgUploadPreset: "Upload Preset", imgSave: "Save Config",
+                imgCloudDesc: "Photos will be uploaded to cloud (Unsigned mode required).", uploading: "☁️ Uploading...", imgTest: "Test Connection",
+                msgTemplates: { gentle: "Gentle", friendly: "Friendly", soft: "Soft Nudge", formal: "Formal" },
+                msgs: {
+                    gentle: "Hi Parents 👋, gentle reminder: {name}'s fee for {month} (RM{amount}) is pending. Thanks for your support! 🙏🏻",
+                    friendly: "Hey! 👋 Quick heads up on {name}'s fee for {month} (RM{amount}). Thanks! ⚽️",
+                    soft: "Hi there! 👋 Hope you're having a good week. Just a soft nudge regarding {name}'s fee for {month} (RM{amount}). No rush! ✨",
+                    formal: "Dear Parents, reminder regarding {name}'s fee for {month} (RM{amount}). Please arrange payment. Thank you."
+                },
+                bankDetails: "\n\n🏦 Bank Details:\n{bankName}\n{accNum}\n{holder}\n\nPlease share receipt. Thanks!",
+                status: { syncing: "⏳ Syncing...", ready: "✅ Ready", fail: "❌ Fail", netError: "❌ Net Error", saving: "☁️ Saving...", saved: "✅ Saved", saveFail: "❌ Save Fail", creating: "Creating...", created: "✅ Created", error: "❌ Error" },
+                alerts: {
+                    fillImgConfig: "Fill Cloud Name & Preset", imgCloudConnected: "✅ Image Cloud Ready!",
+                    fillMasterKey: "Enter Master Key", cloudCreated: "✅ Cloud DB Created!\n\nBin ID: {binId}",
+                    fillCloudConfig: "Enter Key & Bin ID", backupDownloaded: "✅ Backup Downloaded!",
+                    overwriteConfirm: "⚠️ Overwrite data?", fileError: "❌ File Error", deleteConfirm: "Delete?",
+                    resetConfirm: "⚠️ Reset stats?", updated: "✅ Data Updated!", copied: "Copied!", useWhatsapp: "Use WhatsApp Button",
+                    attConfirmMsg: "Confirm attendance for [{date}]?\n\nTotal: {total}\nPresent: {present}\nAbsent: {absent}",
+                    finConfirmAll: "⚠️ Mark ALL displayed as [{status}]?",
+                    imgLocalWarning: "⚠️ Image is local. Text will be copied. Please attach image manually."
+                },
+                stats: { pace: "PAC", shooting: "SHO", passing: "PAS", dribbling: "DRI", defending: "DEF", physical: "PHY" },
+                ai: { analyzing: "Analyzing...", reportTitle: "Coach Report", position: "Role", rating: "Rating", strength: "Strength", suggestion: "Advice", comment: "Comment", template: "Balanced", advice: "Observe.", commentText: "Good potential." }
+            },
+            ms: {
+                appTitle: "AKADEMI BELIA CFC", systemName: "SISTEM AKADEMI", localMode: "Tempatan", cloudMode: "Awan",
+                backupRestore: "Sandaran", manageSchools: "Sekolah", attendanceTool: "Kehadiran", financeTool: "Kewangan",
+                register: "Daftar", searchPlaceholder: "Cari nama, ibu bapa, tel...", noData: "Tiada Data",
+                age: "Umur", category: "Kategori", height: "Tinggi", weight: "Berat", attendance: "Kehadiran",
+                attCount: "Hadir", totalCount: "Sasaran", coachReport: "Laporan", editReport: "Sunting",
+                edit: "Sunting", delete: "Padam", aiAnalyze: "Analisis", updateProfile: "Kemaskini", newPlayer: "Pemain Baru",
+                name: "Nama", nationality: "Warganegara", school: "Sekolah", mainPos: "Posisi", subPos: "Posisi 2",
+                parentName: "Ibu Bapa", phone: "No. Tel", email: "E-mel", tin: "No. TIN",
+                save: "Simpan", cancel: "Batal", addSchool: "Tambah", backupTools: "Alat",
+                backupToDrive: "Sandaran Drive", exportDesc: "Jana fail sandaran.",
+                restoreData: "Pulihkan", restoreDesc: "Pilih fail .json.", selectFile: "Pilih Fail",
+                shareProfile: "Kongsi", sendToParents: "Hantar (Foto)", textOnly: "Teks Sahaja",
+                cropTitle: "Potong", rotate: "Pusing", confirmCrop: "Muat Naik & Simpan",
+                attTitle: "Pusat Kehadiran", attDate: "Tarikh", attPaste: "Tampal Senarai", attPasteDesc: "Auto-tanda",
+                attPlaceholder: "Contoh: Hadir: Arthur...", attConfirm: "Hantar",
+                attShare: "Kongsi", attWhatsapp: "WhatsApp", attExcel: "Eksport Laporan", attTotal: "Jumlah", attPresent: "Hadir",
+                resetStats: "Tetap Semula", attSearch: "Cari...", attToggleAll: "Pilih Semua", // New
+                cloudSetup: "Tetapan Awan", cloudKey: "Master Key", cloudBin: "Bin ID",
+                cloudConnect: "Sambung", cloudCreate: "✨ Cipta DB Baru", cloudDesc: "Masukkan Key untuk auto-cipta.",
+                finTitle: "Pusat Kewangan", finMonth: "Bulan", finFee: "Yuran (RM)", finPaid: "Bayar", finUnpaid: "Belum",
+                finTotal: "Hasil", finPending: "Tunggakan", finRemind: "Ingatkan", finExport: "Eksport Laporan",
+                finBank: "Bank", finCopy: "Salin", finCopied: "Disalin!", finToggleAll: "Tanda Semua", finSearch: "Cari...",
+                
+                coachTool: "Jurulatih", coachTitle: "Pengurusan Jurulatih", coachList: "Senarai", coachAtt: "Kehadiran", coachPay: "Gaji",
+                coachRole: "Jawatan", coachRate: "Kadar/Sesi", coachSessions: "Sesi", coachTotal: "Jumlah",
+                coachPaid: "Dibayar", coachUnpaid: "Belum", addCoach: "Tambah Jurulatih",
+                coachExport: "Eksport Gaji", coachTotalPayout: "Jumlah Bayaran", coachWhatsapp: "Mesej", coachPayslip: "Hantar Slip",
+                selectSchool: "Pilih Sekolah", coachDetails: "Butiran",
+
+                // Share App
+                shareAppTitle: "Pasang App", shareAppDesc: "Gunakan 'Tambah ke Skrin Utama' untuk pasang.",
+                copyLink: "Salin Pautan", linkCopied: "Disalin!", qrLabel: "Kod QR PWA",
+
+                imgCloudSetup: "Awan Gambar (Cloudinary)", imgCloudName: "Nama Cloud", imgUploadPreset: "Preset Muat Naik", imgSave: "Simpan Tetapan",
+                imgCloudDesc: "Foto akan dimuat naik ke awan. Guna preset 'Unsigned'.", uploading: "☁️ Sedang Muat Naik...", imgTest: "Uji Sambungan",
+                msgTemplates: { gentle: "Lembut", friendly: "Mesra", soft: "Santai", formal: "Rasmi" },
+                msgs: {
+                    gentle: "Salam ibu bapa 👋, peringatan mesra yuran {name} bulan {month} (RM{amount}) belum dijelaskan. Terima kasih! 🙏🏻",
+                    friendly: "Hi! 👋 Cuma nak ingatkan pasal yuran {name} bulan {month} (RM{amount}). Terima kasih! ⚽️",
+                    soft: "Salam tuan/puan 👋, maaf mengganggu. Sekadar nak follow up yuran {name} untuk bulan {month} (RM{amount}). Kalau dah bayar, boleh abaikan ya. Terima kasih! 🍃",
+                    formal: "Kepada Ibu Bapa, peringatan yuran {name} bulan {month} (RM{amount}). Sila jelaskan bayaran. Terima kasih."
+                },
+                bankDetails: "\n\n🏦 Maklumat Bank:\n{bankName}\n{accNum}\n{holder}\n\nSila hantar resit. Terima kasih!",
+                status: { syncing: "⏳ Menyegerakkan...", ready: "✅ Sedia", fail: "❌ Gagal", netError: "❌ Ralat Rangkaian", saving: "☁️ Menyimpan...", saved: "✅ Disimpan", saveFail: "❌ Gagal Simpan", creating: "Mencipta...", created: "✅ Dicipta", error: "❌ Ralat" },
+                alerts: {
+                    fillImgConfig: "Sila isi Cloud Name & Preset", imgCloudConnected: "✅ Awan Gambar OK!",
+                    fillMasterKey: "Masukkan Master Key", cloudCreated: "✅ Pangkalan Data Awan Dicipta!\n\nBin ID: {binId}",
+                    fillCloudConfig: "Masukkan Key & Bin ID", backupDownloaded: "✅ Sandaran Dimuat Turun!",
+                    overwriteConfirm: "⚠️ Timpa data?", fileError: "❌ Ralat Fail", deleteConfirm: "Padam?",
+                    resetConfirm: "⚠️ Tetap semula?", updated: "✅ Data Dikemaskini!", copied: "Disalin!",
+                    useWhatsapp: "Guna Butang WhatsApp", attConfirmMsg: "Sahkan kehadiran [{date}]?\n\nJumlah: {total}\nHadir: {present}\nTidak Hadir: {absent}",
+                    finConfirmAll: "⚠️ Tanda semua sebagai [{status}]?"
+                },
+                stats: { pace: "Laju", shooting: "Tembak", passing: "Hantar", dribbling: "Gelecek", defending: "Pertahan", physical: "Fizikal" },
+                ai: { analyzing: "Menganalisis...", reportTitle: "Laporan Jurulatih", position: "Peranan", rating: "Penilaian", strength: "Kekuatan", suggestion: "Nasihat", comment: "Komen", template: "Seimbang", advice: "Perlu pantau.", commentText: "Potensi baik." }
+            }
+        };
+
+        const INITIAL_TEAMS = ['皇家书院', '星耀中学', '雷霆体校', '蓝鹰国际', '北境一中', '南洋公学', '光辉中学', '风暴竞技', '银河实验', '泰坦中学'];
+        const CATEGORIES = ['U8', 'U10', 'U12', 'U15', 'U18'];
+        const POSITIONS = ['前锋 (FW)', '左边锋 (LW)', '右边锋 (RW)', '前腰 (CAM)', '中场 (CM)', '左中场 (LM)', '右中场 (RM)', '后腰 (CDM)', '后卫 (DF)', '中后卫 (CB)', '左后卫 (LB)', '右后卫 (RB)', '门将 (GK)'];
+        const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=400&h=400&fit=crop';
+        const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
+
+        const INITIAL_TRAINEES = [
+            { 
+                id: '1', name: 'Arthur Pendragon', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', 
+                age: '17', category: 'U18', height: '182', weight: '76', 
+                attendance: 0, totalSessions: 52, attendedSessions: 0, attendanceHistory: [], feeHistory: {}, 
+                nationality: '英国', team: '皇家书院', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop', 
+                stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 },
+                parentName: 'Uther', phone: '012-3456789', email: 'uther@camelot.com', tin: 'TIN-001'
+            },
+        ];
+
+        const App = () => {
+            const [lang, setLang] = useState('zh');
+            // Auth State
+            const [userRole, setUserRole] = useState(null); // 'admin' | 'user' | null
+            const [pinInput, setPinInput] = useState("");
+            const [showPinInput, setShowPinInput] = useState(false);
+
+            // 🔥 Share Modal State with URL Editing
+            const [isShareAppOpen, setIsShareAppOpen] = useState(false);
+            const [shareUrl, setShareUrl] = useState(window.location.href);
+
+            const t = (key, subKey) => {
+                const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh'];
+                if (subKey) {
+                    return (dict[key] && dict[key][subKey]) ? dict[key][subKey] : `${key}.${subKey}`;
+                }
+                return dict[key] || key;
+            };
+
+            const [teams, setTeams] = useState(INITIAL_TEAMS);
+            const [trainees, setTrainees] = useState([]);
+            // 🔥 Coach State
+            const [coaches, setCoaches] = useState(INITIAL_COACHES);
+            
+            const [leagueName, setLeagueName] = useState('CFC YOUTH ACADEMY');
+            const [appLogo, setAppLogo] = useState(null);
+            
+            // Cloud (Data)
+            const [cloudConfig, setCloudConfig] = useState({ key: MY_MASTER_KEY || '', binId: '' });
+            const [isCloudConnected, setIsCloudConnected] = useState(false);
+            const [cloudStatus, setCloudStatus] = useState("");
+
+            // Cloud (Image)
+            const [imgConfig, setImgConfig] = useState({ cloudName: MY_CLOUD_NAME, uploadPreset: '' });
+            const [isImgCloudReady, setIsImgCloudReady] = useState(false);
+            const [uploadingStatus, setUploadingStatus] = useState("");
+
+            // UI
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [isSchoolManagerOpen, setIsSchoolManagerOpen] = useState(false);
+            const [isDataToolsOpen, setIsDataToolsOpen] = useState(false); 
+            const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
+            const [isFinanceOpen, setIsFinanceOpen] = useState(false); 
+            const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
+            const [isEditingReport, setIsEditingReport] = useState(false);
+            const [isCropperOpen, setIsCropperOpen] = useState(false);
+            const [isCoachOpen, setIsCoachOpen] = useState(false);
+            const [coachView, setCoachView] = useState('list');
+            const [isLogoCrop, setIsLogoCrop] = useState(false);
+
+            // 🔥 New: Expanded Coach Details State
+            const [expandedCoachId, setExpandedCoachId] = useState(null);
+
+            const [shareTarget, setShareTarget] = useState(null);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedPosition, setSelectedPosition] = useState('全部');
+            const [selectedTeam, setSelectedTeam] = useState('全部');
+            const [editingTrainee, setEditingTrainee] = useState(null);
+            const [isEditingTitle, setIsEditingTitle] = useState(false);
+            
+            const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
+            
+            // Coach Edit
+            const [editingCoach, setEditingCoach] = useState(null);
+            const [coachForm, setCoachForm] = useState({ name: '', role: 'Assistant', rate: 100, phone: '' });
+
+            const [renamingTeam, setRenamingTeam] = useState({ original: '', current: '' });
+            const [aiResult, setAiResult] = useState(null);
+            const [aiLoading, setAiLoading] = useState(false);
+            
+            // Attendance
+            const [attendanceList, setAttendanceList] = useState([]); // Player IDs
+            const [coachAttendanceList, setCoachAttendanceList] = useState([]); // 🔥 Coach IDs
+            const [attTab, setAttTab] = useState('trainees'); // 'trainees' | 'coaches'
+            
+            const [importText, setImportText] = useState("");
+            const [attendanceDate, setAttendanceDate] = useState(""); 
+            const [attendanceSearchTerm, setAttendanceSearchTerm] = useState(''); 
+            
+            // Coach Attendance State
+            const [coachAttDate, setCoachAttDate] = useState(new Date().toISOString().slice(0, 10)); 
+            const [coachAttSchool, setCoachAttSchool] = useState(''); // 🔥 Added School Selector
+
+            // Finance
+            const [financeMonth, setFinanceMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
+            const [monthlyFee, setMonthlyFee] = useState(DEFAULT_MONTHLY_FEE);
+            const [msgTemplate, setMsgTemplate] = useState('gentle');
+            const [financeSearchTerm, setFinanceSearchTerm] = useState(''); 
+
+            // Cropper
+            const [tempImage, setTempImage] = useState(null);
+            const cropperRef = useRef(null);
+            const cropperImageRef = useRef(null);
+
+            const fileInputRef = useRef(null);
+            const logoInputRef = useRef(null);
+            const backupInputRef = useRef(null);
+
+            // --- Init & Data Sanitation ---
+            useEffect(() => {
+                const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
+                const savedCloud = JSON.parse(localStorage.getItem('cfc_jsonbin_config') || '{}');
+                const savedImgCloud = JSON.parse(localStorage.getItem('cfc_cloudinary_config') || '{}');
+
+                if (localData.trainees) {
+                    // 🔥 Data Detox: Fix corrupted strings
+                    const sanitized = localData.trainees.map(trainee => {
+                        let total = trainee.totalSessions || PRESET_YEARLY_TOTAL;
+                        if (total === 0) total = PRESET_YEARLY_TOTAL;
+                        let attended = trainee.attendedSessions || 0;
+                        if (attended > total) total = attended; 
+                        const rate = Math.round((attended / total) * 100);
+                        
+                        // Safety Checks
+                        return {
+                            ...trainee,
+                            name: typeof trainee.name === 'string' ? trainee.name : 'Unknown',
+                            team: typeof trainee.team === 'string' ? trainee.team : 'Free Agent',
+                            totalSessions: total,
+                            attendedSessions: attended,
+                            attendance: rate,
+                            attendanceHistory: Array.isArray(trainee.attendanceHistory) ? trainee.attendanceHistory : [],
+                            feeHistory: trainee.feeHistory || {},
+                            stats: trainee.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 },
+                            parentName: typeof trainee.parentName === 'string' ? trainee.parentName : '',
+                            phone: typeof trainee.phone === 'string' ? trainee.phone : '',
+                            email: typeof trainee.email === 'string' ? trainee.email : '',
+                            tin: typeof trainee.tin === 'string' ? trainee.tin : ''
+                        };
+                    });
+                    setTrainees(sanitized);
+                } else {
+                    setTrainees(INITIAL_TRAINEES);
+                }
+                
+                if (localData.coaches) setCoaches(localData.coaches);
+                if (localData.teams) {
+                    setTeams(localData.teams);
+                    setCoachAttSchool(localData.teams[0] || 'Default');
+                } else {
+                     setCoachAttSchool(INITIAL_TEAMS[0] || 'Default');
+                }
+
+                if (localData.leagueName) setLeagueName(localData.leagueName);
+                if (localData.appLogo) setAppLogo(localData.appLogo);
+
+                let activeKey = MY_MASTER_KEY || savedCloud.key;
+                let activeBin = savedCloud.binId;
+                if (activeKey) {
+                    setCloudConfig({ key: activeKey, binId: activeBin || '' });
+                    if (activeBin) syncFromCloud(activeKey, activeBin);
+                }
+
+                if (savedImgCloud.cloudName && savedImgCloud.uploadPreset) {
+                    setImgConfig(savedImgCloud);
+                    setIsImgCloudReady(true);
+                }
+            }, []);
+
+            // --- FILTERS ---
+            const reportFiltered = useMemo(() => trainees.filter(trainee => {
+                const matchPos = selectedPosition === '全部' || trainee.primaryPosition === selectedPosition || trainee.secondaryPosition === selectedPosition;
+                const matchTeam = selectedTeam === '全部' || trainee.team === selectedTeam;
+                const searchLower = searchTerm.toLowerCase();
+                const matchSearch = searchTerm === '' || 
+                                    (trainee.name || '').toLowerCase().includes(searchLower) || 
+                                    (trainee.team || '').toLowerCase().includes(searchLower) ||
+                                    (trainee.parentName || '').toLowerCase().includes(searchLower) ||
+                                    (trainee.phone || '').includes(searchLower);
+
+                return matchPos && matchTeam && matchSearch;
+            }), [trainees, selectedPosition, selectedTeam, searchTerm]);
+
+            const uiFiltered = reportFiltered;
+
+            const financeFiltered = useMemo(() => reportFiltered.filter(trainee => 
+                (trainee.name || '').toLowerCase().includes(financeSearchTerm.toLowerCase()) || 
+                (trainee.team || '').toLowerCase().includes(financeSearchTerm.toLowerCase()) ||
+                (trainee.parentName || '').toLowerCase().includes(financeSearchTerm.toLowerCase())
+            ), [reportFiltered, financeSearchTerm]);
+
+            const attendanceFiltered = useMemo(() => {
+                const term = attendanceSearchTerm.toLowerCase();
+                if (attTab === 'trainees') {
+                    return reportFiltered.filter(trainee => 
+                        (trainee.name || '').toLowerCase().includes(term) || 
+                        (trainee.team || '').toLowerCase().includes(term)
+                    );
+                } else {
+                    return coaches.filter(coach => 
+                        (coach.name || '').toLowerCase().includes(term)
+                    );
+                }
+            }, [reportFiltered, coaches, attendanceSearchTerm, attTab]);
+
+            // --- Central Update ---
+            const updateData = (newData) => {
+                // 1. Calculate merged state first to ensure consistency
+                const currentData = { 
+                    trainees: newData.trainees !== undefined ? newData.trainees : trainees, 
+                    teams: newData.teams !== undefined ? newData.teams : teams, 
+                    leagueName: newData.leagueName !== undefined ? newData.leagueName : leagueName, 
+                    appLogo: newData.appLogo !== undefined ? newData.appLogo : appLogo,
+                    coaches: newData.coaches !== undefined ? newData.coaches : coaches,
+                };
+
+                // 2. Update React State
+                if (newData.trainees) setTrainees(newData.trainees);
+                if (newData.teams) setTeams(newData.teams);
+                if (newData.leagueName) setLeagueName(newData.leagueName);
+                if (newData.appLogo !== undefined) setAppLogo(newData.appLogo);
+                if (newData.coaches) setCoaches(newData.coaches);
+
+                // 3. Save to Local Storage
+                try {
+                    localStorage.setItem('cfc_local_db', JSON.stringify(currentData));
+                } catch (e) {
+                    alert("Storage full! Please clean up or enable Cloud.");
+                }
+
+                // 4. Sync to Cloud
+                if (isCloudConnected) { 
+                    syncToCloud(currentData); 
+                }
+            };
+            
+            // --- Sync Logo to Head & Manifest (Dynamic) ---
+            useEffect(() => {
+                if (appLogo) {
+                    // Update Favicon
+                    let link = document.getElementById("dynamic-favicon");
+                    if (link) link.href = appLogo;
+
+                    // Update Apple Icon
+                    let appleLink = document.getElementById("dynamic-apple-icon");
+                    if (appleLink) appleLink.href = appLogo;
+
+                    // Update Manifest
+                    const dynamicManifest = {
+                        name: "CFC YOUTH ACADEMY",
+                        short_name: "CFC YOUTH ACADEMY",
+                        start_url: ".",
+                        display: "standalone",
+                        background_color: "#09090b",
+                        theme_color: "#09090b",
+                        icons: [
+                            { src: appLogo, sizes: "192x192", type: "image/png" },
+                            { src: appLogo, sizes: "512x512", type: "image/png" }
+                        ]
+                    };
+                    const stringManifest = JSON.stringify(dynamicManifest);
+                    const blob = new Blob([stringManifest], {type: 'application/json'});
+                    const manifestURL = URL.createObjectURL(blob);
+                    let manifestLink = document.getElementById("dynamic-manifest");
+                    if (manifestLink) manifestLink.href = manifestURL;
+                }
+            }, [appLogo]);
+
+            // --- FUNCTIONS ---
+            const getStatGrade = (val) => {
+                const v = parseInt(val) || 0;
+                if (v >= 85) return 'A';
+                if (v >= 70) return 'B';
+                if (v >= 55) return 'C';
+                return 'D';
+            };
+
+            const getGradeColor = (grade) => {
+                switch(grade) {
+                    case 'A': return 'text-emerald-400 font-black';
+                    case 'B': return 'text-blue-400 font-bold';
+                    case 'C': return 'text-yellow-400 font-bold';
+                    default: return 'text-zinc-500 font-medium';
+                }
+            };
+
+            const getOptimizedImageUrl = (url) => {
+                if (!url || typeof url !== 'string' || !url.includes('cloudinary.com')) return url || DEFAULT_IMAGE;
+                let cleanUrl = url.replace(/([^:]\/)\/+/g, "$1"); 
+                if (cleanUrl.includes('/f_avif,q_auto/')) return cleanUrl; 
+                return cleanUrl.replace('/upload/', '/upload/f_avif,q_auto/');
+            };
+
+            const saveCoach = () => {
+                if(!coachForm.name) return;
+                let newCoaches;
+                if(editingCoach) {
+                    newCoaches = coaches.map(c => c.id === editingCoach.id ? { ...c, ...coachForm } : c);
+                } else {
+                    newCoaches = [...coaches, { ...coachForm, id: Date.now().toString(), attendanceHistory: [], paymentHistory: {} }];
+                }
+                updateData({ coaches: newCoaches });
+                setEditingCoach(null);
+                setCoachForm({ name: '', role: 'Assistant', rate: 100, phone: '' });
+            };
+
+            const deleteCoach = (id) => {
+                if(!confirm(t('deleteConfirm'))) return;
+                const newCoaches = coaches.filter(c => c.id !== id);
+                updateData({ coaches: newCoaches });
+            };
+
+            // 🔥 Coach Multi-School Logic & Delete Record
+            const toggleCoachAttendance = (coachId) => {
+                const newCoaches = coaches.map(c => {
+                    if (c.id === coachId) {
+                        const history = c.attendanceHistory || [];
+                        const isPresentHere = history.some(h => h.date === coachAttDate && h.school === coachAttSchool);
+                        let newHistory;
+                        if (isPresentHere) {
+                            newHistory = history.filter(h => !(h.date === coachAttDate && h.school === coachAttSchool));
+                        } else {
+                            newHistory = [...history, { date: coachAttDate, school: coachAttSchool, status: 'present' }];
+                        }
+                        return { ...c, attendanceHistory: newHistory };
+                    }
+                    return c;
+                });
+                updateData({ coaches: newCoaches });
+            };
+
+            const removeCoachAttendanceRecord = (coachId, dateToRemove, schoolToRemove) => {
+                if(!confirm(t('deleteConfirm'))) return;
+                const newCoaches = coaches.map(c => {
+                    if (c.id === coachId) {
+                        const newHistory = (c.attendanceHistory || []).filter(h => {
+                            if (h.school && schoolToRemove) {
+                                return !(h.date === dateToRemove && h.school === schoolToRemove);
+                            }
+                            return h.date !== dateToRemove;
+                        });
+                        return { ...c, attendanceHistory: newHistory };
+                    }
+                    return c;
+                });
+                updateData({ coaches: newCoaches });
+            };
+
+            const toggleCoachPayment = (coachId) => {
+                const newCoaches = coaches.map(c => {
+                    if (c.id === coachId) {
+                        const history = c.paymentHistory || {};
+                        const currentStatus = history[financeMonth]?.status === 'paid';
+                        const sessions = (c.attendanceHistory || []).filter(h => h.date.startsWith(financeMonth)).length;
+                        const total = sessions * (c.rate || 0);
+                        return { 
+                            ...c, 
+                            paymentHistory: { 
+                                ...history, 
+                                [financeMonth]: { status: currentStatus ? 'unpaid' : 'paid', amount: total } 
+                            } 
+                        };
+                    }
+                    return c;
+                });
+                updateData({ coaches: newCoaches });
+            };
+
+            const getCoachPayrollStats = () => {
+                let totalPayout = 0;
+                const list = coaches.map(c => {
+                    const monthSessions = (c.attendanceHistory || []).filter(h => h.date.startsWith(financeMonth));
+                    // Group by date to handle multiple schools
+                    const sessionCount = monthSessions.length;
+                    
+                    const amount = sessionCount * (c.rate || 0);
+                    const isPaid = c.paymentHistory?.[financeMonth]?.status === 'paid';
+                    if(isPaid) totalPayout += amount;
+                    
+                    // Sort sessions by date
+                    monthSessions.sort((a,b) => a.date.localeCompare(b.date));
+                    
+                    return { ...c, sessions: sessionCount, amount, isPaid, details: monthSessions };
+                });
+                return { list, totalPayout };
+            };
+            
+            const sendCoachMessage = (coach) => {
+                const msg = `Hi Coach ${coach.name}, 👋`;
+                window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+            };
+
+            const sendCoachPayslip = (coach) => {
+                const msg = `Hi Coach ${coach.name} 👋,\n\n📊 *Payslip for ${financeMonth}*\n\n⚽ Sessions: ${coach.sessions}\n💰 Rate: RM ${coach.rate}\n💵 *Total: RM ${coach.amount}*\n\nStatus: ${coach.isPaid ? '✅ PAID' : '⏳ PENDING'}\n\nThank you for your hard work! 🔥`;
+                window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+            };
+
+            const stripImages = (data) => {
+                const cleanData = JSON.parse(JSON.stringify(data));
+                if (cleanData.trainees) cleanData.trainees = cleanData.trainees.map(t => { 
+                    if (t.image && t.image.startsWith('data:image')) t.image = DEFAULT_IMAGE; 
+                    return t; 
+                });
+                // 🔥 CRITICAL FIX: DO NOT STRIP APP LOGO if it's base64, unless we want to rely on local merge.
+                // To force persistence, we ALLOW base64 to go to cloud for Logo only.
+                // The risk is JSONBin limit. But user asked for it.
+                // if (cleanData.appLogo && cleanData.appLogo.startsWith('data:image')) cleanData.appLogo = null;
+                
+                return cleanData;
+            };
+
+            const uploadToCloudinary = async (base64Image) => {
+                if (!imgConfig.cloudName || !imgConfig.uploadPreset) {
+                    alert(t('alerts', 'fillImgConfig'));
+                    return null;
+                }
+                setUploadingStatus(t('uploading'));
+                const url = `https://api.cloudinary.com/v1_1/${imgConfig.cloudName}/image/upload`;
+                const formData = new FormData();
+                formData.append('file', base64Image);
+                formData.append('upload_preset', imgConfig.uploadPreset);
+                try {
+                    const response = await fetch(url, { method: 'POST', body: formData });
+                    const data = await response.json();
+                    setUploadingStatus("");
+                    if (data.error) {
+                        alert(`❌ Cloudinary: ${data.error.message}`);
+                        return null;
+                    }
+                    return data.secure_url;
+                } catch (error) {
+                    alert("⚠️ Network Error");
+                    setUploadingStatus("");
+                    return null;
+                }
+            };
+            const testCloudinary = async () => {
+                const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+                const url = await uploadToCloudinary(testPixel);
+                if (url) alert(`✅ Connection OK!\nURL: ${url}`);
+            };
+            const saveImgConfig = () => {
+                if(imgConfig.cloudName && imgConfig.uploadPreset) {
+                    localStorage.setItem('cfc_cloudinary_config', JSON.stringify(imgConfig));
+                    setIsImgCloudReady(true);
+                    alert(t('alerts', 'imgCloudConnected'));
+                } else {
+                    alert(t('alerts', 'fillImgConfig'));
+                }
+            };
+
+            const syncFromCloud = async (key, binId) => {
+                setCloudStatus(t('status', 'syncing'));
+                try {
+                    const res = await fetch(`${JSONBIN_URL}/${binId}/latest`, { headers: { 'X-Master-Key': key } });
+                    if (res.ok) {
+                        const json = await res.json();
+                        const data = json.record;
+                        let mergedTrainees = [];
+                        
+                        const localData = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
+                        
+                        if (data.trainees) {
+                             mergedTrainees = data.trainees.map(ct => {
+                                 const localT = localData.trainees ? localData.trainees.find(lt => lt.id === ct.id) : null;
+                                 let finalImg = ct.image;
+                                 if (!finalImg || finalImg === DEFAULT_IMAGE) {
+                                     if (localT && localT.image && localT.image.startsWith('data:')) finalImg = localT.image;
+                                 }
+                                 return { ...ct, image: finalImg || DEFAULT_IMAGE };
+                             });
+                        } else { mergedTrainees = INITIAL_TRAINEES; }
+                        
+                        // 🔥 Smart Merge for Logo: Use local if cloud is null, otherwise use cloud (which might be base64 now)
+                        let finalLogo = data.appLogo;
+                        if (!finalLogo && localData.appLogo && localData.appLogo.startsWith('data:')) {
+                            finalLogo = localData.appLogo;
+                        }
+
+                        updateData({ ...data, trainees: mergedTrainees, appLogo: finalLogo }); 
+                        setIsCloudConnected(true); setCloudStatus(t('status', 'ready')); setTimeout(() => setCloudStatus(""), 2000);
+                    } else { setCloudStatus(t('status', 'fail')); setIsCloudConnected(false); }
+                } catch (e) { setCloudStatus(t('status', 'netError')); setIsCloudConnected(false); }
+            };
+
+            const syncToCloud = async (dataOverride = null) => {
+                if (!isCloudConnected || !cloudConfig.key || !cloudConfig.binId) return;
+                setCloudStatus(t('status', 'saving'));
+                const rawData = dataOverride || { trainees, teams, leagueName, coaches, appLogo }; 
+                const cleanData = stripImages(rawData);
+                try { await fetch(`${JSONBIN_URL}/${cloudConfig.binId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': cloudConfig.key }, body: JSON.stringify(cleanData) }); setCloudStatus(t('status', 'saved')); setTimeout(() => setCloudStatus(""), 2000); } catch (e) { setCloudStatus(t('status', 'saveFail')); }
+            };
+
+            const createCloudBin = async () => {
+                if (!cloudConfig.key) return alert(t('alerts', 'fillMasterKey')); setCloudStatus(t('status', 'creating'));
+                const cleanData = stripImages({ trainees, teams, leagueName, coaches, appLogo, note: "Created by CFC App" });
+                try { const res = await fetch(JSONBIN_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Master-Key": cloudConfig.key, "X-Bin-Name": "CFC_League_Data" }, body: JSON.stringify(cleanData) }); if (res.ok) { const json = await res.json(); const newBinId = json.metadata.id; setCloudConfig(prev => ({ ...prev, binId: newBinId })); localStorage.setItem('cfc_jsonbin_config', JSON.stringify({ key: cloudConfig.key, binId: newBinId })); setIsCloudConnected(true); setCloudStatus(t('status', 'created')); alert(t('alerts', 'cloudCreated').replace('{binId}', newBinId)); setTimeout(() => setCloudStatus(""), 2000); } else { throw new Error("Failed"); } } catch (e) { alert(t('status', 'error')); setCloudStatus(t('status', 'error')); }
+            };
+
+            const handleConnectCloud = () => { if (cloudConfig.key && cloudConfig.binId) { localStorage.setItem('cfc_jsonbin_config', JSON.stringify(cloudConfig)); syncFromCloud(cloudConfig.key, cloudConfig.binId); setIsCloudModalOpen(false); } else { alert(t('alerts', 'fillCloudConfig')); } };
+
+            // Handlers
+            const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo, coaches},null,2); const b=new Blob([d],{type:"application/json"}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; const dt=new Date().toISOString().slice(0,10); l.download=`CFC_Backup_${dt}.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); setTimeout(() => { if(confirm(t('alerts', 'backupDownloaded'))) window.open(DRIVE_LINK, '_blank'); }, 500); };
+            const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(!p.trainees) throw new Error(); if(confirm(t('alerts', 'overwriteConfirm'))) { updateData(p); alert(t('alerts', 'updated')); setIsDataToolsOpen(false); } } catch (e) { alert(t('alerts', 'fileError')); } e.target.value=null; }; r.readAsText(f); };
+            
+            const handleLogoFile = (e) => {
+                 const f = e.target.files?.[0]; if(!f) return; 
+                 const r = new FileReader(); 
+                 r.onloadend = () => { 
+                     setTempImage(r.result); 
+                     setIsLogoCrop(true); 
+                     setIsCropperOpen(true); 
+                 }; 
+                 r.readAsDataURL(f); 
+                 e.target.value = '';
+            };
+
+            const handleTraineeFile = (e) => {
+                 const f = e.target.files?.[0]; if(!f) return; 
+                 const r = new FileReader(); 
+                 r.onloadend = () => { 
+                     setTempImage(r.result); 
+                     setIsLogoCrop(false); 
+                     setIsCropperOpen(true); 
+                 }; 
+                 r.readAsDataURL(f); 
+                 e.target.value = '';
+            };
+
+            useEffect(() => { if (isCropperOpen && cropperImageRef.current) { if (cropperRef.current) cropperRef.current.destroy(); cropperRef.current = new Cropper(cropperImageRef.current, { aspectRatio: 1, viewMode: 1, background: false, autoCropArea: 0.8 }); } }, [isCropperOpen, tempImage]);
+            
+            const handleCropConfirm = async () => { 
+                if (cropperRef.current) { 
+                    const c = cropperRef.current.getCroppedCanvas({ width: 250, height: 250 }); 
+                    const base64Url = c.toDataURL('image/jpeg', 0.6); 
+                    
+                    let finalUrl = base64Url;
+                    if (imgConfig.cloudName && imgConfig.uploadPreset) {
+                         const cloudUrl = await uploadToCloudinary(base64Url);
+                         if(cloudUrl) finalUrl = cloudUrl;
+                    }
+                    if (isLogoCrop) { 
+                        setAppLogo(finalUrl); 
+                        updateData({ appLogo: finalUrl }); 
+                    } 
+                    else { 
+                        setFormData(p => ({ ...p, image: finalUrl })); 
+                    } 
+                    setIsCropperOpen(false); setTempImage(null); if(fileInputRef.current) fileInputRef.current.value=''; if(logoInputRef.current) logoInputRef.current.value=''; 
+                } 
+            };
+            const handleRotate = () => { if (cropperRef.current) cropperRef.current.rotate(90); };
+            const handleAttendanceChange = (field, value) => { const val = parseInt(value) || 0; let newData = { ...formData, [field]: val }; const att = field === 'attendedSessions' ? val : formData.attendedSessions; const tot = field === 'totalSessions' ? val : formData.totalSessions; const newRate = tot === 0 ? 0 : Math.round((att / tot) * 100); newData.attendance = newRate; setFormData(newData); };
+            const resetPlayerStats = () => { if(!confirm(t('alerts', 'resetConfirm'))) return; const data = { ...formData, totalSessions: PRESET_YEARLY_TOTAL, attendedSessions: 0, attendance: 0, attendanceHistory: [] }; setFormData(data); };
+            
+            // 🔥 Robust Handle Save (Detox)
+            const handleSave = () => { 
+                if(!formData.name) return; 
+                
+                // Sanitize Data before saving
+                const data = { 
+                    ...formData, 
+                    image: formData.image || DEFAULT_IMAGE,
+                    stats: formData.stats || DEFAULT_FORM_DATA.stats,
+                    name: formData.name || 'Unknown',
+                    team: formData.team || 'Free Agent'
+                }; 
+                
+                let newTrainees; 
+                if(editingTrainee) { 
+                    // Safe Update
+                    const oldT = trainees.find(t => t.id === editingTrainee.id) || editingTrainee; // Fallback to current if not found
+                    newTrainees = trainees.map(t => t.id === editingTrainee.id ? { 
+                        ...data, 
+                        // Preserve history if not in formData
+                        attendanceHistory: oldT.attendanceHistory || [], 
+                        feeHistory: oldT.feeHistory || {}, 
+                        id: t.id 
+                    } : t); 
+                } else { 
+                    newTrainees = [{ ...data, id: Date.now().toString(), attendanceHistory: [], feeHistory: {} }, ...trainees]; 
+                } 
+                
+                updateData({ trainees: newTrainees }); 
+                setIsModalOpen(false); 
+            };
+            
+            // 🔥 REGISTER HELPER
+            const handleRegister = () => {
+                setEditingTrainee(null);
+                setFormData(DEFAULT_FORM_DATA);
+                setIsModalOpen(true);
+            };
+
+            const deleteTrainee = (id) => { if(confirm(t('alerts', 'deleteConfirm'))) { const newT = trainees.filter(t => t.id !== id); updateData({ trainees: newT }); } };
+            
+            // 🔥 School Manager Logic
+            const handleRenameTeam = (old) => { 
+                const n = renamingTeam.current.trim(); 
+                if(!n || n===old) return setRenamingTeam({original:'',current:''}); 
+                const newTeams = teams.map(teamName=>teamName===old?n:teamName); 
+                const newT = trainees.map(trainee=>trainee.team===old?{...trainee,team:n}:trainee); 
+                updateData({teams:newTeams, trainees:newT}); 
+                setRenamingTeam({original:'',current:''}); 
+            };
+            const handleAddTeam = () => { const n=`New School ${teams.length+1}`; updateData({teams:[...teams,n]}); };
+            const handleDeleteTeam = (n) => { if(!confirm(`${t('delete')} ${n}?`)) return; const newTeams=teams.filter(teamName=>teamName!==n); const newT=trainees.map(trainee=>trainee.team===n?{...trainee,team:'Free Agent'}:trainee); updateData({teams:newTeams,trainees:newT}); };
+            
+            const handleRandomPhoto = () => { const arr=['https://images.unsplash.com/photo-1511886929837-354d827aae26?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1504257365157-1496a50d48f2?w=400&h=400&fit=crop']; setFormData(p=>({...p, image:arr[Math.floor(Math.random()*arr.length)]})); };
+            const mockAI = (type, trainee) => { setAiLoading(true); setAiResult({ name: trainee.name, content: TRANSLATIONS[lang].ai.analyzing }); setIsEditingReport(false); setTimeout(() => { const stats=trainee.stats||{pace:50}; const sorted=Object.entries(stats).sort((a,b)=>b[1]-a[1]); const best=sorted[0]; const weak=sorted[sorted.length-1]; const d=TRANSLATIONS[lang].ai; const sd=TRANSLATIONS[lang].stats; let rep=`【${d.reportTitle}】\n\n🔥 ${d.strength}：${sd[best[0]]} (${best[1]})\n📝 ${d.suggestion}：${d.advice}\n\n💬 ${d.comment}：\n"${trainee.name} - ${d.commentText}"`; setAiResult({name:trainee.name, content:rep}); setAiLoading(false); }, 1000); };
+            const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
+            const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500' : (v >= 70 ? 'bg-yellow-500' : 'bg-red-500');
+            const dataURLtoFile = (dataurl, filename) => { try { let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n); while(n--){ u8arr[n] = bstr.charCodeAt(n); } return new File([u8arr], filename, {type:mime}); } catch(e) { return null; } };
+            const generateShareText = (trainee) => { const L = TRANSLATIONS[lang]; const c = trainee.category ? `[${trainee.category}] ` : ''; let base = `【${L.appTitle}】\n\n${L.name}：${trainee.name}\n${L.school}：${c}${trainee.team}\n${L.mainPos}：${trainee.primaryPosition}\n${L.age}：${trainee.age} | ${L.height}：${trainee.height||'-'}cm | ${L.weight}：${trainee.weight||'-'}kg\n${L.attendance}：${trainee.attendance||0}%\n\n📊 ${L.stats.pace}: ${trainee.stats.pace} | ${L.stats.shooting}: ${trainee.stats.shooting}\n${L.stats.passing}: ${trainee.stats.passing} | ${L.stats.dribbling}: ${trainee.stats.dribbling}\n${L.stats.defending}: ${trainee.stats.defending} | ${L.stats.physical}: ${trainee.stats.physical}`; return base; };
+            // 🔥 Updated System Share Logic with API QR
+            const handleSystemShare = async (trainee) => {
+                let text = generateShareText(trainee);
+                const shareData = { title: trainee.name, text: text };
+                const isUrl = trainee.image && trainee.image.startsWith('http');
+                const isBase64 = trainee.image && trainee.image.startsWith('data:image');
+                
+                if (isUrl) { 
+                    text += `\n\n🖼️ Photo: ${trainee.image}`; 
+                    shareData.text = text; 
+                }
+                
+                let file = null;
+                if (isBase64) { 
+                    file = dataURLtoFile(trainee.image, `${trainee.name}.jpg`); 
+                    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { 
+                        shareData.files = [file]; 
+                    } 
+                }
+
+                try { 
+                    if (navigator.share && (shareData.files || isUrl)) { 
+                        await navigator.share(shareData); 
+                        return; 
+                    } 
+                    throw new Error("Web Share Fail"); 
+                } 
+                catch (e) { 
+                    if (isBase64) alert(t('alerts', 'imgLocalWarning')); 
+                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareData.text)}`; 
+                    window.open(whatsappUrl, '_blank'); 
+                }
+            };
+
+            const handleReportShare = async () => { if(!aiResult) return; const txt = aiResult.content; try { if(navigator.share) await navigator.share({text:txt}); else { const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('alerts', 'copied')); } } catch(e){} };
+            const handleWhatsappShare = () => { const date = attendanceDate; const pNames = reportFiltered.filter(trainee => attendanceList.includes(trainee.id)).map(trainee => trainee.name); const aNames = reportFiltered.filter(trainee => !attendanceList.includes(trainee.id)).map(trainee => trainee.name); let text = `📅 *CFCYA Attendance - ${date}*\n\n✅ *Present (${pNames.length})*:\n${pNames.join('\n')}\n\n❌ *Absent (${aNames.length})*:\n${aNames.join('\n')}`; window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); };
+            const handleExportAttendanceExcel = () => { const date = attendanceDate; const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Category,Status,Date\n"; reportFiltered.forEach(trainee => { const status = attendanceList.includes(trainee.id) ? "Present" : "Absent"; csvContent += `${trainee.name.replace(/,/g," ")},${trainee.team.replace(/,/g," ")},${trainee.category||""},${status},${date}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Att_${targetSchool}_${date}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
+
+            const exportFinanceExcel = () => {
+                const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
+                const teamsMap = {}; financeFiltered.forEach(trainee => { if (!teamsMap[trainee.team]) teamsMap[trainee.team] = []; teamsMap[trainee.team].push(trainee); });
+                let csvContent = "\uFEFF"; csvContent += `CFC YOUTH ACADEMY FINANCE REPORT\nMonth:,${financeMonth}\nGenerated:,${new Date().toISOString().slice(0, 10)}\nScope:,${targetSchool}\nFee Standard:,RM ${monthlyFee}\n\n`;
+                let grandTotalCollected = 0; let grandTotalPending = 0;
+                Object.keys(teamsMap).sort().forEach(school => {
+                    const students = teamsMap[school]; const paidCount = students.filter(t => t.feeHistory && t.feeHistory[financeMonth]).length; const totalCount = students.length; const unpaidCount = totalCount - paidCount; const collected = paidCount * monthlyFee; const pending = unpaidCount * monthlyFee; const rate = totalCount === 0 ? 0 : Math.round((paidCount / totalCount) * 100);
+                    grandTotalCollected += collected; grandTotalPending += pending;
+                    csvContent += `------------------------------------------------\nSCHOOL:,${school.replace(/,/g, " ")}\nSummary:,${paidCount} Paid / ${totalCount} Total (${rate}%)\nCash Flow:,Collected: RM ${collected},Pending: RM ${pending}\n------------------------------------------------\nName,Category,Position,Fee (RM),Status\n`;
+                    students.sort((a, b) => { if (a.category !== b.category) return (a.category || '').localeCompare(b.category || ''); return a.name.localeCompare(b.name); });
+                    students.forEach(t => { const isPaid = t.feeHistory && t.feeHistory[financeMonth]; const status = isPaid ? "PAID" : "UNPAID"; csvContent += `${t.name.replace(/,/g," ")},${t.category||"-"},${t.primaryPosition.split(' ')[0]},${monthlyFee},${status}\n`; });
+                    csvContent += `\n\n`;
+                });
+                if (selectedTeam === '全部') { csvContent += `================================================\nGRAND TOTAL SUMMARY\nTotal Collected:,RM ${grandTotalCollected}\nTotal Pending:,RM ${grandTotalPending}\n================================================\n`; }
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `CFC_Fin_${targetSchool}_${financeMonth}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            };
+
+            const toggleFeeStatus = (traineeId) => { const newTrainees = trainees.map(trainee => { if (trainee.id === traineeId) { const history = trainee.feeHistory || {}; const currentStatus = history[financeMonth] || false; return { ...trainee, feeHistory: { ...history, [financeMonth]: !currentStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
+            const toggleAllFeeStatus = () => { const allPaid = financeFiltered.every(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]); const targetStatus = !allPaid; const statusText = targetStatus ? (lang === 'zh' ? "已交 (PAID)" : "PAID") : (lang === 'zh' ? "未交 (UNPAID)" : "UNPAID"); if (!confirm(t('alerts', 'finConfirmAll').replace('{status}', statusText))) return; const newTrainees = trainees.map(trainee => { if (financeFiltered.some(rt => rt.id === trainee.id)) { const history = trainee.feeHistory || {}; return { ...trainee, feeHistory: { ...history, [financeMonth]: targetStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
+            const toggleAllAttendanceStatus = () => { 
+                if (attTab === 'trainees') {
+                    const allPresent = attendanceFiltered.every(t => attendanceList.includes(t.id)); 
+                    if (allPresent) { const idsToRemove = attendanceFiltered.map(t => t.id); setAttendanceList(attendanceList.filter(id => !idsToRemove.includes(id))); } 
+                    else { const idsToAdd = attendanceFiltered.map(t => t.id); setAttendanceList([...new Set([...attendanceList, ...idsToAdd])]); }
+                } else {
+                    const allPresent = attendanceFiltered.every(c => coachAttendanceList.includes(c.id));
+                    if (allPresent) { const idsToRemove = attendanceFiltered.map(c => c.id); setCoachAttendanceList(coachAttendanceList.filter(id => !idsToRemove.includes(id))); }
+                    else { const idsToAdd = attendanceFiltered.map(c => c.id); setCoachAttendanceList([...new Set([...coachAttendanceList, ...idsToAdd])]); }
+                }
+            };
+            const sendFeeReminder = (trainee) => { const dict = TRANSLATIONS[lang]; const template = dict.msgs[msgTemplate] || dict.msgs['gentle']; const bankInfo = dict.bankDetails.replace('{bankName}', BANK_INFO.bankName).replace('{accNum}', BANK_INFO.accNum).replace('{holder}', BANK_INFO.holder); const msgBody = template.replace('{name}', trainee.name).replace('{month}', financeMonth).replace('{amount}', monthlyFee); const fullMsg = msgBody + bankInfo; window.open(`https://wa.me/?text=${encodeURIComponent(fullMsg)}`, '_blank'); };
+            const copyBankInfo = () => { const text = `${BANK_INFO.bankName}\n${BANK_INFO.accNum}\n${BANK_INFO.holder}`; const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(t('finCopied')); };
+            const getFinanceSummary = () => { const paidCount = financeFiltered.filter(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]).length; const totalAmount = paidCount * monthlyFee; const pendingAmount = (financeFiltered.length - paidCount) * monthlyFee; return { paidCount, totalAmount, pendingAmount }; };
+
+            // 🔥 Attendance Functions (Restored)
+            const openAttendanceModal = () => {
+                const today = new Date().toISOString().slice(0, 10);
+                setAttendanceDate(today);
+                setAttendanceSearchTerm(''); 
+                setAttTab('trainees'); // Reset to default tab
+
+                // 1. Players Init
+                const presentPlayerIds = reportFiltered.filter(t => 
+                    t.attendanceHistory && t.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today && (typeof h === 'string' || h.status === 'present'))
+                ).map(t => t.id);
+                // If records exist for anyone in view, use records. Else default all? No, default empty for safety.
+                const playerRecordExists = reportFiltered.some(t => t.attendanceHistory?.some(h => (typeof h === 'string' ? h : h.date) === today));
+                if (playerRecordExists) { setAttendanceList(presentPlayerIds); } 
+                else { setAttendanceList(reportFiltered.map(t => t.id)); } // Auto-select all if new day
+
+                // 2. Coaches Init
+                const presentCoachIds = coaches.filter(c => c.attendanceHistory && c.attendanceHistory.some(h => h.date === today)).map(c => c.id);
+                const coachRecordExists = coaches.some(c => c.attendanceHistory?.some(h => h.date === today));
+                if (coachRecordExists) { setCoachAttendanceList(presentCoachIds); }
+                else { setCoachAttendanceList(coaches.map(c => c.id)); }
+
+                setImportText(""); setIsAttendanceOpen(true);
+            };
+
+            const toggleAttendance = (id) => { 
+                if (attTab === 'trainees') {
+                    if (attendanceList.includes(id)) setAttendanceList(attendanceList.filter(pid => pid !== id)); 
+                    else setAttendanceList([...attendanceList, id]); 
+                } else {
+                    if (coachAttendanceList.includes(id)) setCoachAttendanceList(coachAttendanceList.filter(cid => cid !== id));
+                    else setCoachAttendanceList([...coachAttendanceList, id]);
+                }
+            };
+
+            const parseImportText = () => { 
+                if (!importText) return; 
+                const text = importText.toLowerCase(); 
+                const targetList = attTab === 'trainees' ? reportFiltered : coaches;
+                
+                const matchedIds = targetList.filter(item => text.includes(item.name.toLowerCase())).map(item => item.id); 
+                
+                if (matchedIds.length > 0) { 
+                    if(attTab === 'trainees') setAttendanceList(matchedIds);
+                    else setCoachAttendanceList(matchedIds);
+                    alert(`✅ ID: ${matchedIds.length}`); 
+                } else { alert("⚠️ No match"); } 
+            };
+
+            const submitAttendance = () => {
+                const sCount = attendanceList.length;
+                const cCount = coachAttendanceList.length;
+                const msg = t('alerts', 'attConfirmMsg').replace('{date}', attendanceDate).replace('{sCount}', sCount).replace('{cCount}', cCount);
+                if (!confirm(msg)) return;
+
+                // 1. Update Trainees
+                const newTrainees = trainees.map(t => {
+                    if (reportFiltered.some(r => r.id === t.id)) {
+                        let history = Array.isArray(t.attendanceHistory) ? [...t.attendanceHistory] : [];
+                        const isPresent = attendanceList.includes(t.id);
+                        const newStatus = isPresent ? 'present' : 'absent';
+                        
+                        // Remove today's entry if exists to replace it
+                        history = history.filter(h => (typeof h === 'string' ? h : h.date) !== attendanceDate);
+                        history.push({ date: attendanceDate, status: newStatus });
+
+                        const newAttended = history.filter(h => (typeof h === 'string' ? 'present' : h.status) === 'present').length;
+                        const currentTotal = t.totalSessions > 0 ? t.totalSessions : PRESET_YEARLY_TOTAL;
+                        const newRate = Math.round((newAttended / currentTotal) * 100);
+                        
+                        return { ...t, totalSessions: currentTotal, attendedSessions: newAttended, attendance: newRate, attendanceHistory: history };
+                    }
+                    return t;
+                });
+
+                // 2. Update Coaches
+                const newCoaches = coaches.map(c => {
+                     let history = [...(c.attendanceHistory || [])];
+                     const isPresent = coachAttendanceList.includes(c.id);
+                     history = history.filter(h => h.date !== attendanceDate); // Remove old
+                     if (isPresent) history.push({ date: attendanceDate, status: 'present' });
+                     return { ...c, attendanceHistory: history };
+                });
+
+                updateData({ trainees: newTrainees, coaches: newCoaches }); 
+                setIsAttendanceOpen(false); 
+                alert(t('alerts', 'updated'));
+            };
+            
+            // 🔥 Auth Login
+            const handleLogin = (role) => {
+                if (role === 'admin') {
+                    if (pinInput === ADMIN_PIN) {
+                        setUserRole('admin');
+                        setPinInput("");
+                        setShowPinInput(false);
+                    } else {
+                        alert(t('auth', 'wrongPin'));
+                    }
+                } else {
+                    setUserRole('user');
+                }
+            };
+
+            // 🌟 LOGIN SCREEN COMPONENT (Inline)
+            if (!userRole) {
+                return (
+                    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center p-6 z-[100] fade-in">
+                        <div className="w-24 h-24 mb-6 rounded-2xl overflow-hidden shadow-2xl border-2 border-zinc-800">
+                             {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-6xl flex items-center justify-center h-full bg-zinc-900"></i>}
+                        </div>
+                        <h1 className="text-3xl font-black text-white mb-2 tracking-tight">CFC YOUTH ACADEMY</h1>
+                        <p className="text-zinc-500 text-sm mb-10">{t('auth', 'welcome')}</p>
+                        
+                        <div className="w-full max-w-sm space-y-4">
+                            {!showPinInput ? (
+                                <>
+                                    <button onClick={() => setShowPinInput(true)} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-bold flex items-center justify-center gap-3 transition-all border border-zinc-700">
+                                        <i className="fa-solid fa-user-shield text-emerald-400 text-xl"></i> 
+                                        <div className="text-left">
+                                            <div className="text-sm">{t('auth', 'adminMode')}</div>
+                                            <div className="text-[10px] text-zinc-500 font-normal">{t('auth', 'adminDesc')}</div>
+                                        </div>
+                                    </button>
+                                    <button onClick={() => handleLogin('user')} className="w-full py-4 bg-zinc-900 hover:bg-black text-white rounded-xl font-bold flex items-center justify-center gap-3 transition-all border border-zinc-800">
+                                        <i className="fa-solid fa-users text-blue-400 text-xl"></i>
+                                        <div className="text-left">
+                                            <div className="text-sm">{t('auth', 'userMode')}</div>
+                                            <div className="text-[10px] text-zinc-500 font-normal">{t('auth', 'userDesc')}</div>
+                                        </div>
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 fade-in">
+                                    <h3 className="text-white font-bold mb-4 text-center">{t('auth', 'enterPin')}</h3>
+                                    <div className="flex gap-2 justify-center mb-4">
+                                        {[0,1,2,3].map(i => (
+                                            <div key={i} className={`w-3 h-3 rounded-full ${pinInput.length > i ? 'bg-emerald-500' : 'bg-zinc-700'}`}></div>
+                                        ))}
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {[1,2,3,4,5,6,7,8,9].map(n => (
+                                            <button key={n} onClick={() => setPinInput(p => (p+n).slice(0,4))} className="py-4 bg-zinc-800 rounded-lg text-xl font-bold text-white active:bg-zinc-700">{n}</button>
+                                        ))}
+                                        <button onClick={() => setShowPinInput(false)} className="py-4 text-red-400 font-bold text-xs">CANCEL</button>
+                                        <button onClick={() => setPinInput(p => (p+0).slice(0,4))} className="py-4 bg-zinc-800 rounded-lg text-xl font-bold text-white active:bg-zinc-700">0</button>
+                                        <button onClick={() => handleLogin('admin')} className="py-4 bg-emerald-600 rounded-lg text-white flex items-center justify-center"><i className="fa-solid fa-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="mt-12 flex gap-4">
+                             <button onClick={() => setLang('zh')} className={`text-2xl ${lang==='zh'?'opacity-100':'opacity-30'}`}>🇨🇳</button>
+                             <button onClick={() => setLang('en')} className={`text-2xl ${lang==='en'?'opacity-100':'opacity-30'}`}>🇬🇧</button>
+                             <button onClick={() => setLang('ms')} className={`text-2xl ${lang==='ms'?'opacity-100':'opacity-30'}`}>🇲🇾</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="max-w-[1920px] mx-auto p-3 md:p-6 lg:p-8 pb-20 fade-in">
+                    {/* Header with Logout */}
+                    <div className="h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-yellow-500 mb-6 rounded-full"></div>
+                    
+                    <header className="flex flex-col xl:flex-row justify-between items-center gap-4 md:gap-6 mb-6 md:mb-8">
+                        <div className="w-full xl:w-auto flex justify-between xl:justify-start items-center gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="relative group w-14 h-14 md:w-16 md:h-16 bg-zinc-800 rounded-xl flex items-center justify-center cursor-pointer border border-zinc-700 overflow-hidden shrink-0 shadow-lg" onClick={() => userRole === 'admin' && logoInputRef.current.click()}>
+                                    {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-3xl"></i>}
+                                    {userRole === 'admin' && <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoFile} />}
+                                </div>
+                                <div>
+                                    {isEditingTitle && userRole === 'admin' ? (
+                                        <input autoFocus className="bg-zinc-800 text-white text-xl md:text-2xl font-black px-2 py-1 rounded w-full border border-zinc-600" 
+                                            value={leagueName} onChange={e => setLeagueName(e.target.value)} 
+                                            onBlur={() => {setIsEditingTitle(false); updateData({leagueName});}} />
+                                    ) : (
+                                        <h1 className="text-xl md:text-2xl font-black cursor-pointer flex items-center gap-2 hover:text-blue-400 transition-colors" onClick={() => userRole === 'admin' && setIsEditingTitle(true)}>
+                                            {leagueName} 
+                                            {userRole === 'admin' && <i className="fa-solid fa-pen text-xs text-zinc-600"></i>}
+                                        </h1>
+                                    )}
+                                    <div className="text-xs text-zinc-500 mt-1 flex items-center gap-2">
+                                        <span className={`px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] md:text-xs ${userRole === 'admin' ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-500/30' : 'bg-blue-900/30 text-blue-400 border border-blue-500/30'}`}>
+                                            {userRole === 'admin' ? 'ADMIN' : 'USER'}
+                                        </span>
+                                        {userRole === 'admin' && (
+                                            <div onClick={() => setIsCloudModalOpen(true)} className={`cursor-pointer px-2 rounded flex items-center gap-1 transition-colors ${isCloudConnected ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
+                                                <i className={`fa-solid fa-cloud ${isCloudConnected ? '' : 'text-zinc-600'}`}></i>
+                                                <span className="text-[10px] md:text-xs">{isCloudConnected ? t('cloudMode') : t('localMode')}</span>
+                                                <span className="text-[10px] ml-1">{cloudStatus}</span>
+                                            </div>
+                                        )}
+                                        <button onClick={() => setUserRole(null)} className="text-zinc-500 hover:text-white ml-2"><i className="fa-solid fa-right-from-bracket"></i></button>
+                                        
+                                        {/* 🔥 New Share Button (Next to Cloud Status) */}
+                                        <button 
+                                            onClick={() => setIsShareAppOpen(true)} 
+                                            className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded border border-zinc-700 transition-colors text-[10px] flex items-center gap-1"
+                                            title="Share App"
+                                        >
+                                            <i className="fa-solid fa-qrcode"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Admin Tools (Hidden for User) */}
+                        {userRole === 'admin' && (
+                            <div className="w-full xl:w-auto flex flex-col gap-3">
+                                <div className="grid grid-cols-4 md:grid-cols-6 lg:flex gap-2 w-full">
+                                    <button onClick={() => setIsFinanceOpen(true)} className="col-span-1 px-2 sm:px-4 py-3 bg-yellow-600 hover:bg-yellow-500 text-yellow-100 rounded-xl font-bold border border-yellow-500 flex flex-col lg:flex-row items-center justify-center gap-1 sm:gap-2 text-[10px] md:text-xs transition-transform active:scale-95 shadow-lg shadow-yellow-900/20">
+                                        <i className="fa-solid fa-sack-dollar text-base sm:text-lg"></i> <span className="">{t('financeTool')}</span>
+                                    </button>
+                                    <button onClick={openAttendanceModal} className="col-span-1 px-2 sm:px-4 py-3 bg-emerald-900 hover:bg-emerald-800 text-emerald-100 rounded-xl font-bold border border-emerald-700 flex flex-col lg:flex-row items-center justify-center gap-1 sm:gap-2 text-[10px] md:text-xs transition-transform active:scale-95 shadow-lg shadow-emerald-900/20">
+                                        <i className="fa-solid fa-calendar-check text-base sm:text-lg"></i> <span className="">{t('attendanceTool')}</span>
+                                    </button>
+                                    <button onClick={() => { setIsCoachOpen(true); setCoachView('list'); }} className="col-span-1 px-2 sm:px-4 py-3 bg-blue-900 hover:bg-blue-800 text-blue-200 rounded-xl font-bold border border-blue-700 flex flex-col lg:flex-row items-center justify-center gap-1 sm:gap-2 text-[10px] md:text-xs transition-transform active:scale-95 shadow-lg shadow-blue-900/20">
+                                        <i className="fa-solid fa-user-tie text-base sm:text-lg"></i> <span className="">{t('coachTool')}</span>
+                                    </button>
+                                    <button onClick={() => setIsDataToolsOpen(true)} className="col-span-1 px-2 sm:px-4 py-3 bg-indigo-900 hover:bg-indigo-800 text-indigo-100 rounded-xl font-bold border border-indigo-700 flex flex-col lg:flex-row items-center justify-center gap-1 sm:gap-2 text-[10px] md:text-xs transition-transform active:scale-95 shadow-lg shadow-indigo-900/20">
+                                        <i className="fa-solid fa-cloud-arrow-up text-base sm:text-lg"></i> <span className="">{t('backupRestore')}</span>
+                                    </button>
+                                    
+                                    <button onClick={() => setIsSchoolManagerOpen(true)} className="col-span-2 md:col-span-1 lg:flex-1 px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl font-bold border border-zinc-700 flex items-center justify-center gap-2 text-xs sm:text-sm transition-colors whitespace-nowrap">
+                                        <i className="fa-solid fa-gear"></i> {t('manageSchools')}
+                                    </button>
+                                    <button onClick={handleRegister} className="col-span-2 md:col-span-1 lg:flex-[1.5] px-6 py-3 bg-zinc-100 hover:bg-white text-zinc-900 rounded-xl font-bold shadow-xl shadow-zinc-900/50 flex items-center justify-center gap-2 text-sm transition-transform active:scale-95 whitespace-nowrap">
+                                        <i className="fa-solid fa-plus"></i> {t('register')}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </header>
+
+                    {/* Filters & Search */}
+                    <div className="mb-6 md:mb-8 space-y-3">
+                        <div className="relative">
+                            <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
+                            <input className="w-full pl-10 pr-4 py-3 md:py-4 bg-zinc-900 border border-zinc-800 rounded-xl text-white focus:border-indigo-500 outline-none placeholder-zinc-600 text-base shadow-sm transition-all focus:shadow-md" placeholder={t('searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                        </div>
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4 md:mx-0 md:px-0">
+                            {['全部', ...teams].map(teamItem => <button key={teamItem} onClick={() => setSelectedTeam(teamItem)} className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap border transition-all ${selectedTeam === teamItem ? 'bg-yellow-500 text-black border-yellow-500 shadow-md shadow-yellow-500/20' : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800'}`}>{teamItem.split(' (')[0]}</button>)}
+                        </div>
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+                            {['全部', ...POSITIONS].map(p => <button key={p} onClick={() => setSelectedPosition(p)} className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-colors ${selectedPosition === p ? 'bg-zinc-100 text-black shadow-sm' : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800'}`}>{p.replace(/\s*\(.*?\)\s*/g, '')}</button>)}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+                        {uiFiltered.length === 0 && <div className="col-span-full py-20 text-center text-zinc-600 border-2 border-dashed border-zinc-800 rounded-3xl">{t('noData')}</div>}
+                        {uiFiltered.map(trainee => (
+                            <div key={trainee.id} className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col hover:border-zinc-600 transition-all hover:shadow-xl hover:shadow-black/50 relative group overflow-hidden">
+                                <div className="w-full h-28 relative shrink-0">
+                                    <img src={getOptimizedImageUrl(trainee.image)} className="w-full h-full object-cover bg-zinc-800 transition-transform group-hover:scale-105 duration-500" onError={e => e.target.src = DEFAULT_IMAGE} />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent opacity-80"></div>
+                                    <span className="absolute top-2 left-2 bg-yellow-500 text-black text-[10px] font-black px-2 py-0.5 rounded shadow-lg z-10">{getPositionCode(trainee.primaryPosition)}</span>
+                                    {trainee.category && <span className="absolute top-2 right-2 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg z-10">{trainee.category}</span>}
+                                    <button onClick={(e) => { e.stopPropagation(); setShareTarget(trainee); }} className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-emerald-600 transition-all z-20 shadow-lg border border-white/20 active:scale-95" title={t('shareProfile')}><i className="fa-solid fa-share-nodes text-xs"></i></button>
+                                    <div className="absolute bottom-2 left-3 right-12">
+                                        <h3 className="text-sm font-bold text-white truncate shadow-black drop-shadow-md leading-tight">{trainee.name}</h3>
+                                        <p className="text-[10px] text-zinc-300 flex items-center gap-1 truncate shadow-black drop-shadow-md mt-0.5"><i className="fa-solid fa-school text-yellow-500 text-[9px]"></i> {trainee.team.split(' (')[0]}</p>
+                                    </div>
+                                </div>
+                                <div className="p-2 flex-1 flex flex-col">
+                                    {/* Personal Info Block (Privacy Mode) */}
+                                    {userRole === 'admin' && (
+                                        <div className="bg-zinc-950/50 rounded-lg p-1.5 mb-2 text-[9px] text-zinc-400 space-y-1 border border-zinc-800/50">
+                                            <div className="flex items-center gap-2"><i className="fa-solid fa-user text-zinc-600 w-3 text-center"></i><span className="text-zinc-300 truncate font-medium">{trainee.parentName || '-'}</span></div>
+                                            <div className="flex items-center gap-2"><i className="fa-solid fa-phone text-zinc-600 w-3 text-center"></i><span className="text-zinc-300 truncate font-mono">{trainee.phone || '-'}</span></div>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="mb-2 px-0.5">
+                                        <div className="flex justify-between text-[9px] text-zinc-500 mb-0.5 font-bold uppercase tracking-wide">
+                                            <span>{t('attendance')}</span>
+                                            <span className={trainee.attendance >= 90 ? 'text-emerald-500' : (trainee.attendance >= 70 ? 'text-yellow-500' : 'text-red-500')}>{trainee.attendance || 0}%</span>
+                                        </div>
+                                        <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
+                                            <div className={`h-full ${getAttendanceColor(trainee.attendance || 0)}`} style={{width: `${trainee.attendance || 0}%`}}></div>
+                                        </div>
+                                    </div>
+
+                                    {/* 🔥 Stats Grade Grid */}
+                                    <div className="grid grid-cols-3 gap-1 mb-2 text-[9px] font-mono text-zinc-400 text-center bg-zinc-950/30 p-1 rounded border border-zinc-800/30">
+                                        {['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical'].map(s => {
+                                            const val = trainee.stats?.[s] || 50;
+                                            const grade = getStatGrade(val);
+                                            return (
+                                                <div key={s} className="flex flex-col items-center">
+                                                    <span className="text-zinc-600 text-[8px] uppercase">{t('stats', s).substring(0,3)}</span>
+                                                    <span className={`text-xs ${getGradeColor(grade)}`}>{grade}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Admin Only Actions */}
+                                    {userRole === 'admin' && (
+                                        <div className="flex gap-1 mt-auto pt-2 border-t border-zinc-800/50">
+                                            <button onClick={() => handleEdit(trainee)} className="flex-1 py-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded transition-colors flex justify-center"><i className="fa-solid fa-pen-to-square text-xs"></i></button>
+                                            <button onClick={() => deleteTrainee(trainee.id)} className="flex-1 py-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors flex justify-center"><i className="fa-solid fa-trash text-xs"></i></button>
+                                            <button onClick={() => mockAI('球探', trainee)} className="flex-1 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-[10px] font-bold rounded border border-zinc-700 transition-all flex items-center justify-center gap-1 active:scale-95">
+                                                AI
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* 🔥 New Share App Modal with API QR Code */}
+                    {isShareAppOpen && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in" onClick={() => setIsShareAppOpen(false)}>
+                            <div className="bg-zinc-900 w-full max-w-sm rounded-2xl border border-zinc-700 shadow-2xl p-6 text-center" onClick={e => e.stopPropagation()}>
+                                <div className="w-16 h-16 bg-zinc-800 rounded-xl flex items-center justify-center mx-auto mb-4 border border-zinc-700">
+                                    {appLogo ? <img src={appLogo} className="w-full h-full object-cover rounded-xl"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-3xl"></i>}
+                                </div>
+                                <h2 className="text-xl font-bold text-white mb-2">{t('shareAppTitle')}</h2>
+                                <p className="text-sm text-zinc-400 mb-6">{t('shareAppDesc')}</p>
+                                
+                                {/* 🔥 API Generated QR Code with White Background */}
+                                <div className="bg-white p-2 rounded-xl mb-6 mx-auto w-fit shadow-lg shadow-white/10">
+                                    <img 
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shareUrl)}&margin=10`} 
+                                        alt="QR Code" 
+                                        className="w-48 h-48 rounded-lg"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = `https://chart.googleapis.com/chart?cht=qr&chs=250x250&chl=${encodeURIComponent(shareUrl)}`;
+                                        }}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 text-xs text-left mb-6">
+                                    <div className="bg-zinc-800 p-3 rounded-lg border border-zinc-700">
+                                        <div className="font-bold text-white mb-1"><i className="fa-brands fa-apple text-lg mr-1"></i> iOS</div>
+                                        <div className="text-zinc-400">Tap <i className="fa-solid fa-arrow-up-from-bracket mx-1"></i> Share then 'Add to Home Screen'</div>
+                                    </div>
+                                    <div className="bg-zinc-800 p-3 rounded-lg border border-zinc-700">
+                                        <div className="font-bold text-white mb-1"><i className="fa-brands fa-android text-lg mr-1"></i> Android</div>
+                                        <div className="text-zinc-400">Tap <i className="fa-solid fa-ellipsis-vertical mx-1"></i> Menu then 'Install App'</div>
+                                    </div>
+                                </div>
+                                
+                                <button onClick={() => {
+                                    navigator.clipboard.writeText(shareUrl);
+                                    alert(t('linkCopied'));
+                                }} className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl border border-zinc-600 transition-colors">
+                                    <i className="fa-solid fa-link mr-2"></i> {t('copyLink')}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Modals: Cloud Setup */}
+                    {isCloudModalOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-sm rounded-2xl border border-emerald-700 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-cloud text-emerald-500"></i> {t('cloudSetup')}</h2><button onClick={() => setIsCloudModalOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4"><p className="text-sm text-zinc-400 leading-relaxed">{t('cloudDesc')}</p><div className="bg-black p-3 rounded-lg border border-zinc-700"><label className="text-xs text-zinc-500 block mb-1 font-bold">{t('cloudKey')}</label><input className="w-full bg-transparent text-white outline-none font-mono text-sm" placeholder="X-Master-Key" value={cloudConfig.key} onChange={e => setCloudConfig({...cloudConfig, key: e.target.value})} /></div><div className="bg-black p-3 rounded-lg border border-zinc-700"><label className="text-xs text-zinc-500 block mb-1 font-bold">{t('cloudBin')}</label><input className="w-full bg-transparent text-white outline-none font-mono text-sm" placeholder="Bin ID" value={cloudConfig.binId} onChange={e => setCloudConfig({...cloudConfig, binId: e.target.value})} /></div><div className="border-t border-zinc-800 pt-2 mt-2"><button onClick={createCloudBin} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-900/30 mb-3">{t('cloudCreate')}</button></div>
+                    {/* Cloudinary Config in Cloud Modal */}
+                    <div className="pt-2 mt-2 border-t border-zinc-700">
+                        <label className="text-sm text-blue-400 font-bold mb-2 block flex items-center gap-2"><i className="fa-solid fa-image"></i> {t('imgCloudSetup')}</label>
+                        <p className="text-xs text-zinc-500 mb-2">{t('imgCloudDesc')}</p>
+                        <div className="bg-black p-3 rounded-lg border border-zinc-700 mb-2"><label className="text-xs text-zinc-500 block mb-1 font-bold">{t('imgCloudName')}</label><input className="w-full bg-transparent text-white outline-none font-mono text-sm" placeholder="e.g. dxyz..." value={imgConfig.cloudName} onChange={e => setImgConfig({...imgConfig, cloudName: e.target.value})} /></div>
+                        <div className="bg-black p-3 rounded-lg border border-zinc-700 mb-2"><label className="text-xs text-zinc-500 block mb-1 font-bold">{t('imgUploadPreset')}</label><input className="w-full bg-transparent text-white outline-none font-mono text-sm" placeholder="e.g. cfc_preset" value={imgConfig.uploadPreset} onChange={e => setImgConfig({...imgConfig, uploadPreset: e.target.value})} /></div>
+                        <div className="flex gap-2">
+                             <button onClick={testCloudinary} className="flex-1 py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-xs font-bold rounded-lg border border-zinc-600">{t('imgTest')}</button>
+                             <button onClick={saveImgConfig} className="flex-1 py-2 bg-blue-900/50 hover:bg-blue-800 text-blue-400 text-xs font-bold rounded-lg border border-blue-900/30">{t('imgSave')}</button>
+                        </div>
+                    </div>
+                    
+                    <button onClick={handleConnectCloud} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition-transform active:scale-95 mt-2">{t('cloudConnect')}</button></div></div></div>)}
+                    
+                    {/* Attendance Modal */}
+                    {isAttendanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-calendar-check text-emerald-500"></i> {t('attTitle')}</h2><div className="flex items-center gap-2"><input type="date" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-emerald-500 outline-none" value={attendanceDate} onChange={(e) => setAttendanceDate(e.target.value)} /><button onClick={() => setIsAttendanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div>
+                    {/* 🔥 Tabs for Attendance */}
+                    <div className="flex bg-zinc-950 rounded-lg p-1 mb-4 border border-zinc-700">
+                        <button onClick={() => setAttTab('trainees')} className={`flex-1 py-2 text-xs font-bold rounded ${attTab === 'trainees' ? 'bg-emerald-600 text-white' : 'text-zinc-500'}`}>{t('attTabTrainees')}</button>
+                        <button onClick={() => setAttTab('coaches')} className={`flex-1 py-2 text-xs font-bold rounded ${attTab === 'coaches' ? 'bg-blue-600 text-white' : 'text-zinc-500'}`}>{t('attTabCoaches')}</button>
+                    </div>
+                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4"><label className="text-zinc-400 text-xs font-bold block mb-2">{t('attPaste')}</label><textarea className="w-full bg-black border border-zinc-700 rounded-lg p-3 text-xs text-white h-20 mb-2 focus:border-emerald-500 outline-none" placeholder={t('attPlaceholder')} value={importText} onChange={e => setImportText(e.target.value)}></textarea><button onClick={parseImportText} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-900/30 rounded-lg text-xs font-bold">{t('attPasteDesc')}</button></div>
+                    {/* 🔥 考勤搜索栏 */}
+                    <div className="mb-2 px-1">
+                        <input className="w-full bg-black/50 border border-zinc-700 rounded-lg text-xs px-2 py-1.5 text-white focus:border-emerald-500 outline-none" placeholder={t('attSearch')} value={attendanceSearchTerm} onChange={e => setAttendanceSearchTerm(e.target.value)} />
+                    </div>
+                    <div className="flex justify-between items-center mb-2 px-1">
+                        <span className="text-xs text-zinc-500">Selected: {attTab === 'trainees' ? attendanceList.length : coachAttendanceList.length}</span>
+                        {/* 🔥 考勤一键全选 */}
+                        <button onClick={toggleAllAttendanceStatus} className="text-xs text-indigo-400 hover:text-indigo-300 font-bold border border-indigo-500/30 px-2 py-1 rounded">
+                            {t('attToggleAll')}
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">
+                        {attendanceFiltered.map(item => (
+                            <div key={item.id} onClick={() => toggleAttendance(item.id)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${(attTab === 'trainees' ? attendanceList.includes(item.id) : coachAttendanceList.includes(item.id)) ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-zinc-800/50 border-zinc-700'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${(attTab === 'trainees' ? attendanceList.includes(item.id) : coachAttendanceList.includes(item.id)) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-500'}`}>{(attTab === 'trainees' ? attendanceList.includes(item.id) : coachAttendanceList.includes(item.id)) && <i className="fa-solid fa-check text-black text-xs"></i>}</div>
+                                    <div><p className="text-sm font-bold text-white">{item.name}</p><p className="text-[10px] text-zinc-500">{item.team || item.role}</p></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div><div className="flex gap-2"><button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button><button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button><button onClick={handleWhatsappShare} className="px-4 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl shadow-lg" title={t('attWhatsapp')}><i className="fa-brands fa-whatsapp text-xl"></i></button></div></div></div>)}
+                    {/* Finance Modal */}
+                    {isFinanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-yellow-600 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-sack-dollar text-yellow-500"></i> {t('finTitle')}</h2><div className="flex items-center gap-2"><input type="month" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-yellow-500 outline-none" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} /><button onClick={() => setIsFinanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-yellow-900/20 border border-yellow-800 p-3 rounded-xl mb-4 flex justify-between items-center relative group"><div className="text-xs text-yellow-200"><p className="font-bold">{BANK_INFO.bankName}</p><p className="font-mono text-yellow-400 text-sm my-0.5">{BANK_INFO.accNum}</p><p className="text-[10px] opacity-70">{BANK_INFO.holder}</p></div><button onClick={copyBankInfo} className="bg-yellow-700/50 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1"><i className="fa-regular fa-copy"></i> {t('finCopy')}</button></div><div className="grid grid-cols-2 gap-3 mb-4"><div className="bg-emerald-900/30 border border-emerald-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-emerald-400 uppercase">{t('finTotal')}</span><span className="text-xl font-bold text-white">RM {getFinanceSummary().totalAmount}</span><span className="text-[10px] text-zinc-400">({getFinanceSummary().paidCount} pax)</span></div><div className="bg-red-900/30 border border-red-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-red-400 uppercase">{t('finPending')}</span><span className="text-xl font-bold text-white">RM {getFinanceSummary().pendingAmount}</span><span className="text-[10px] text-zinc-400">({reportFiltered.length - getFinanceSummary().paidCount} pax)</span></div></div>
+                    <div className="mb-2 px-1">
+                        <input className="w-full bg-black/50 border border-zinc-700 rounded-lg text-xs px-2 py-1.5 text-white focus:border-yellow-500 outline-none" placeholder={t('finSearch')} value={financeSearchTerm} onChange={e => setFinanceSearchTerm(e.target.value)} />
+                    </div>
+                    <div className="flex justify-between items-center mb-2 px-1">
+                        <span className="text-xs text-zinc-500">Selected: {financeFiltered.length}</span>
+                        <button onClick={toggleAllFeeStatus} className="text-xs text-indigo-400 hover:text-indigo-300 font-bold border border-indigo-500/30 px-2 py-1 rounded">
+                            {t('finToggleAll')}
+                        </button>
+                    </div>
+                    <div className="flex gap-2 mb-4"><div className="flex-1 flex justify-between items-center bg-zinc-950 p-2 rounded-lg border border-zinc-800"><span className="text-xs text-zinc-400 pl-2">{t('finFee')}</span><input type="number" className="w-20 bg-black text-white text-right text-sm px-2 py-1 rounded border border-zinc-700 focus:border-yellow-500 outline-none" value={monthlyFee} onChange={e => setMonthlyFee(parseInt(e.target.value) || 0)} /></div><select className="w-1/3 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-xs px-2 outline-none" value={msgTemplate} onChange={(e) => setMsgTemplate(e.target.value)}><option value="gentle">🌸 {t('msgTemplates', 'gentle')}</option><option value="friendly">🤝 {t('msgTemplates', 'friendly')}</option><option value="soft">🍃 {t('msgTemplates', 'soft')}</option><option value="formal">👔 {t('msgTemplates', 'formal')}</option></select></div><div className="flex-1 overflow-y-auto space-y-2 mb-4 pr-1">{financeFiltered.map(trainee => { const isPaid = trainee.feeHistory && trainee.feeHistory[financeMonth]; return (<div key={trainee.id} className="flex items-center justify-between p-3 rounded-xl border border-zinc-700 bg-zinc-800/30"><div className="flex items-center gap-3"><div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${isPaid ? 'bg-emerald-600 text-white' : 'bg-red-900/50 text-red-500 border border-red-800'}`}>{isPaid ? <i className="fa-solid fa-check"></i> : "RM"}</div><div><p className="text-sm font-bold text-white">{trainee.name}</p><p className="text-[10px] text-zinc-500">{trainee.team}</p></div></div><div className="flex items-center gap-2">{!isPaid && (<button onClick={() => sendFeeReminder(trainee)} className="w-8 h-8 rounded-full bg-[#25D366]/20 hover:bg-[#25D366] text-[#25D366] hover:text-white border border-[#25D366]/50 flex items-center justify-center transition-all" title={t('finRemind')}><i className="fa-brands fa-whatsapp"></i></button>)}<button onClick={() => toggleFeeStatus(trainee.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isPaid ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-transparent border-zinc-600 text-zinc-400 hover:border-yellow-500 hover:text-yellow-500'}`}>{isPaid ? t('finPaid') : t('finUnpaid')}</button></div></div>); })}</div><button onClick={exportFinanceExcel} className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl border border-zinc-600 flex items-center justify-center gap-2"><i className="fa-solid fa-file-invoice-dollar"></i> {t('finExport')}</button></div></div>)}
+                    {/* (Other modals shareTarget, isDataToolsOpen, isCropperOpen are identical to previous version, omitted for brevity but should be included) */}
+                    {shareTarget && (<div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in" onClick={() => setShareTarget(null)}><div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}><div className="text-center mb-6"><div className="w-20 h-20 mx-auto rounded-full overflow-hidden border-4 border-zinc-800 mb-3"><img src={shareTarget.image} className="w-full h-full object-cover" onError={e => e.target.src = DEFAULT_IMAGE} /></div><h3 className="text-xl font-bold text-white">{shareTarget.name}</h3><p className="text-sm text-zinc-500">{shareTarget.team}</p></div><div className="space-y-3"><button onClick={() => handleSystemShare(shareTarget)} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95"><i className="fa-solid fa-share-nodes"></i> {t('share', 'sendToParents')}</button><div className="relative flex py-2 items-center"><div className="flex-grow border-t border-zinc-700"></div><span className="flex-shrink-0 mx-4 text-xs text-zinc-500">{t('share', 'textOnly')}</span><div className="flex-grow border-t border-zinc-700"></div></div><div className="grid grid-cols-2 gap-3"><a href={`https://wa.me/?text=${encodeURIComponent(generateShareText(shareTarget))}`} target="_blank" className="py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-brands fa-whatsapp text-lg"></i> WhatsApp</a><a href={`mailto:?subject=CFC Player: ${shareTarget.name}&body=${encodeURIComponent(generateShareText(shareTarget))}`} className="py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2"><i className="fa-solid fa-envelope"></i> Email</a></div></div></div></div>)}
+                    {isDataToolsOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6"><div className="flex justify-between items-center mb-4"><h2 className="text-lg font-bold text-white flex items-center gap-2"><i className="fa-solid fa-cloud-arrow-up text-indigo-500"></i> {t('backupTools')}</h2><button onClick={() => setIsDataToolsOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4"><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 relative group overflow-hidden"><div className="absolute top-0 right-0 p-2 opacity-20"><i className="fab fa-google-drive text-6xl text-white"></i></div><h3 className="text-white font-bold mb-2 flex items-center gap-2 z-10 relative"><i className="fa-solid fa-cloud-upload-alt text-emerald-500"></i> {t('backupToDrive')}</h3><p className="text-zinc-500 text-xs mb-3 relative z-10">{t('exportDesc')}</p><button onClick={handleBackupToDrive} className="w-full py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 relative z-10 border border-emerald-500"><i className="fab fa-google-drive"></i> {t('save')}</button></div><div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800"><h3 className="text-zinc-300 font-bold mb-2 flex items-center gap-2"><i className="fa-solid fa-file-import text-indigo-500"></i> {t('restoreData')}</h3><p className="text-zinc-500 text-xs mb-3">{t('restoreDesc')}</p><div className="relative group"><button className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-indigo-400 border border-indigo-900/50 rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 cursor-pointer" onClick={() => backupInputRef.current.click()}><i className="fa-solid fa-folder-open"></i> {t('selectFile')}</button><input type="file" ref={backupInputRef} className="hidden" accept=".json" onChange={handleImportFile} /></div></div></div><p className="text-center text-zinc-600 text-xs mt-6">{t('dataSafe')}</p></div></div>)}
+                    {/* 🔥 Updated School Manager */}
+                    {isSchoolManagerOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
+                            <div className="bg-zinc-900 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-lg font-bold text-white">{t('manageSchools')}</h2>
+                                    <button onClick={() => setIsSchoolManagerOpen(false)}><i className="fa-solid fa-xmark text-zinc-500 hover:text-white"></i></button>
+                                </div>
+                                <div className="max-h-[50vh] overflow-y-auto space-y-2 mb-4">
+                                    {teams.map(teamItem => (
+                                        <div key={teamItem} className="flex items-center justify-between bg-zinc-800 p-3 rounded-lg border border-zinc-700">
+                                            {renamingTeam.original === teamItem ? (
+                                                <div className="flex gap-2 flex-1 items-center">
+                                                    <input 
+                                                        autoFocus 
+                                                        className="flex-1 bg-zinc-950 px-2 py-1 text-sm text-white rounded outline-none border border-emerald-500" 
+                                                        value={renamingTeam.current} 
+                                                        onChange={e => setRenamingTeam({...renamingTeam, current: e.target.value})}
+                                                        onKeyDown={e => {
+                                                            if (e.key === 'Enter') handleRenameTeam(teamItem);
+                                                            if (e.key === 'Escape') setRenamingTeam({original:'',current:''});
+                                                        }}
+                                                    />
+                                                    <button onClick={() => handleRenameTeam(teamItem)} className="text-emerald-500 w-8 h-8 flex items-center justify-center bg-emerald-500/10 rounded">
+                                                        <i className="fa-solid fa-check"></i>
+                                                    </button>
+                                                    <button onClick={() => setRenamingTeam({original:'',current:''})} className="text-zinc-500 w-8 h-8 flex items-center justify-center hover:text-white">
+                                                        <i className="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <span className="text-sm text-zinc-300 font-medium truncate flex-1">{teamItem}</span>
+                                                    <div className="flex gap-1 shrink-0">
+                                                        <button onClick={() => setRenamingTeam({original: teamItem, current: teamItem})} className="w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-700 rounded transition-colors">
+                                                            <i className="fa-solid fa-pen"></i>
+                                                        </button>
+                                                        <button onClick={() => handleDeleteTeam(teamItem)} className="w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors">
+                                                            <i className="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                                <button onClick={handleAddTeam} className="w-full py-3 bg-zinc-800 text-zinc-300 text-sm font-bold rounded-xl border border-zinc-700 hover:bg-zinc-700 transition-colors flex items-center justify-center gap-2">
+                                    <i className="fa-solid fa-plus"></i> {t('addSchool')}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {/* 🔥 Coach Manager Modal (New!) */}
+                    {isCoachOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
+                            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-blue-900 shadow-2xl p-6 h-[85vh] flex flex-col">
+                                <div className="flex justify-between items-center mb-4 shrink-0">
+                                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <i className="fa-solid fa-user-tie text-blue-500"></i> {t('coachTitle')}
+                                    </h2>
+                                    <button onClick={() => setIsCoachOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button>
+                                </div>
+                                
+                                {/* Tabs */}
+                                <div className="flex bg-zinc-950 rounded-lg p-1 mb-4 shrink-0 border border-zinc-800">
+                                    {['list', 'attendance', 'finance'].map(v => (
+                                        <button key={v} onClick={() => setCoachView(v)} 
+                                            className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${coachView === v ? 'bg-blue-900 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                            {v === 'list' && <><i className="fa-solid fa-list mr-1"></i> {t('coachList')}</>}
+                                            {v === 'attendance' && <><i className="fa-solid fa-calendar-check mr-1"></i> {t('coachAtt')}</>}
+                                            {v === 'finance' && <><i className="fa-solid fa-money-bill-wave mr-1"></i> {t('coachPay')}</>}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Content Area */}
+                                <div className="flex-1 overflow-y-auto pr-1">
+                                    {/* LIST VIEW */}
+                                    {coachView === 'list' && (
+                                        <div className="space-y-3">
+                                            {/* Add Form */}
+                                            <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 mb-4">
+                                                <div className="grid grid-cols-2 gap-2 mb-2">
+                                                    <input className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white" placeholder="Name" value={coachForm.name} onChange={e => setCoachForm({...coachForm, name: e.target.value})} />
+                                                    <input className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white" placeholder="Phone" value={coachForm.phone} onChange={e => setCoachForm({...coachForm, phone: e.target.value})} />
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                                    <select className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white" value={coachForm.role} onChange={e => setCoachForm({...coachForm, role: e.target.value})}>
+                                                        <option value="Head Coach">Head Coach</option>
+                                                        <option value="Assistant">Assistant</option>
+                                                        <option value="GK Coach">GK Coach</option>
+                                                        <option value="Fitness">Fitness</option>
+                                                    </select>
+                                                    <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded px-2">
+                                                        <span className="text-xs text-zinc-500">RM</span>
+                                                        <input type="number" className="bg-transparent w-full py-1.5 text-sm text-white outline-none" placeholder="Rate" value={coachForm.rate} onChange={e => setCoachForm({...coachForm, rate: parseInt(e.target.value) || 0})} />
+                                                    </div>
+                                                </div>
+                                                <button onClick={saveCoach} className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg transition-colors">
+                                                    {editingCoach ? t('save') : t('addCoach')}
+                                                </button>
+                                                {editingCoach && <button onClick={() => {setEditingCoach(null); setCoachForm({name:'', role:'Assistant', rate:100, phone:''})}} className="w-full mt-2 py-1 text-xs text-zinc-500 hover:text-white">Cancel Edit</button>}
+                                            </div>
+
+                                            {/* List */}
+                                            {coaches.map(c => (
+                                                <div key={c.id} className="bg-zinc-800 p-3 rounded-xl border border-zinc-700 flex justify-between items-center">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <h4 className="font-bold text-white">{c.name}</h4>
+                                                            <button 
+                                                                onClick={(e) => { e.stopPropagation(); setExpandedCoachId(expandedCoachId === c.id ? null : c.id); }}
+                                                                className="text-zinc-500 hover:text-blue-400 text-xs px-2 py-0.5 border border-zinc-700 rounded bg-zinc-900"
+                                                            >
+                                                                {expandedCoachId === c.id ? <i className="fa-solid fa-chevron-up"></i> : <i className="fa-solid fa-chevron-down"></i>} {t('coachDetails')}
+                                                            </button>
+                                                        </div>
+                                                        <div className="text-xs text-zinc-400 flex gap-2 mt-1">
+                                                            <span className="bg-zinc-700 px-1.5 rounded text-blue-300">{c.role}</span>
+                                                            <span>RM {c.rate}/ses</span>
+                                                        </div>
+                                                        
+                                                        {/* 🔥 Detailed Date List */}
+                                                        {expandedCoachId === c.id && (
+                                                            <div className="mt-2 bg-black/50 p-2 rounded border border-zinc-700/50 text-[10px] text-zinc-300 max-h-32 overflow-y-auto">
+                                                                {c.details && c.details.length > 0 ? (
+                                                                    c.details.map((d, idx) => (
+                                                                        <div key={idx} className="flex justify-between items-center border-b border-zinc-800 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
+                                                                            <div>
+                                                                                <span>{d.date}</span>
+                                                                                <span className="text-blue-300 ml-2">{d.school || '-'}</span>
+                                                                            </div>
+                                                                            <button 
+                                                                                onClick={(e) => { e.stopPropagation(); removeCoachAttendanceRecord(c.id, d.date, d.school); }}
+                                                                                className="text-zinc-500 hover:text-red-500 px-1"
+                                                                            >
+                                                                                <i className="fa-solid fa-trash text-[10px]"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="text-zinc-500 italic">No attendance records this month.</span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        {/* 🔥 New WhatsApp Button */}
+                                                        <button onClick={() => sendCoachMessage(c)} className="w-8 h-8 bg-[#25D366]/20 hover:bg-[#25D366] text-[#25D366] hover:text-white border border-[#25D366]/50 rounded-full flex items-center justify-center transition-all"><i className="fa-brands fa-whatsapp"></i></button>
+                                                        <button onClick={() => { setEditingCoach(c); setCoachForm(c); }} className="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 rounded-full text-zinc-300"><i className="fa-solid fa-pen"></i></button>
+                                                        <button onClick={() => deleteCoach(c.id)} className="w-8 h-8 bg-red-900/30 hover:bg-red-900/50 border border-red-900 rounded-full text-red-500"><i className="fa-solid fa-trash"></i></button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* ATTENDANCE VIEW */}
+                                    {coachView === 'attendance' && (
+                                        <div>
+                                            <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 mb-4 sticky top-0 z-10 flex gap-2">
+                                                <input type="date" className="flex-1 bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 outline-none focus:border-blue-500" value={coachAttDate} onChange={e => setCoachAttDate(e.target.value)} />
+                                                <select className="flex-1 bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 outline-none focus:border-blue-500 text-xs" value={coachAttSchool} onChange={e => setCoachAttSchool(e.target.value)}>
+                                                    {teams.map(t => <option key={t} value={t}>{t}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {coaches.map(c => {
+                                                    // Check precise match for Date + School
+                                                    const isPresentHere = (c.attendanceHistory || []).some(h => h.date === coachAttDate && h.school === coachAttSchool);
+                                                    // Check if present at ANY other school today (for warning)
+                                                    const isPresentElsewhere = (c.attendanceHistory || []).some(h => h.date === coachAttDate && h.school !== coachAttSchool);
+                                                    
+                                                    return (
+                                                        <div key={c.id} onClick={() => toggleCoachAttendance(c.id)} className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${isPresentHere ? 'bg-emerald-900/30 border-emerald-500' : 'bg-zinc-800 border-zinc-700'}`}>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`w-6 h-6 rounded flex items-center justify-center border ${isPresentHere ? 'bg-emerald-500 border-emerald-500 text-black' : 'border-zinc-500'}`}>
+                                                                    {isPresentHere && <i className="fa-solid fa-check text-sm"></i>}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-bold text-white">{c.name} {isPresentElsewhere && <span className="text-[10px] text-yellow-500 ml-2"><i className="fa-solid fa-triangle-exclamation"></i> (Other School)</span>}</p>
+                                                                    <p className="text-xs text-zinc-500">{c.role}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* FINANCE VIEW */}
+                                    {coachView === 'finance' && (
+                                        <div>
+                                            <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 mb-4 sticky top-0 z-10 flex justify-between items-center">
+                                                <input type="month" className="bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 outline-none focus:border-blue-500 text-sm" value={financeMonth} onChange={e => setFinanceMonth(e.target.value)} />
+                                                <div className="text-right">
+                                                    <p className="text-[10px] text-zinc-500 uppercase">{t('coachTotalPayout')}</p>
+                                                    <p className="text-lg font-bold text-emerald-400">RM {getCoachPayrollStats().totalPayout}</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {getCoachPayrollStats().list.map(c => (
+                                                    <div key={c.id} className="bg-zinc-800 p-3 rounded-xl border border-zinc-700 flex justify-between items-center">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="font-bold text-white">{c.name}</p>
+                                                                <button 
+                                                                    onClick={(e) => { e.stopPropagation(); setExpandedCoachId(expandedCoachId === c.id ? null : c.id); }}
+                                                                    className="text-zinc-500 hover:text-blue-400 text-xs px-2 py-0.5 border border-zinc-700 rounded bg-zinc-900"
+                                                                >
+                                                                    {expandedCoachId === c.id ? <i className="fa-solid fa-chevron-up"></i> : <i className="fa-solid fa-chevron-down"></i>} {t('coachDetails')}
+                                                                </button>
+                                                            </div>
+                                                            <div className="text-xs text-zinc-400 mt-1">
+                                                                {c.sessions} sessions x RM{c.rate}
+                                                            </div>
+                                                            
+                                                            {/* 🔥 Detailed Date List */}
+                                                            {expandedCoachId === c.id && (
+                                                                <div className="mt-2 bg-black/50 p-2 rounded border border-zinc-700/50 text-[10px] text-zinc-300 max-h-32 overflow-y-auto">
+                                                                    {c.details && c.details.length > 0 ? (
+                                                                        c.details.map((d, idx) => (
+                                                                            <div key={idx} className="flex justify-between border-b border-zinc-800 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
+                                                                                <span>{d.date}</span>
+                                                                                <span className="text-blue-300">{d.school || 'Unknown'}</span>
+                                                                            </div>
+                                                                        ))
+                                                                    ) : (
+                                                                        <span className="text-zinc-500 italic">No attendance records.</span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-right flex flex-col items-end gap-1 ml-2">
+                                                            <span className="text-sm font-bold text-white">RM {c.amount}</span>
+                                                            <div className="flex gap-2">
+                                                                {/* 🔥 New Payslip Button */}
+                                                                <button onClick={() => sendCoachPayslip(c)} className="w-6 h-6 bg-[#25D366]/20 hover:bg-[#25D366] text-[#25D366] hover:text-white border border-[#25D366]/50 rounded flex items-center justify-center transition-all" title={t('coachPayslip')}><i className="fa-brands fa-whatsapp text-xs"></i></button>
+                                                                <button onClick={() => toggleCoachPayment(c.id)} className={`px-2 py-1 rounded text-[10px] font-bold border ${c.isPaid ? 'bg-emerald-600 text-white border-emerald-600' : 'text-zinc-500 border-zinc-600 hover:border-yellow-500 hover:text-yellow-500'}`}>
+                                                                    {c.isPaid ? t('coachPaid') : t('coachUnpaid')}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {/* 🔥 Updated Edit/Register Modal (Clean & Safe) */}
+                    {isModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl max-h-[90vh] overflow-y-auto p-6"><div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-white">{editingTrainee ? t('updateProfile') : t('newPlayer')}</h2><button onClick={() => setIsModalOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div><div className="space-y-4 mb-6"><div className="flex items-center gap-4"><div className="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center overflow-hidden border border-zinc-700 shrink-0 cursor-pointer relative" onClick={() => fileInputRef.current.click()}>{formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <i className="fa-solid fa-camera text-zinc-600"></i>}<input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleTraineeFile} /></div><div className="flex-1 space-y-2"><input className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('name')} value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} /><div className="flex gap-2"><input type="number" className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('age')} value={formData.age || ''} onChange={e => setFormData({...formData, age: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" placeholder={t('nationality')} value={formData.nationality || ''} onChange={e => setFormData({...formData, nationality: e.target.value})} /></div>
+                    
+                    {/* 🔥 新增档案字段 (父母/电话/邮件/TIN) */}
+                    <div className="flex gap-2"><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('parentName')} value={formData.parentName || ''} onChange={e => setFormData({...formData, parentName: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('phone')} value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
+                    <div className="flex gap-2"><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('email')} value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} /><input className="w-1/2 bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" placeholder={t('tin')} value={formData.tin || ''} onChange={e => setFormData({...formData, tin: e.target.value})} /></div>
+                    
+                    <div className="flex gap-2"><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('height')} value={formData.height || ''} onChange={e => setFormData({...formData, height: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">cm</span></div><div className="relative w-1/3"><input type="number" className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white pr-8" placeholder={t('weight')} value={formData.weight || ''} onChange={e => setFormData({...formData, weight: e.target.value})} /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">kg</span></div><div className="w-1/3"><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.category || 'U18'} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div></div></div></div><div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex justify-between items-center"><div className="flex flex-col"><span className="text-xs font-bold text-zinc-400">{t('attendance')}</span><span className={formData.attendance >= 90 ? 'text-emerald-500 font-bold' : 'text-white font-bold'}>{formData.attendance || 0}%</span></div><div className="flex items-center gap-2"><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('attCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.attendedSessions || 0} onChange={(e) => handleAttendanceChange('attendedSessions', e.target.value)} /></div><div className="flex flex-col items-end"><span className="text-[10px] text-zinc-500">{t('totalCount')}</span><input type="number" className="w-12 bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5 text-white text-right text-xs" value={formData.totalSessions || PRESET_YEARLY_TOTAL} onChange={(e) => handleAttendanceChange('totalSessions', e.target.value)} /></div><button onClick={resetPlayerStats} className="ml-2 bg-red-900/30 hover:bg-red-900/50 text-red-500 text-[10px] px-2 py-2 rounded border border-red-900/50 h-full flex items-center justify-center" title={t('resetStats')}><i className="fa-solid fa-rotate-right"></i></button></div></div><select className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white" value={formData.team} onChange={e => setFormData({...formData, team: e.target.value})}>{teams.map(teamItem => <option key={teamItem} value={teamItem}>{teamItem}</option>)}</select><div className="grid grid-cols-2 gap-2"><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.primaryPosition} onChange={e => setFormData({...formData, primaryPosition: e.target.value})}>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select><select className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-white text-xs" value={formData.secondaryPosition} onChange={e => setFormData({...formData, secondaryPosition: e.target.value})}><option value="无">无</option>{POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-zinc-800 p-4 rounded-xl mb-4">{Object.keys(formData.stats).map(s => (<div key={s}><div className="flex justify-between text-[10px] text-zinc-400 uppercase mb-1"><span>{t('stats', s)}</span> <span>{formData.stats[s]}</span></div><input type="range" min="0" max="99" className="w-full accent-white h-1 bg-zinc-600 rounded-lg appearance-none" value={formData.stats[s]} onChange={e => setFormData({...formData, stats: {...formData.stats, [s]: parseInt(e.target.value)}})} /></div>))}</div></div><div className="flex gap-2"><button onClick={handleSave} className="flex-1 py-3 bg-zinc-100 hover:bg-white text-zinc-900 font-bold rounded-xl transition-colors">{t('save')}</button><button onClick={() => setIsModalOpen(false)} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-colors">{t('cancel')}</button></div></div></div>)}
+                    {isCropperOpen && (<div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-800 shadow-2xl p-4 modal-overlay"><h3 className="text-white font-bold text-lg mb-4 text-center">{t('cropTitle')}</h3><div className="cropper-container rounded-lg overflow-hidden mb-4 border border-zinc-700"><img ref={cropperImageRef} src={tempImage} alt="Crop" style={{maxWidth: '100%'}} /></div><div className="flex gap-2"><button onClick={handleRotate} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"><i className="fa-solid fa-rotate-right"></i></button><button onClick={handleCropConfirm} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">{t('confirmCrop')}</button><button onClick={() => setIsCropperOpen(false)} className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"><i className="fa-solid fa-xmark"></i></button></div></div></div>)}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
+
 
