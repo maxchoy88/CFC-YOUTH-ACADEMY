@@ -31,8 +31,7 @@
 </head>
 <body>
     <div id="static-loading">
-        <!-- 🔥 统一使用 CFCYA LOGO 图片，替换原本的 fa-icon -->
-        <img src="https://cdn-icons-png.flaticon.com/512/3309/3309991.png" class="w-24 h-24 mb-4 animate-bounce" style="filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.5));" />
+        <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold mt-4 tracking-wider uppercase text-white">CFC YOUTH ACADEMY</h2>
         <p id="loading-text" class="text-zinc-500 text-xs mt-2 font-mono tracking-widest uppercase">System Stabilized...</p>
     </div>
@@ -49,8 +48,6 @@
         const ADMIN_PIN = "1413"; 
         const PRESET_YEARLY_TOTAL = 52;
         const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=400&h=400&fit=crop';
-        // 🔥 定义统一的 LOGO URL
-        const CFC_LOGO = "https://cdn-icons-png.flaticon.com/512/3309/3309991.png";
         const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
         const BANK_INFO = { bankName: "OCBC BANK", accNum: "7091258844", holder: "CFC YOUTH ACADEMY SB" };
 
@@ -151,20 +148,8 @@
         };
 
         // --- 纯辅助函数 ---
-        // 🔥 更新评级标准：90+为S，80-89为A，70-79为B，60-69为C，60以下为D
-        const getStatGrade = (v) => { const val = parseInt(v) || 0; return val >= 90 ? 'S' : val >= 80 ? 'A' : val >= 70 ? 'B' : val >= 60 ? 'C' : 'D'; };
-        
-        // 🔥 更新颜色逻辑：S级紫色发光，其他颜色更鲜艳
-        const getGradeColor = (g) => { 
-            switch(g) { 
-                case 'S': return 'text-fuchsia-400 font-black drop-shadow-[0_0_5px_rgba(192,38,211,0.8)]'; 
-                case 'A': return 'text-emerald-400 font-black'; 
-                case 'B': return 'text-blue-400 font-bold'; 
-                case 'C': return 'text-yellow-400 font-bold'; 
-                default: return 'text-zinc-500 font-bold'; 
-            } 
-        };
-
+        const getStatGrade = (v) => { const val = parseInt(v) || 0; return val >= 85 ? 'A' : val >= 70 ? 'B' : val >= 55 ? 'C' : 'D'; };
+        const getGradeColor = (g) => { switch(g) { case 'A': return 'text-emerald-400 font-black'; case 'B': return 'text-blue-400 font-bold'; case 'C': return 'text-yellow-400 font-bold'; default: return 'text-zinc-500'; } };
         const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : (v >= 70 ? 'bg-yellow-500 shadow-lg shadow-yellow-500/20' : 'bg-red-500 shadow-lg shadow-red-500/20');
         const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
         const getOptimizedImageUrl = (url) => (!url || typeof url !== 'string' || !url.includes('cloudinary.com')) ? (url || DEFAULT_IMAGE) : url.replace(/([^:]\/)\/+/g, "$1").replace('/upload/', '/upload/f_avif,q_auto/');
@@ -637,8 +622,7 @@
             if (!userRole) return (
                 <div className="fixed inset-0 bg-black flex flex-col items-center justify-center p-6 z-[6000] fade-in">
                     <div className="w-24 h-24 mb-6 rounded-2xl overflow-hidden border-2 border-zinc-800 bg-zinc-900 flex items-center justify-center shadow-2xl">
-                        {/* 🔥 登录页 Logo 统一 */}
-                        <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover" />
+                        {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-5xl"></i>}
                     </div>
                     <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">CFC YOUTH ACADEMY</h1>
                     <div className="w-full max-w-sm space-y-4 mt-8">
@@ -673,8 +657,7 @@
                     <header className="relative z-30 flex flex-col xl:flex-row justify-between items-center gap-6 mb-8">
                         <div className="flex items-center gap-4 w-full">
                             <div className="w-16 h-16 rounded-xl overflow-hidden border border-zinc-700 cursor-pointer bg-zinc-900 shrink-0 shadow-lg shadow-black/40" onClick={() => userRole === 'admin' && logoInputRef.current.click()}>
-                                {/* 🔥 顶部导航栏 Logo 统一 */}
-                                <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover" />
+                                {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <div className="bg-zinc-900 w-full h-full flex items-center justify-center"><i className="fa-solid fa-shield-halved text-yellow-500 text-3xl"></i></div>}
                                 <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoFile}/>
                             </div>
                             <div className="flex-1">
@@ -730,19 +713,6 @@
                                     <img src={getOptimizedImageUrl(t.image)} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" onError={e => e.target.src = DEFAULT_IMAGE}/>
                                     <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent opacity-80"></div>
                                     <span className="absolute top-3 left-3 bg-yellow-500 text-black text-[10px] font-black px-1.5 rounded shadow-lg">{getPositionCode(t.primaryPosition)}</span>
-                                    
-                                    {/* 🔥 新增：右上角显示总评级 S/A/B/C/D */}
-                                    {(() => {
-                                        const vals = Object.values(t.stats || {});
-                                        const avg = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
-                                        const grade = getStatGrade(avg);
-                                        return (
-                                            <div className="absolute top-2 right-2 flex flex-col items-center">
-                                                <span className={`text-xl italic leading-none ${getGradeColor(grade)}`}>{grade}</span>
-                                            </div>
-                                        );
-                                    })()}
-
                                     <div className="absolute bottom-3 left-4 right-4 truncate leading-tight font-black uppercase text-white drop-shadow-md">{t.name}</div>
                                     {/* 🔥 Share Button on Card */}
                                     <button onClick={(e)=>{e.stopPropagation(); handleSystemShare(t);}} className="absolute bottom-2 right-2 w-7 h-7 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-emerald-600 transition-all border border-white/20 shadow-lg z-20 active:scale-90"><i className="fa-solid fa-share-nodes text-[10px]"></i></button>
@@ -918,10 +888,7 @@
                     {isShareAppOpen && (
                         <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6 fade-in" onClick={() => setIsShareAppOpen(false)}>
                             <div className="bg-zinc-900 border border-zinc-800 w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl shadow-black" onClick={e => e.stopPropagation()}>
-                                {/* 🔥 分享弹窗 Logo 统一 */}
-                                <div className="w-20 h-20 bg-zinc-800 rounded-3xl mx-auto mb-6 flex items-center justify-center border-2 border-zinc-700 shadow-xl overflow-hidden leading-none">
-                                    <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover" />
-                                </div>
+                                <div className="w-20 h-20 bg-zinc-800 rounded-3xl mx-auto mb-6 flex items-center justify-center border-2 border-zinc-700 shadow-xl overflow-hidden leading-none">{appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-4xl"></i>}</div>
                                 <h2 className="text-2xl font-black text-white mb-2 tracking-tight uppercase tracking-widest leading-none">CFC YOUTH ACADEMY</h2>
                                 <p className="text-zinc-500 text-sm mb-8 leading-relaxed px-4">使用浏览器“添加到主屏幕”安装 App</p>
                                 <div className="bg-white p-4 rounded-[2rem] mb-8 w-fit mx-auto shadow-2xl"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shareUrl)}&margin=10`} className="w-48 h-48 rounded-lg" alt="QR"/></div>
