@@ -48,12 +48,20 @@
         const ADMIN_PIN = "1413"; 
         const PRESET_YEARLY_TOTAL = 52;
         const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=400&h=400&fit=crop';
+        
+        // 🔥 修复：使用 SVG Data URI 作为默认 LOGO，解决防盗链和加载失败问题
+        const CFC_LOGO = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBjLTQ0LjIgMC04MCAzNS44LTgwIDgwdjQ4SDY0Yy0zNS4zIDAtNjQgMjguNy02NCA2NHYxOTJjMCAzNS4zIDI4LjcgNjQgNjQgNjRoMzg0YzM1LjMgMCA2NC0yOC43IDY0LTY0VjE5MmMwLTM1LjMtMjguNy02NC02NC02NGgtMTEyVjgwYzAtNDQuMi0zNS44LTgwLTgwLTgweiIvPjwvc3ZnPg==";
+        
         const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
         const BANK_INFO = { bankName: "OCBC BANK", accNum: "7091258844", holder: "CFC YOUTH ACADEMY SB" };
 
         const INITIAL_TEAMS = ['皇家书院', '星耀中学', '雷霆体校', '蓝鹰国际', '北境一中', '南洋公学', '光辉中学', '风暴竞技', '银河实验', '泰坦中学'];
         const CATEGORIES = ['U8', 'U10', 'U12', 'U15', 'U18'];
         const POSITIONS = ['前锋 (FW)', '左边锋 (LW)', '右边锋 (RW)', '前腰 (CAM)', '中场 (CM)', '后腰 (CDM)', '后卫 (DF)', '门将 (GK)'];
+        
+        // 🔥 新增：教练等级和角色定义
+        const COACH_RANKS = ['Director', 'Senior', 'Junior', 'Trainee'];
+        const COACH_ROLES = ['Head Coach', 'Assistant', 'GK Coach', 'Admin'];
 
         const INITIAL_TRAINEES = [
             { 
@@ -64,9 +72,10 @@
             }
         ];
 
+        // 🔥 更新：初始教练数据包含 rank
         const INITIAL_COACHES = [
-            { id: 'c1', name: 'Coach Mourinho', role: 'Head Coach', rate: 200, phone: '60123456789', attendanceHistory: [], paymentHistory: {} },
-            { id: 'c2', name: 'Coach Pep', role: 'Assistant', rate: 100, phone: '60198765432', attendanceHistory: [], paymentHistory: {} }
+            { id: 'c1', name: 'Coach Mourinho', role: 'Head Coach', rank: 'Director', rate: 200, phone: '60123456789', attendanceHistory: [], paymentHistory: {} },
+            { id: 'c2', name: 'Coach Pep', role: 'Assistant', rank: 'Senior', rate: 150, phone: '60198765432', attendanceHistory: [], paymentHistory: {} }
         ];
 
         const DEFAULT_FORM_DATA = { 
@@ -92,9 +101,9 @@
                     formal: "【CFC 财务通知】您好，请查收 {name} {month} 月份的学费单 (RM{amount})。请在近期内完成缴费，感谢配合。"
                 },
                 bankDetails: "\n\n🏦 汇款资料:\n{bankName}\n{accNum}\n{holder}\n\n汇款后请发收据，谢谢！",
-                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", parent: "家长", secPos: "副位置", all: "全部", comment: "教练评语", generate: "AI生成" },
+                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", parent: "家长", secPos: "副位置", all: "全部", comment: "教练评语", generate: "AI生成", role: "角色", rank: "等级", rate: "课时费" },
                 player: { title: "球员资料" },
-                coach: { list: "名单", attendance: "考勤", finance: "薪资", register: "注册", sessions: "课时" },
+                coach: { list: "名单", attendance: "考勤", finance: "薪资", register: "注册教练", update: "更新资料", sessions: "课时" },
                 coachTotalPayout: "本月总支出", coachExport: "导出薪资单",
                 cloud: { setup: "云端设置", key: "Master Key", bin: "Bin ID", connect: "连接云端", create: "创建新库" },
                 cloudDesc: "输入 JSONBin.io 的 Key 和 Bin ID 以启用多设备同步。",
@@ -112,9 +121,9 @@
                 auth: { welcome: "YOUR FUTURE IS NOW!", selectMode: "Select Login Mode", adminMode: "MASTER MODE", userMode: "PLAYER MODE", enterPin: "Enter Master Pin", wrongPin: "Wrong PIN" },
                 alerts: { deleteConfirm: "Confirm delete?", updated: "✅ Data synced!", linkCopied: "Link copied!", copied: "Copied!" },
                 stats: { pace: "Pace", shooting: "Shooting", passing: "Passing", dribbling: "Dribbling", defending: "Defending", physical: "Physical" },
-                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", parent: "Parent", secPos: "Sub-Pos", all: "All", comment: "Comment", generate: "AI Generate" },
+                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", parent: "Parent", secPos: "Sub-Pos", all: "All", comment: "Comment", generate: "AI Generate", role: "Role", rank: "Rank", rate: "Rate/Session" },
                 player: { title: "Player Profile" },
-                coach: { list: "List", attendance: "Attendance", finance: "Payroll", register: "Register", sessions: "Sessions" },
+                coach: { list: "List", attendance: "Attendance", finance: "Payroll", register: "Register Coach", update: "Update Coach", sessions: "Sessions" },
                 coachTotalPayout: "Total Payout", coachExport: "Export Payroll",
                 cloud: { setup: "Cloud Setup", key: "Master Key", bin: "Bin ID", connect: "Connect", create: "Create New" },
                 cloudDesc: "Sync data across devices using JSONBin.io",
@@ -132,9 +141,9 @@
                 auth: { welcome: "MASA DEPAN ANDA BERMULA SEKARANG!", adminMode: "MOD UTAMA", userMode: "MOD PEMAIN", enterPin: "Masukkan Pin", wrongPin: "Pin Salah" },
                 alerts: { deleteConfirm: "Padam?", updated: "✅ Dikemaskini!", linkCopied: "Disalin!", imgLocalWarning: "⚠️ Gambar tempatan, sila lampirkan.", copied: "Disalin!" },
                 stats: { pace: "Laju", shooting: "Tendang", passing: "Hantar", dribbling: "Gelecek", defending: "Pertahanan", physical: "Fizikal" },
-                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", parent: "Ibu Bapa", secPos: "Posisi 2", all: "Semua", comment: "Komen", generate: "AI" },
+                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", parent: "Ibu Bapa", secPos: "Posisi 2", all: "Semua", comment: "Komen", generate: "AI", role: "Peranan", rank: "Pangkat", rate: "Kadar" },
                 player: { title: "Profil Pemain" },
-                coach: { list: "Senarai", attendance: "Kehadiran", finance: "Gaji", register: "Daftar", sessions: "Sesi" },
+                coach: { list: "Senarai", attendance: "Kehadiran", finance: "Gaji", register: "Daftar Jurulatih", update: "Kemaskini", sessions: "Sesi" },
                 coachTotalPayout: "Jumlah Bayaran", coachExport: "Eksport Gaji",
                 cloud: { setup: "Awan", key: "Kunci", bin: "ID Bin", connect: "Sambung", create: "Cipta" },
                 cloudDesc: "Segerakkan data",
@@ -148,8 +157,16 @@
         };
 
         // --- 纯辅助函数 ---
-        const getStatGrade = (v) => { const val = parseInt(v) || 0; return val >= 85 ? 'A' : val >= 70 ? 'B' : val >= 55 ? 'C' : 'D'; };
-        const getGradeColor = (g) => { switch(g) { case 'A': return 'text-emerald-400 font-black'; case 'B': return 'text-blue-400 font-bold'; case 'C': return 'text-yellow-400 font-bold'; default: return 'text-zinc-500'; } };
+        const getStatGrade = (v) => { const val = parseInt(v) || 0; return val >= 90 ? 'S' : val >= 80 ? 'A' : val >= 70 ? 'B' : val >= 60 ? 'C' : 'D'; };
+        const getGradeColor = (g) => { 
+            switch(g) { 
+                case 'S': return 'text-fuchsia-400 font-black drop-shadow-[0_0_5px_rgba(192,38,211,0.8)]'; 
+                case 'A': return 'text-emerald-400 font-black'; 
+                case 'B': return 'text-blue-400 font-bold'; 
+                case 'C': return 'text-yellow-400 font-bold'; 
+                default: return 'text-zinc-500 font-bold'; 
+            } 
+        };
         const getAttendanceColor = (v) => v >= 90 ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : (v >= 70 ? 'bg-yellow-500 shadow-lg shadow-yellow-500/20' : 'bg-red-500 shadow-lg shadow-red-500/20');
         const getPositionCode = (s) => (s && s !== '无') ? s.match(/\((.*?)\)/)?.[1] || s.substring(0,2) : '';
         const getOptimizedImageUrl = (url) => (!url || typeof url !== 'string' || !url.includes('cloudinary.com')) ? (url || DEFAULT_IMAGE) : url.replace(/([^:]\/)\/+/g, "$1").replace('/upload/', '/upload/f_avif,q_auto/');
@@ -204,7 +221,8 @@
             const [isShareAppOpen, setIsShareAppOpen] = useState(false);
 
             const [coachView, setCoachView] = useState('list');
-            const [coachForm, setCoachForm] = useState({ name: '', phone: '', role: 'Assistant', rate: 100 });
+            // 🔥 更新：coachForm 增加 rank 和 rate
+            const [coachForm, setCoachForm] = useState({ name: '', phone: '', role: 'Assistant', rank: 'Junior', rate: 100 });
             const [expandedCoachId, setExpandedCoachId] = useState(null);
             const [editingCoach, setEditingCoach] = useState(null);
             
@@ -361,24 +379,34 @@
             };
             const handleDeleteTeam = (n) => { if(confirm(`${t('alerts', 'deleteConfirm')} ${n}?`)) { const nt = teams.filter(t => t!==n); const ntr = trainees.map(tr => tr.team===n?{...tr,team:'Free Agent'}:tr); updateData({teams:nt, trainees:ntr}); } };
 
+            // 🔥 新增：教练编辑处理
+            const handleEditCoach = (c) => {
+                setEditingCoach(c);
+                setCoachForm({ 
+                    name: c.name, 
+                    phone: c.phone, 
+                    role: c.role || 'Assistant', 
+                    rank: c.rank || 'Junior', 
+                    rate: c.rate || 100 
+                });
+            };
+
+            const cancelEditCoach = () => {
+                setEditingCoach(null);
+                setCoachForm({ name: '', phone: '', role: 'Assistant', rank: 'Junior', rate: 100 });
+            };
+
+            // 🔥 更新：保存教练逻辑
             const saveCoach = () => {
                 if(!coachForm.name) return;
                 let newCoaches;
                 if(editingCoach) {
-                    newCoaches = coaches.map(c => c.id === editingCoach.id ? { ...c, ...coachForm } : c);
+                    newCoaches = coaches.map(c => c.id === editingCoach.id ? { ...c, ...coachForm, id: c.id, attendanceHistory: c.attendanceHistory, paymentHistory: c.paymentHistory } : c);
                 } else {
                     newCoaches = [...coaches, { ...coachForm, id: Date.now().toString(), attendanceHistory: [], paymentHistory: {} }];
                 }
                 updateData({ coaches: newCoaches });
-                setEditingCoach(null);
-                setCoachForm({ name: '', phone: '', role: 'Assistant', rate: 100 });
-            };
-            
-            const handleRegisterCoach = () => {
-                if (!coachForm.name) return;
-                const newC = [...coaches, { ...coachForm, id: Date.now().toString(), attendanceHistory: [], paymentHistory: {} }];
-                updateData({ coaches: newC });
-                setCoachForm({ name: '', phone: '', role: 'Assistant', rate: 100 });
+                cancelEditCoach();
             };
 
             const deleteCoach = (id) => { if(!confirm("Delete Coach?")) return; updateData({ coaches: coaches.filter(c => c.id !== id) }); };
@@ -481,9 +509,9 @@
             
             const sendCoachMessage = (coach) => { window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}`, '_blank'); };
             const exportCoachPayrollExcel = () => {
-                let csvContent = "\uFEFFName,Role,Sessions,Rate,Total,Status\n";
+                let csvContent = "\uFEFFName,Role,Rank,Sessions,Rate,Total,Status\n";
                 payrollData.list.forEach(c => {
-                    csvContent += `${c.name},${c.role},${c.sessions},${c.rate},${c.amount},${c.isPaid?'PAID':'PENDING'}\n`;
+                    csvContent += `${c.name},${c.role},${c.rank || '-'},${c.sessions},${c.rate},${c.amount},${c.isPaid?'PAID':'PENDING'}\n`;
                 });
                 const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                 const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `CFC_Payroll_${financeMonth}.csv`; link.click();
@@ -786,10 +814,50 @@
                                     {coachView === 'list' && (
                                         <div className="space-y-4 font-black uppercase tracking-tighter">
                                             <div className="bg-zinc-950 p-5 rounded-[2.5rem] border border-zinc-800 mb-2 shadow-xl shadow-black/20">
-                                                <div className="grid grid-cols-2 gap-3 mb-4 leading-none"><input className="bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none" placeholder={t('common', 'name')} value={coachForm.name} onChange={e => setCoachForm({...coachForm, name: e.target.value})} /><input className="bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white font-mono focus:border-blue-500 outline-none" placeholder={t('common', 'phone')} value={coachForm.phone} onChange={e => setCoachForm({...coachForm, phone: e.target.value})} /></div>
-                                                <button onClick={handleRegisterCoach} className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white text-sm font-black rounded-2xl active:scale-95 transition-all shadow-lg shadow-blue-600/20 uppercase tracking-widest leading-none">{t('coach', 'register')}</button>
+                                                <div className="grid grid-cols-2 gap-3 mb-3 leading-none">
+                                                    <input className="bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none" placeholder={t('common', 'name')} value={coachForm.name} onChange={e => setCoachForm({...coachForm, name: e.target.value})} />
+                                                    <input className="bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white font-mono focus:border-blue-500 outline-none" placeholder={t('common', 'phone')} value={coachForm.phone} onChange={e => setCoachForm({...coachForm, phone: e.target.value})} />
+                                                </div>
+                                                {/* 🔥 新增：教练等级、角色和费率输入 */}
+                                                <div className="grid grid-cols-3 gap-2 mb-4 leading-none">
+                                                    <select className="bg-zinc-900 border border-zinc-700 rounded-xl px-2 py-3 text-[10px] text-white focus:border-blue-500 outline-none uppercase font-bold" value={coachForm.role} onChange={e => setCoachForm({...coachForm, role: e.target.value})}>
+                                                        {COACH_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                                                    </select>
+                                                    <select className="bg-zinc-900 border border-zinc-700 rounded-xl px-2 py-3 text-[10px] text-white focus:border-blue-500 outline-none uppercase font-bold" value={coachForm.rank} onChange={e => setCoachForm({...coachForm, rank: e.target.value})}>
+                                                        {COACH_RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                                                    </select>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[10px]">RM</span>
+                                                        <input type="number" className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pl-8 pr-2 py-3 text-sm text-white font-mono focus:border-blue-500 outline-none" placeholder="Rate" value={coachForm.rate} onChange={e => setCoachForm({...coachForm, rate: parseInt(e.target.value) || 0})} />
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex gap-2">
+                                                    {editingCoach && <button onClick={cancelEditCoach} className="flex-1 py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-sm font-black rounded-2xl active:scale-95 transition-all uppercase tracking-widest leading-none">{t('common', 'cancel')}</button>}
+                                                    <button onClick={saveCoach} className={`flex-[2] py-4 text-white text-sm font-black rounded-2xl active:scale-95 transition-all shadow-lg uppercase tracking-widest leading-none ${editingCoach ? 'bg-emerald-600 shadow-emerald-900/20' : 'bg-blue-600 shadow-blue-600/20'}`}>
+                                                        {editingCoach ? t('common', 'save') : t('coach', 'register')}
+                                                    </button>
+                                                </div>
                                             </div>
-                                            {coaches.map(c => <div key={c.id} className="bg-zinc-800 p-5 rounded-3xl border border-zinc-700 flex justify-between items-center shadow-lg shadow-black/20 leading-none"><div><p className="font-bold text-white text-lg tracking-widest leading-none mb-1">{c.name}</p><p className="text-xs text-zinc-500 font-bold uppercase">{c.role} • RM{c.rate}</p></div><div className="flex gap-2"><button onClick={() => sendCoachMessage(c)} className="w-10 h-10 rounded-full bg-[#25D366]/20 text-[#25D366] flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-[#25D366]/10"><i className="fa-brands fa-whatsapp text-xl"></i></button><button onClick={() => updateData({coaches: coaches.filter(coach => coach.id !== c.id)})} className="w-10 h-10 rounded-full bg-red-900/20 text-red-500 flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-red-900/10 border border-red-900/20"><i className="fa-solid fa-trash-can text-sm"></i></button></div></div>)}
+                                            
+                                            {coaches.map(c => (
+                                                <div key={c.id} className="bg-zinc-800 p-5 rounded-3xl border border-zinc-700 flex justify-between items-center shadow-lg shadow-black/20 leading-none group">
+                                                    <div>
+                                                        <p className="font-bold text-white text-lg tracking-widest leading-none mb-1 flex items-center gap-2">
+                                                            {c.name}
+                                                            {/* 显示等级标签 */}
+                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded border ${c.rank === 'Director' ? 'bg-purple-900/30 text-purple-400 border-purple-500/30' : c.rank === 'Senior' ? 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30' : 'bg-zinc-700 text-zinc-400 border-zinc-600'}`}>{c.rank || 'Junior'}</span>
+                                                        </p>
+                                                        <p className="text-xs text-zinc-500 font-bold uppercase">{c.role} • RM{c.rate}/Session</p>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => sendCoachMessage(c)} className="w-10 h-10 rounded-full bg-[#25D366]/20 text-[#25D366] flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-[#25D366]/10"><i className="fa-brands fa-whatsapp text-xl"></i></button>
+                                                        {/* 🔥 新增：编辑按钮 */}
+                                                        <button onClick={() => handleEditCoach(c)} className="w-10 h-10 rounded-full bg-blue-900/20 text-blue-400 flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-blue-900/10 border border-blue-900/20"><i className="fa-solid fa-pen text-sm"></i></button>
+                                                        <button onClick={() => deleteCoach(c.id)} className="w-10 h-10 rounded-full bg-red-900/20 text-red-500 flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-red-900/10 border border-red-900/20"><i className="fa-solid fa-trash-can text-sm"></i></button>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
                                     {coachView === 'attendance' && (
