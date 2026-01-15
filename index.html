@@ -4,13 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CFC YOUTH ACADEMY</title>
-
-    <!-- Open Graph / Social Media Meta Tags -->
-    <meta property="og:title" content="CFC YOUTH ACADEMY">
-    <meta property="og:description" content="Professional Youth Football Academy Management System">
-    <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
-    <meta property="og:type" content="website">
-
     <meta name="theme-color" content="#09090b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -38,7 +31,8 @@
 </head>
 <body>
     <div id="static-loading">
-        <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
+        <!-- 🔥 统一使用 CFCYA LOGO 图片，替换原本的 fa-icon -->
+        <img src="https://cdn-icons-png.flaticon.com/512/3309/3309991.png" class="w-24 h-24 mb-4 animate-bounce" style="filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.5));" />
         <h2 class="text-xl font-bold mt-4 tracking-wider uppercase text-white">CFC YOUTH ACADEMY</h2>
         <p id="loading-text" class="text-zinc-500 text-xs mt-2 font-mono tracking-widest uppercase">System Stabilized...</p>
     </div>
@@ -55,6 +49,8 @@
         const ADMIN_PIN = "1413"; 
         const PRESET_YEARLY_TOTAL = 52;
         const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=400&h=400&fit=crop';
+        // 🔥 定义统一的 LOGO URL
+        const CFC_LOGO = "https://cdn-icons-png.flaticon.com/512/3309/3309991.png";
         const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
         const BANK_INFO = { bankName: "OCBC BANK", accNum: "7091258844", holder: "CFC YOUTH ACADEMY SB" };
 
@@ -641,7 +637,8 @@
             if (!userRole) return (
                 <div className="fixed inset-0 bg-black flex flex-col items-center justify-center p-6 z-[6000] fade-in">
                     <div className="w-24 h-24 mb-6 rounded-2xl overflow-hidden border-2 border-zinc-800 bg-zinc-900 flex items-center justify-center shadow-2xl">
-                        {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-5xl"></i>}
+                        {/* 🔥 登录页 Logo 统一 */}
+                        <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover" />
                     </div>
                     <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">CFC YOUTH ACADEMY</h1>
                     <div className="w-full max-w-sm space-y-4 mt-8">
@@ -676,7 +673,8 @@
                     <header className="relative z-30 flex flex-col xl:flex-row justify-between items-center gap-6 mb-8">
                         <div className="flex items-center gap-4 w-full">
                             <div className="w-16 h-16 rounded-xl overflow-hidden border border-zinc-700 cursor-pointer bg-zinc-900 shrink-0 shadow-lg shadow-black/40" onClick={() => userRole === 'admin' && logoInputRef.current.click()}>
-                                {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <div className="bg-zinc-900 w-full h-full flex items-center justify-center"><i className="fa-solid fa-shield-halved text-yellow-500 text-3xl"></i></div>}
+                                {/* 🔥 顶部导航栏 Logo 统一 */}
+                                <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover" />
                                 <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoFile}/>
                             </div>
                             <div className="flex-1">
@@ -920,7 +918,10 @@
                     {isShareAppOpen && (
                         <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6 fade-in" onClick={() => setIsShareAppOpen(false)}>
                             <div className="bg-zinc-900 border border-zinc-800 w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl shadow-black" onClick={e => e.stopPropagation()}>
-                                <div className="w-20 h-20 bg-zinc-800 rounded-3xl mx-auto mb-6 flex items-center justify-center border-2 border-zinc-700 shadow-xl overflow-hidden leading-none">{appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-4xl"></i>}</div>
+                                {/* 🔥 分享弹窗 Logo 统一 */}
+                                <div className="w-20 h-20 bg-zinc-800 rounded-3xl mx-auto mb-6 flex items-center justify-center border-2 border-zinc-700 shadow-xl overflow-hidden leading-none">
+                                    <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover" />
+                                </div>
                                 <h2 className="text-2xl font-black text-white mb-2 tracking-tight uppercase tracking-widest leading-none">CFC YOUTH ACADEMY</h2>
                                 <p className="text-zinc-500 text-sm mb-8 leading-relaxed px-4">使用浏览器“添加到主屏幕”安装 App</p>
                                 <div className="bg-white p-4 rounded-[2rem] mb-8 w-fit mx-auto shadow-2xl"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shareUrl)}&margin=10`} className="w-48 h-48 rounded-lg" alt="QR"/></div>
