@@ -82,7 +82,7 @@
                 attendanceTool: "出席库", financeTool: "财务", register: "注册", coachTool: "教练", backupTools: "备份工具",
                 manageSchools: "学校管理", addSchool: "增加新学校", coachDetails: "查看明细",
                 auth: { welcome: "YOUR FUTURE IS NOW!", adminMode: "MASTER MODE", userMode: "PLAYER MODE", enterPin: "请输入管理员密码", wrongPin: "密码错误" },
-                alerts: { deleteConfirm: "确定要删除吗？", updated: "✅ 数据已同步！", resetConfirm: "确定重置统计数据吗？", linkCopied: "链接已复制！", fileError: "文件解析失败" },
+                alerts: { deleteConfirm: "确定要删除吗？", updated: "✅ 数据已同步！", resetConfirm: "确定重置统计数据吗？", linkCopied: "链接已复制！", fileError: "文件解析失败", copied: "已复制" },
                 stats: { pace: "速度", shooting: "射门", passing: "传球", dribbling: "盘带", defending: "防守", physical: "体能" },
                 msgTemplates: { gentle: "温柔提醒", friendly: "朋友语气", soft: "婉转提醒", formal: "正式通知" },
                 msgs: {
@@ -92,23 +92,58 @@
                     formal: "【CFC 财务通知】您好，请查收 {name} {month} 月份的学费单 (RM{amount})。请在近期内完成缴费，感谢配合。"
                 },
                 bankDetails: "\n\n🏦 汇款资料:\n{bankName}\n{accNum}\n{holder}\n\n汇款后请发收据，谢谢！",
-                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", parent: "家长", secPos: "副位置" }
+                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", parent: "家长", secPos: "副位置", all: "全部", comment: "教练评语", generate: "AI生成" },
+                player: { title: "球员资料" },
+                coach: { list: "名单", attendance: "考勤", finance: "薪资", register: "注册", sessions: "课时" },
+                coachTotalPayout: "本月总支出", coachExport: "导出薪资单",
+                cloud: { setup: "云端设置", key: "Master Key", bin: "Bin ID", connect: "连接云端", create: "创建新库" },
+                cloudDesc: "输入 JSONBin.io 的 Key 和 Bin ID 以启用多设备同步。",
+                cloudCreate: "一键创建新数据库",
+                imgCloudSetup: "图片云设置", imgCloudDesc: "连接 Cloudinary 以节省空间", imgCloudName: "Cloud Name", imgUploadPreset: "Upload Preset", imgTest: "测试", imgSave: "保存",
+                attTitle: "考勤打卡", attTabTrainees: "球员", attTabCoaches: "教练", attPaste: "粘贴名单", attPlaceholder: "粘贴包含姓名的文本...", attPasteDesc: "识别名单", attSearch: "搜索人员...", attToggleAll: "全选/反选", attConfirm: "提交考勤", attExcel: "导出Excel", attWhatsapp: "分享到WhatsApp",
+                finTitle: "财务管理", finCopy: "复制账户", finTotal: "总收入", finPending: "待收取", finSearch: "搜索...", finToggleAll: "一键全选/反选", finFee: "月费", finPaid: "已付", finUnpaid: "未付", finRemind: "发送提醒", finExport: "导出报表",
+                backupToDrive: "备份数据", exportDesc: "下载 JSON 文件以防数据丢失", restoreData: "恢复数据", restoreDesc: "上传 JSON 文件覆盖当前数据", selectFile: "选择文件", dataSafe: "数据仅保存在本地或您指定的云端",
+                copyLink: "复制链接分享", noData: "暂无数据"
             },
             en: {
                 appTitle: "CFC YOUTH ACADEMY", systemName: "ACADEMY SYSTEM", localMode: "Local", cloudMode: "Cloud Sync",
                 backupRestore: "Backup", manageSchools: "Schools", attendanceTool: "Attendance", financeTool: "Finance",
                 register: "Register", searchPlaceholder: "Search...", noData: "No Data",
                 auth: { welcome: "YOUR FUTURE IS NOW!", selectMode: "Select Login Mode", adminMode: "MASTER MODE", userMode: "PLAYER MODE", enterPin: "Enter Master Pin", wrongPin: "Wrong PIN" },
-                alerts: { deleteConfirm: "Confirm delete?", updated: "✅ Data synced!", linkCopied: "Link copied!" },
-                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", parent: "Parent", secPos: "Sub-Pos" }
+                alerts: { deleteConfirm: "Confirm delete?", updated: "✅ Data synced!", linkCopied: "Link copied!", copied: "Copied!" },
+                stats: { pace: "Pace", shooting: "Shooting", passing: "Passing", dribbling: "Dribbling", defending: "Defending", physical: "Physical" },
+                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", parent: "Parent", secPos: "Sub-Pos", all: "All", comment: "Comment", generate: "AI Generate" },
+                player: { title: "Player Profile" },
+                coach: { list: "List", attendance: "Attendance", finance: "Payroll", register: "Register", sessions: "Sessions" },
+                coachTotalPayout: "Total Payout", coachExport: "Export Payroll",
+                cloud: { setup: "Cloud Setup", key: "Master Key", bin: "Bin ID", connect: "Connect", create: "Create New" },
+                cloudDesc: "Sync data across devices using JSONBin.io",
+                cloudCreate: "Create New Bin",
+                imgCloudSetup: "Image Cloud", imgCloudDesc: "Cloudinary Setup", imgCloudName: "Cloud Name", imgUploadPreset: "Upload Preset", imgTest: "Test", imgSave: "Save",
+                attTitle: "Attendance", attTabTrainees: "Players", attTabCoaches: "Coaches", attPaste: "Paste List", attPlaceholder: "Paste text...", attPasteDesc: "Parse", attSearch: "Search...", attToggleAll: "Select All", attConfirm: "Submit", attExcel: "Export CSV", attWhatsapp: "WhatsApp",
+                finTitle: "Finance", finCopy: "Copy Acc", finTotal: "Total", finPending: "Pending", finSearch: "Search...", finToggleAll: "Toggle All", finFee: "Fee", finPaid: "PAID", finUnpaid: "UNPAID", finRemind: "Remind", finExport: "Export",
+                backupToDrive: "Backup", exportDesc: "Download JSON", restoreData: "Restore", restoreDesc: "Upload JSON", selectFile: "Select File", dataSafe: "Data is local.",
+                copyLink: "Copy Link", manageSchools: "Schools", addSchool: "Add School", coachTool: "Coach", backupTools: "Backup", coachDetails: "Details"
             },
             ms: {
                 appTitle: "AKADEMI BELIA CFC", localMode: "Tempatan", cloudMode: "Awan",
                 attendanceTool: "Kehadiran", financeTool: "Kewangan", register: "Daftar", coachTool: "Jurulatih", backupTools: "Sandaran",
                 manageSchools: "Sekolah", addSchool: "Tambah", coachDetails: "Butiran",
                 auth: { welcome: "MASA DEPAN ANDA BERMULA SEKARANG!", adminMode: "MOD UTAMA", userMode: "MOD PEMAIN", enterPin: "Masukkan Pin", wrongPin: "Pin Salah" },
-                alerts: { deleteConfirm: "Padam?", updated: "✅ Dikemaskini!", linkCopied: "Disalin!", imgLocalWarning: "⚠️ Gambar tempatan, sila lampirkan." },
-                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", parent: "Ibu Bapa", secPos: "Posisi 2" }
+                alerts: { deleteConfirm: "Padam?", updated: "✅ Dikemaskini!", linkCopied: "Disalin!", imgLocalWarning: "⚠️ Gambar tempatan, sila lampirkan.", copied: "Disalin!" },
+                stats: { pace: "Laju", shooting: "Tendang", passing: "Hantar", dribbling: "Gelecek", defending: "Pertahanan", physical: "Fizikal" },
+                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", parent: "Ibu Bapa", secPos: "Posisi 2", all: "Semua", comment: "Komen", generate: "AI" },
+                player: { title: "Profil Pemain" },
+                coach: { list: "Senarai", attendance: "Kehadiran", finance: "Gaji", register: "Daftar", sessions: "Sesi" },
+                coachTotalPayout: "Jumlah Bayaran", coachExport: "Eksport Gaji",
+                cloud: { setup: "Awan", key: "Kunci", bin: "ID Bin", connect: "Sambung", create: "Cipta" },
+                cloudDesc: "Segerakkan data",
+                cloudCreate: "Cipta Baru",
+                imgCloudSetup: "Awan Imej", imgCloudDesc: "Tetapan Cloudinary", imgCloudName: "Nama Awan", imgUploadPreset: "Preset", imgTest: "Uji", imgSave: "Simpan",
+                attTitle: "Kehadiran", attTabTrainees: "Pemain", attTabCoaches: "Jurulatih", attPaste: "Tampal", attPlaceholder: "Teks...", attPasteDesc: "Proses", attSearch: "Cari...", attToggleAll: "Pilih Semua", attConfirm: "Hantar", attExcel: "Eksport", attWhatsapp: "WhatsApp",
+                finTitle: "Kewangan", finCopy: "Salin Akaun", finTotal: "Jumlah", finPending: "Belum", finSearch: "Cari...", finToggleAll: "Pilih Semua", finFee: "Yuran", finPaid: "BAYAR", finUnpaid: "BELUM", finRemind: "Ingatkan", finExport: "Eksport",
+                backupToDrive: "Sandaran", exportDesc: "Muat Turun JSON", restoreData: "Pulihkan", restoreDesc: "Muat Naik JSON", selectFile: "Pilih Fail", dataSafe: "Data tempatan.",
+                copyLink: "Salin Pautan", noData: "Tiada Data"
             }
         };
 
@@ -445,7 +480,14 @@
             const resetPlayerStats = () => { if(!confirm("Reset?")) return; setFormData({ ...formData, attendedSessions: 0, attendance: 0, attendanceHistory: [] }); };
             
             const sendCoachMessage = (coach) => { window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}`, '_blank'); };
-            const sendCoachPayslip = (coach) => { window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}`, '_blank'); };
+            const exportCoachPayrollExcel = () => {
+                let csvContent = "\uFEFFName,Role,Sessions,Rate,Total,Status\n";
+                payrollData.list.forEach(c => {
+                    csvContent += `${c.name},${c.role},${c.sessions},${c.rate},${c.amount},${c.isPaid?'PAID':'PENDING'}\n`;
+                });
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `CFC_Payroll_${financeMonth}.csv`; link.click();
+            };
             const toggleFeeStatus = (traineeId) => { const newTrainees = trainees.map(trainee => { if (trainee.id === traineeId) { const history = trainee.feeHistory || {}; const currentStatus = history[financeMonth] || false; return { ...trainee, feeHistory: { ...history, [financeMonth]: !currentStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
             const toggleAllFeeStatus = () => { const allPaid = financeFiltered.every(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]); const targetStatus = !allPaid; if (!confirm(`Mark all as ${targetStatus?'Paid':'Unpaid'}?`)) return; const newTrainees = trainees.map(trainee => { if (financeFiltered.some(rt => rt.id === trainee.id)) { const history = trainee.feeHistory || {}; return { ...trainee, feeHistory: { ...history, [financeMonth]: targetStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
             const toggleAllAttendanceStatus = () => { const currentIds = attTab === 'trainees' ? attendanceList : coachAttendanceList; const filteredIds = attendanceFiltered.map(i => i.id); const allSelected = filteredIds.every(id => currentIds.includes(id)); if (allSelected) { if (attTab === 'trainees') setAttendanceList(attendanceList.filter(id => !filteredIds.includes(id))); else setCoachAttendanceList(coachAttendanceList.filter(id => !filteredIds.includes(id))); } else { if (attTab === 'trainees') setAttendanceList([...new Set([...attendanceList, ...filteredIds])]); else setCoachAttendanceList([...new Set([...coachAttendanceList, ...filteredIds])]); } };
@@ -465,7 +507,56 @@
             };
 
             const parseImportText = () => { if (!importText) return; const text = importText.toLowerCase(); const matchedIds = (attTab === 'trainees' ? filteredTrainees : coaches).filter(item => text.includes(item.name.toLowerCase())).map(item => item.id); if (attTab === 'trainees') setAttendanceList(matchedIds); else setCoachAttendanceList(matchedIds); alert(`Matched ${matchedIds.length}`); };
-            const mockAI = (type, trainee) => { setAiLoading(true); setTimeout(() => { setAiResult({name:trainee.name, content: "Great potential."}); setAiLoading(false); }, 1000); };
+            
+            const mockAI = () => { 
+                setAiLoading(true); 
+                
+                setTimeout(() => { 
+                    const s = formData.stats || { pace: 50, shooting: 50, passing: 50, dribbling: 50, defending: 50, physical: 50 };
+                    const values = Object.values(s);
+                    const avg = values.reduce((a, b) => a + b, 0) / (values.length || 1);
+                    
+                    // 1. 计算评级
+                    let grade = 'D级';
+                    if (avg >= 90) grade = 'S级';
+                    else if (avg >= 80) grade = 'A级';
+                    else if (avg >= 70) grade = 'B级';
+                    else if (avg >= 60) grade = 'C级';
+
+                    // 2. 寻找核心竞争力 (最高项)
+                    const statMap = {
+                        pace: '速度', shooting: '射门', passing: '传球', 
+                        dribbling: '盘带', defending: '防守', physical: '体能'
+                    };
+                    let bestStat = 'pace';
+                    let maxVal = -1;
+                    
+                    // 寻找最大值
+                    for (const key in s) {
+                        if (s[key] > maxVal) {
+                            maxVal = s[key];
+                            bestStat = key;
+                        }
+                    }
+                    const bestStatName = statMap[bestStat] || '综合';
+
+                    // 3. 确定球员定位
+                    let playerType = '均衡型球员';
+                    if (maxVal > 80) {
+                        if (['defending', 'physical'].includes(bestStat)) playerType = '防守悍将';
+                        else if (['shooting', 'pace'].includes(bestStat)) playerType = '进攻终结者';
+                        else if (['passing', 'dribbling'].includes(bestStat)) playerType = '中场指挥官';
+                    }
+
+                    // 4. 生成模板
+                    const name = (formData.name || '球员').toUpperCase();
+                    const template = `【教练深度评估报告】\n\n👤 球员定位：${playerType}\n⭐ 综合评级：${grade}\n🔥 核心竞争力：${bestStatName} (${maxVal})\n📝 战术建议：需进一步观察。\n\n💬 教练评语：\n"${name} - 潜力不错，建议继续观察。"`;
+
+                    setFormData(prev => ({ ...prev, coachComment: template }));
+                    setAiLoading(false); 
+                }, 800); 
+            };
+
             const saveImgConfig = () => { if(imgConfig.cloudName) { localStorage.setItem('cfc_cloudinary_config', JSON.stringify(imgConfig)); setIsImgCloudReady(true); alert("Saved"); } };
             const testCloudinary = async () => { const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="; const url = await uploadToCloudinary(testPixel); if (url) alert("Connected!"); };
             const handleWhatsappShare = () => { const names = attendanceFiltered.filter(i => attTab === 'trainees' ? attendanceList.includes(i.id) : coachAttendanceList.includes(i.id)).map(i => i.name); window.open(`https://wa.me/?text=${encodeURIComponent(`📅 ${attendanceDate} Attendance:\n${names.join('\n')}`)}`, '_blank'); };
@@ -770,7 +861,13 @@
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <div className="flex justify-between items-center"><label className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-2">{t('common', 'comment')}</label><button onClick={mockAI} className="text-[10px] bg-indigo-900/50 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/30 flex items-center gap-1 hover:bg-indigo-900 hover:text-white transition-colors">{aiLoading ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-wand-magic-sparkles"></i>} {t('common', 'generate')}</button></div>
+                                        <div className="flex justify-between items-center">
+                                            <button onClick={mockAI} className="group flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ml-2 text-zinc-500 hover:text-indigo-400 transition-colors outline-none">
+                                                <i className={`fa-solid ${aiLoading ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'} text-indigo-500 group-hover:scale-110 transition-transform`}></i>
+                                                {t('common', 'comment')} 
+                                                <span className="text-[9px] bg-indigo-500/10 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/20 group-hover:bg-indigo-500 group-hover:text-white transition-colors">AI AUTO</span>
+                                            </button>
+                                        </div>
                                         <textarea className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-6 py-3.5 font-bold text-white focus:border-indigo-500 outline-none transition-all shadow-inner text-xs h-24 resize-none leading-relaxed" placeholder="..." value={formData.coachComment || ''} onChange={e => setFormData({...formData, coachComment: e.target.value})}></textarea>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 uppercase font-black text-[10px] tracking-widest">
