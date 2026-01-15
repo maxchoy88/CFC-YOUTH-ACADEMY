@@ -37,7 +37,7 @@
     <div id="static-loading">
         <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
         <h2 class="text-xl font-bold mt-4 tracking-wider uppercase text-white">CFC YOUTH ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-xs mt-2 font-mono tracking-widest uppercase">System Stabilized...</p>
+        <p id="loading-text" class="text-zinc-500 text-xs mt-2 font-mono tracking-widest uppercase">Injecting AI Modules...</p>
     </div>
     <div id="error-box" style="display:none; position:fixed; top:0; left:0; width:100%; background:#ef4444; color:#fff; padding:10px; z-index:9000; font-size:12px; text-align:center;"></div>
     <div id="root"></div>
@@ -60,7 +60,12 @@
         const POSITIONS = ['前锋 (FW)', '左边锋 (LW)', '右边锋 (RW)', '前腰 (CAM)', '中场 (CM)', '后腰 (CDM)', '后卫 (DF)', '门将 (GK)'];
 
         const INITIAL_TRAINEES = [
-            { id: '1', name: 'Arthur', primaryPosition: '前腰 (CAM)', team: '皇家书院', stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 }, image: DEFAULT_IMAGE, attendance: 0, attendanceHistory: [], feeHistory: {} }
+            { 
+                id: '1', name: 'Arthur', primaryPosition: '前腰 (CAM)', team: '皇家书院', 
+                stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 }, 
+                image: DEFAULT_IMAGE, attendance: 0, attendanceHistory: [], feeHistory: {},
+                coachComment: "该球员在场上展现出了极高的战术素养，尤其是在中场的调度能力上。他不仅能够通过精准的长短传梳理球队的进攻节奏，还能在防守端积极回撤，贡献关键抢断。他的体能储备非常充沛，能够支撑全场的高强度跑动。技术层面，他的盘带稳健，不易丢球，且具备一脚远射能力，是球队打破僵局的利器。建议未来加强在高压逼抢下的出球速度，以及逆足脚的使用频率。总体而言，他具备成为职业球员的潜质，是球队不可或缺的灵魂人物。"
+            }
         ];
 
         const INITIAL_COACHES = [
@@ -71,8 +76,14 @@
         const DEFAULT_FORM_DATA = { 
             name:'', team:'', primaryPosition:'前腰 (CAM)', 
             stats:{pace:50,shooting:50,passing:50,dribbling:50,defending:50,physical:50}, 
-            image: DEFAULT_IMAGE 
+            image: DEFAULT_IMAGE, coachComment: ''
         };
+
+        const AI_COMMENTS = [
+            "该球员在场上展现出了极高的战术素养，尤其是在中场的调度能力上。他不仅能够通过精准的长短传梳理球队的进攻节奏，还能在防守端积极回撤，贡献关键抢断。他的体能储备非常充沛，能够支撑全场的高强度跑动。技术层面，他的盘带稳健，不易丢球，且具备一脚远射能力，是球队打破僵局的利器。建议未来加强在高压逼抢下的出球速度，以及逆足脚的使用频率。总体而言，他具备成为职业球员的潜质，是球队不可或缺的灵魂人物。",
+            "身体素质非常出色，对抗能力强，是后防线上的定海神针。在一对一防守中，他总能利用强壮的身体卡住身位，断球成功率极高。头球争顶也是他的强项，不仅能化解对方的高空轰炸，还能在角球进攻中制造威胁。战术执行力强，位置感极佳，很少出现失位的情况。不过，他的转身速度和回追能力还有提升空间，建议在敏捷性训练上下功夫。此外，作为后卫，若能提升后场长传发动的准确性，将能更好地丰富球队的战术体系。",
+            "天生的射手，门前嗅觉极其灵敏。无论是抢点推射还是禁区外的冷射，他都能保持极高的进球效率。他的瞬间爆发力惊人，能够瞬间摆脱后卫形成单刀机会。在无球跑动方面，他非常聪明，总能出现在对手防线的空档处。然而，他在背身拿球和做球能力上稍显薄弱，有时会因为粘球而贻误战机。建议加强与队友的配合意识，练习在背身状态下的护球和分球技巧，这样能让自己在进攻端更具威胁性，成为更全面的锋线杀手。"
+        ];
 
         const TRANSLATIONS = {
             zh: {
@@ -80,7 +91,7 @@
                 attendanceTool: "出席库", financeTool: "财务", register: "注册", coachTool: "教练", backupTools: "备份工具",
                 manageSchools: "学校管理", addSchool: "增加新学校", coachDetails: "查看明细",
                 auth: { welcome: "YOUR FUTURE IS NOW!", adminMode: "MASTER MODE", userMode: "PLAYER MODE", enterPin: "请输入管理员密码", wrongPin: "密码错误" },
-                alerts: { deleteConfirm: "确定要删除吗？", updated: "✅ 数据已同步！", resetConfirm: "确定重置统计数据吗？", linkCopied: "链接已复制！", fileError: "文件解析失败", imgLocalWarning: "⚠️ 图片为本地数据，请手动发送。" },
+                alerts: { deleteConfirm: "确定要删除吗？", updated: "✅ 数据已同步！", resetConfirm: "确定重置统计数据吗？", linkCopied: "链接已复制！", fileError: "文件解析失败" },
                 stats: { pace: "速度", shooting: "射门", passing: "传球", dribbling: "盘带", defending: "防守", physical: "体能" },
                 msgTemplates: { gentle: "温柔提醒", friendly: "朋友语气", soft: "婉转提醒", formal: "正式通知" },
                 msgs: {
@@ -90,7 +101,7 @@
                     formal: "【CFC 财务通知】您好，请查收 {name} {month} 月份的学费单 (RM{amount})。请在近期内完成缴费，感谢配合。"
                 },
                 bankDetails: "\n\n🏦 汇款资料:\n{bankName}\n{accNum}\n{holder}\n\n汇款后请发收据，谢谢！",
-                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", comment: "教练评语" },
+                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", comment: "教练评语", generate: "AI 生成评语" },
                 share: { sendToParents: "发送给家长", textOnly: "仅发送文字" }
             },
             en: {
@@ -99,7 +110,7 @@
                 register: "Register", searchPlaceholder: "Search...", noData: "No Data",
                 auth: { welcome: "YOUR FUTURE IS NOW!", selectMode: "Select Login Mode", adminMode: "MASTER MODE", userMode: "PLAYER MODE", enterPin: "Enter Master Pin", wrongPin: "Wrong PIN" },
                 alerts: { deleteConfirm: "Confirm delete?", updated: "✅ Data synced!", linkCopied: "Link copied!", imgLocalWarning: "⚠️ Local image, attach manually." },
-                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", comment: "Comment" },
+                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", comment: "Comment", generate: "Generate AI" },
                 share: { sendToParents: "Send to Parents", textOnly: "Text Only" }
             },
             ms: {
@@ -108,7 +119,7 @@
                 manageSchools: "Sekolah", addSchool: "Tambah", coachDetails: "Butiran",
                 auth: { welcome: "MASA DEPAN ANDA BERMULA SEKARANG!", adminMode: "MOD UTAMA", userMode: "MOD PEMAIN", enterPin: "Masukkan Pin", wrongPin: "Pin Salah" },
                 alerts: { deleteConfirm: "Padam?", updated: "✅ Dikemaskini!", linkCopied: "Disalin!", imgLocalWarning: "⚠️ Gambar tempatan, sila lampirkan." },
-                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", comment: "Komen" },
+                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", comment: "Komen", generate: "Jana AI" },
                 share: { sendToParents: "Hantar ke Ibu Bapa", textOnly: "Teks Sahaja" }
             }
         };
@@ -121,7 +132,6 @@
         const getOptimizedImageUrl = (url) => (!url || typeof url !== 'string' || !url.includes('cloudinary.com')) ? (url || DEFAULT_IMAGE) : url.replace(/([^:]\/)\/+/g, "$1").replace('/upload/', '/upload/f_avif,q_auto/');
         const dataURLtoFile = (dataurl, filename) => { try { let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n); while(n--){ u8arr[n] = bstr.charCodeAt(n); } return new File([u8arr], filename, {type:mime}); } catch(e) { return null; } };
 
-        // 🔥 Safe Copy Logic (Compatible with iframe)
         const safeCopy = (text, successMsg) => {
             const textArea = document.createElement("textarea");
             textArea.value = text;
@@ -197,7 +207,6 @@
             
             const [msgTemplate, setMsgTemplate] = useState('gentle'); 
 
-            // 🔥 Share Target State
             const [shareTarget, setShareTarget] = useState(null);
 
             const [tempImage, setTempImage] = useState(null);
@@ -212,23 +221,14 @@
             const [aiResult, setAiResult] = useState({content: null, name: null});
             const [aiLoading, setAiLoading] = useState(false);
 
-            // --- 1. Helper for Translations ---
-            const t = (k, sk) => {
-                const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh'];
-                if(sk) return dict[k]?.[sk] || (TRANSLATIONS['zh'][k]?.[sk] || k);
-                return dict[k] || (TRANSLATIONS['zh'][k] || k);
-            };
-
-            // --- 2. Filter Logic ---
+            // --- 1. Filter Logic ---
             const filteredTrainees = useMemo(() => trainees.filter(t => (selectedTeam === '全部' || t.team === selectedTeam) && t.name.toLowerCase().includes(searchTerm.toLowerCase())), [trainees, selectedTeam, searchTerm]);
             const financeFiltered = useMemo(() => filteredTrainees.filter(t => (t.name || '').toLowerCase().includes(financeSearchTerm.toLowerCase())), [filteredTrainees, financeSearchTerm]);
             const attendanceFiltered = useMemo(() => { const term = attendanceSearchTerm.toLowerCase(); return (attTab === 'trainees' ? filteredTrainees : coaches).filter(i => i.name.toLowerCase().includes(term)); }, [attTab, filteredTrainees, coaches, attendanceSearchTerm]);
-            
             const financeSummary = useMemo(() => { 
                 const paidCount = financeFiltered.filter(t => t.feeHistory?.[financeMonth]).length; 
                 return { total: financeFiltered.length * monthlyFee, paid: paidCount * monthlyFee, pending: (financeFiltered.length - paidCount) * monthlyFee, paidCount }; 
             }, [financeFiltered, financeMonth, monthlyFee]);
-
             const payrollData = useMemo(() => {
                 let total = 0;
                 const list = coaches.map(c => {
@@ -245,7 +245,7 @@
                 return { list, total };
             }, [coaches, financeMonth]);
 
-            // --- 3. Data Persistence ---
+            // --- 2. Data Persistence ---
             const updateData = (newData) => {
                 const updated = {
                     trainees: newData.trainees !== undefined ? newData.trainees : trainees,
@@ -258,7 +258,6 @@
                 localStorage.setItem('cfc_local_db', JSON.stringify(updated));
                 if (isCloudConnected) syncToCloud(updated);
             };
-
             const syncFromCloud = async (key, binId) => {
                 setCloudStatus("⏳");
                 try {
@@ -269,7 +268,6 @@
                     }
                 } catch (e) { setCloudStatus("❌"); }
             };
-
             const syncToCloud = async (data) => {
                 if (!isCloudConnected || !cloudConfig.binId) return;
                 try {
@@ -295,14 +293,8 @@
                 } catch (error) { setUploadingStatus("❌"); return null; }
             };
 
-            // --- 4. Handlers ---
-            const handleLogin = (role) => {
-                if (role === 'admin') {
-                    if (pinInput === ADMIN_PIN) { setUserRole('admin'); setPinInput(""); setShowPinInput(false); }
-                    else { alert(t('auth', 'wrongPin')); setPinInput(""); }
-                } else setUserRole('user');
-            };
-
+            // --- 3. Handlers ---
+            const handleLogin = (role) => { if (role === 'admin') { if (pinInput === ADMIN_PIN) { setUserRole('admin'); setPinInput(""); setShowPinInput(false); } else { alert(t('auth', 'wrongPin')); setPinInput(""); } } else setUserRole('user'); };
             const handleRegister = () => { setEditingTrainee(null); setFormData(DEFAULT_FORM_DATA); setIsModalOpen(true); };
             const handleEdit = (t) => { setEditingTrainee(t); setFormData({ ...t }); setIsModalOpen(true); };
             const handleSaveTrainee = () => {
@@ -314,200 +306,57 @@
                 updateData({ trainees: newTrainees }); setIsModalOpen(false);
             };
             const deleteTrainee = (id) => { if(confirm(t('alerts', 'deleteConfirm'))) updateData({ trainees: trainees.filter(t => t.id !== id) }); };
-
             const handleAddTeam = () => { const nt = [...teams, `New School ${teams.length + 1}`]; setTeams(nt); updateData({ teams: nt }); };
-            const handleRenameTeam = (old) => { 
-                const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''});
-                const nt = teams.map(t => t===old?n:t); const ntr = trainees.map(tr => tr.team===old?{...tr,team:n}:tr);
-                updateData({teams:nt, trainees:ntr}); setRenamingTeam({original:'',current:''}); 
-            };
+            const handleRenameTeam = (old) => { const n = renamingTeam.current.trim(); if(!n || n===old) return setRenamingTeam({original:'',current:''}); const nt = teams.map(t => t===old?n:t); const ntr = trainees.map(tr => tr.team===old?{...tr,team:n}:tr); updateData({teams:nt, trainees:ntr}); setRenamingTeam({original:'',current:''}); };
             const handleDeleteTeam = (n) => { if(confirm(`${t('alerts', 'deleteConfirm')} ${n}?`)) { const nt = teams.filter(t => t!==n); const ntr = trainees.map(tr => tr.team===n?{...tr,team:'Free Agent'}:tr); updateData({teams:nt, trainees:ntr}); } };
-
-            const saveCoach = () => {
-                if(!coachForm.name) return;
-                let newCoaches;
-                if(editingCoach) {
-                    newCoaches = coaches.map(c => c.id === editingCoach.id ? { ...c, ...coachForm } : c);
-                } else {
-                    newCoaches = [...coaches, { ...coachForm, id: Date.now().toString(), attendanceHistory: [], paymentHistory: {} }];
-                }
-                updateData({ coaches: newCoaches });
-                setEditingCoach(null);
-                setCoachForm({ name: '', phone: '', role: 'Assistant', rate: 100 });
-            };
-            
-            const handleRegisterCoach = () => {
-                if (!coachForm.name) return;
-                const newC = [...coaches, { ...coachForm, id: Date.now().toString(), attendanceHistory: [], paymentHistory: {} }];
-                updateData({ coaches: newC });
-                setCoachForm({ name: '', phone: '', role: 'Assistant', rate: 100 });
-            };
-
+            const saveCoach = () => { if(!coachForm.name) return; let newCoaches; if(editingCoach) { newCoaches = coaches.map(c => c.id === editingCoach.id ? { ...c, ...coachForm } : c); } else { newCoaches = [...coaches, { ...coachForm, id: Date.now().toString(), attendanceHistory: [], paymentHistory: {} }]; } updateData({ coaches: newCoaches }); setEditingCoach(null); setCoachForm({ name: '', phone: '', role: 'Assistant', rate: 100 }); };
+            const handleRegisterCoach = () => { if (!coachForm.name) return; const newC = [...coaches, { ...coachForm, id: Date.now().toString(), attendanceHistory: [], paymentHistory: {} }]; updateData({ coaches: newC }); setCoachForm({ name: '', phone: '', role: 'Assistant', rate: 100 }); };
             const deleteCoach = (id) => { if(!confirm("Delete Coach?")) return; updateData({ coaches: coaches.filter(c => c.id !== id) }); };
-
-            const removeCoachRecord = (coachId, dateToRemove, schoolToRemove) => {
-                if (!confirm(`Delete record?`)) return;
-                const newCoaches = coaches.map(c => {
-                    if (c.id === coachId) {
-                        const newHistory = (c.attendanceHistory || []).filter(h => {
-                            const hDate = (typeof h === 'string') ? h : h.date;
-                            const hSchool = (typeof h === 'string') ? '' : (h.school || '');
-                            return !(hDate === dateToRemove && (hSchool === schoolToRemove || (schoolToRemove === '' && hSchool === '')));
-                        });
-                        return { ...c, attendanceHistory: newHistory };
-                    }
-                    return c;
-                });
-                updateData({ coaches: newCoaches });
-            };
-
-            const toggleCoachPayment = (id) => {
-                const newCoaches = coaches.map(c => {
-                    if (c.id === id) {
-                        const history = c.paymentHistory || {};
-                        const isPaid = history[financeMonth]?.status === 'paid';
-                        return { ...c, paymentHistory: { ...history, [financeMonth]: { status: isPaid ? 'unpaid' : 'paid' } } };
-                    }
-                    return c;
-                });
-                updateData({ coaches: newCoaches });
-            };
-
-            const toggleCoachAttendance = (id) => {
-                const newCoaches = coaches.map(c => {
-                    if (c.id === id) {
-                        const history = c.attendanceHistory || [];
-                        const exists = history.some(h => h.date === coachAttDate && h.school === coachAttSchool);
-                        const newHistory = exists ? history.filter(h => !(h.date === coachAttDate && h.school === coachAttSchool)) : [...history, { date: coachAttDate, school: coachAttSchool }];
-                        return { ...c, attendanceHistory: newHistory };
-                    }
-                    return c;
-                });
-                updateData({ coaches: newCoaches });
-            };
-
-            const openAttendanceModal = () => {
-                const today = new Date().toISOString().slice(0, 10);
-                setAttendanceDate(today);
-                setAttTab('trainees');
-                setAttendanceList(trainees.filter(t => t.attendanceHistory?.some(h => (h.date || h) === today)).map(t => t.id));
-                setCoachAttendanceList(coaches.filter(c => c.attendanceHistory?.some(h => h.date === today)).map(c => c.id));
-                setIsAttendanceOpen(true);
-            };
-
-            const toggleAttendance = (id) => {
-                if (attTab === 'trainees') setAttendanceList(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-                else setCoachAttendanceList(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-            };
-
-            const submitAttendance = () => {
-                const newTrainees = trainees.map(t => {
-                    let history = Array.isArray(t.attendanceHistory) ? [...t.attendanceHistory] : [];
-                    history = history.filter(h => (h.date || h) !== attendanceDate);
-                    if (attendanceList.includes(t.id)) history.push({ date: attendanceDate, status: 'present' });
-                    const rate = Math.round((history.length / PRESET_YEARLY_TOTAL) * 100);
-                    return { ...t, attendance: rate, attendanceHistory: history };
-                });
-                const newCoaches = coaches.map(c => {
-                    let history = Array.isArray(c.attendanceHistory) ? [...c.attendanceHistory] : [];
-                    history = history.filter(h => h.date !== attendanceDate);
-                    if (coachAttendanceList.includes(c.id)) history.push({ date: attendanceDate, school: teams[0] });
-                    return { ...c, attendanceHistory: history };
-                });
-                updateData({ trainees: newTrainees, coaches: newCoaches }); 
-                setIsAttendanceOpen(false); alert("Saved!");
-            };
-
+            const removeCoachRecord = (coachId, dateToRemove, schoolToRemove) => { if (!confirm(`Delete record?`)) return; const newCoaches = coaches.map(c => { if (c.id === coachId) { const newHistory = (c.attendanceHistory || []).filter(h => { const hDate = (typeof h === 'string') ? h : h.date; const hSchool = (typeof h === 'string') ? '' : (h.school || ''); return !(hDate === dateToRemove && (hSchool === schoolToRemove || (schoolToRemove === '' && hSchool === ''))); }); return { ...c, attendanceHistory: newHistory }; } return c; }); updateData({ coaches: newCoaches }); };
+            const toggleCoachPayment = (id) => { const newCoaches = coaches.map(c => { if (c.id === id) { const history = c.paymentHistory || {}; const isPaid = history[financeMonth]?.status === 'paid'; return { ...c, paymentHistory: { ...history, [financeMonth]: { status: isPaid ? 'unpaid' : 'paid' } } }; } return c; }); updateData({ coaches: newCoaches }); };
+            const toggleCoachAttendance = (id) => { const newCoaches = coaches.map(c => { if (c.id === id) { const history = c.attendanceHistory || []; const exists = history.some(h => h.date === coachAttDate && h.school === coachAttSchool); const newHistory = exists ? history.filter(h => !(h.date === coachAttDate && h.school === coachAttSchool)) : [...history, { date: coachAttDate, school: coachAttSchool }]; return { ...c, attendanceHistory: newHistory }; } return c; }); updateData({ coaches: newCoaches }); };
+            const openAttendanceModal = () => { const today = new Date().toISOString().slice(0, 10); setAttendanceDate(today); setAttTab('trainees'); setAttendanceList(trainees.filter(t => t.attendanceHistory?.some(h => (h.date || h) === today)).map(t => t.id)); setCoachAttendanceList(coaches.filter(c => c.attendanceHistory?.some(h => h.date === today)).map(c => c.id)); setIsAttendanceOpen(true); };
+            const toggleAttendance = (id) => { if (attTab === 'trainees') setAttendanceList(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]); else setCoachAttendanceList(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]); };
+            const submitAttendance = () => { const newTrainees = trainees.map(t => { let history = Array.isArray(t.attendanceHistory) ? [...t.attendanceHistory] : []; history = history.filter(h => (h.date || h) !== attendanceDate); if (attendanceList.includes(t.id)) history.push({ date: attendanceDate, status: 'present' }); const rate = Math.round((history.length / PRESET_YEARLY_TOTAL) * 100); return { ...t, attendance: rate, attendanceHistory: history }; }); const newCoaches = coaches.map(c => { let history = Array.isArray(c.attendanceHistory) ? [...c.attendanceHistory] : []; history = history.filter(h => h.date !== attendanceDate); if (coachAttendanceList.includes(c.id)) history.push({ date: attendanceDate, school: teams[0] }); return { ...c, attendanceHistory: history }; }); updateData({ trainees: newTrainees, coaches: newCoaches }); setIsAttendanceOpen(false); alert("Saved!"); };
             const handleBackupToDrive = () => { const d=JSON.stringify({trainees,teams,leagueName,appLogo, coaches},null,2); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([d],{type:"application/json"})); a.download = `CFC_Backup.json`; a.click(); };
             const handleImportFile = (e) => { const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=(ev) => { try { const p=JSON.parse(ev.target.result); if(confirm("Overwrite?")) { updateData(p); setIsDataToolsOpen(false); } } catch (e) { alert("Error"); } }; r.readAsText(f); };
             const handleConnectCloud = () => { if (cloudConfig.key && cloudConfig.binId) { localStorage.setItem('cfc_jsonbin_config', JSON.stringify(cloudConfig)); syncFromCloud(cloudConfig.key, cloudConfig.binId); setIsCloudModalOpen(false); } else { alert("Incomplete"); } };
             const createCloudBin = async () => { if (!cloudConfig.key) return alert("Key Required"); try { const res = await fetch(JSONBIN_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Master-Key": cloudConfig.key, "X-Bin-Private": "true" }, body: JSON.stringify({ trainees, coaches, teams }) }); if (res.ok) { const json = await res.json(); setCloudConfig(p => ({ ...p, binId: json.metadata.id })); setIsCloudConnected(true); alert("Success"); } } catch (e) { alert("Failed"); } };
-            
             const handleLogoFile = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{setTempImage(ev.target.result);setIsLogoCrop(true);setIsCropperOpen(true);}; r.readAsDataURL(f); e.target.value=""; };
             const handleTraineeFile = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{setTempImage(ev.target.result);setIsLogoCrop(false);setIsCropperOpen(true);}; r.readAsDataURL(f); e.target.value=""; };
-            
-            const handleCropConfirm = async () => {
-                if (cropperRef.current) {
-                    const canvas = cropperRef.current.getCroppedCanvas({ width: 400, height: 400 });
-                    const base64 = canvas.toDataURL('image/jpeg', 0.8);
-                    let finalUrl = base64;
-                    if (isImgCloudReady) { const cloudUrl = await uploadToCloudinary(base64); if (cloudUrl) finalUrl = cloudUrl; }
-                    if (isLogoCrop) updateData({ appLogo: finalUrl });
-                    else setFormData(p => ({ ...p, image: finalUrl }));
-                    setIsCropperOpen(false);
-                }
-            };
+            const handleCropConfirm = async () => { if (cropperRef.current) { const canvas = cropperRef.current.getCroppedCanvas({ width: 400, height: 400 }); const base64 = canvas.toDataURL('image/jpeg', 0.8); let finalUrl = base64; if (isImgCloudReady) { const cloudUrl = await uploadToCloudinary(base64); if (cloudUrl) finalUrl = cloudUrl; } if (isLogoCrop) updateData({ appLogo: finalUrl }); else setFormData(p => ({ ...p, image: finalUrl })); setIsCropperOpen(false); } };
             const handleRotate = () => { if (cropperRef.current) cropperRef.current.rotate(90); };
             const handleAttendanceChange = (field, val) => { const num = parseInt(val) || 0; setFormData(p => ({ ...p, [field]: num })); };
             const resetPlayerStats = () => { if(!confirm("Reset?")) return; setFormData({ ...formData, attendedSessions: 0, attendance: 0, attendanceHistory: [] }); };
-            
             const sendCoachMessage = (coach) => { window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}`, '_blank'); };
             const sendCoachPayslip = (coach) => { window.open(`https://wa.me/${coach.phone.replace(/[^0-9]/g, '')}`, '_blank'); };
             const toggleFeeStatus = (traineeId) => { const newTrainees = trainees.map(trainee => { if (trainee.id === traineeId) { const history = trainee.feeHistory || {}; const currentStatus = history[financeMonth] || false; return { ...trainee, feeHistory: { ...history, [financeMonth]: !currentStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
             const toggleAllFeeStatus = () => { const allPaid = financeFiltered.every(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]); const targetStatus = !allPaid; if (!confirm(`Mark all as ${targetStatus?'Paid':'Unpaid'}?`)) return; const newTrainees = trainees.map(trainee => { if (financeFiltered.some(rt => rt.id === trainee.id)) { const history = trainee.feeHistory || {}; return { ...trainee, feeHistory: { ...history, [financeMonth]: targetStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
             const toggleAllAttendanceStatus = () => { const currentIds = attTab === 'trainees' ? attendanceList : coachAttendanceList; const filteredIds = attendanceFiltered.map(i => i.id); const allSelected = filteredIds.every(id => currentIds.includes(id)); if (allSelected) { if (attTab === 'trainees') setAttendanceList(attendanceList.filter(id => !filteredIds.includes(id))); else setCoachAttendanceList(coachAttendanceList.filter(id => !filteredIds.includes(id))); } else { if (attTab === 'trainees') setAttendanceList([...new Set([...attendanceList, ...filteredIds])]); else setCoachAttendanceList([...new Set([...coachAttendanceList, ...filteredIds])]); } };
-            
-            const sendFeeReminder = (trainee) => { 
-                const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh']; 
-                const template = dict.msgs[msgTemplate] || dict.msgs['gentle'];
-                const bankInfo = dict.bankDetails.replace('{bankName}', BANK_INFO.bankName).replace('{accNum}', BANK_INFO.accNum).replace('{holder}', BANK_INFO.holder);
-                const msgBody = template.replace('{name}', trainee.name).replace('{month}', financeMonth).replace('{amount}', monthlyFee);
-                const fullMsg = msgBody + bankInfo;
-                window.open(`https://wa.me/?text=${encodeURIComponent(fullMsg)}`, '_blank'); 
-            };
-            
-            // 🔥 修复点：使用 safeCopy
-            const copyBankInfo = () => { 
-                const text = `${BANK_INFO.bankName}\n${BANK_INFO.accNum}\n${BANK_INFO.holder}`; 
-                safeCopy(text, t('alerts', 'copied'));
-            };
-
+            const sendFeeReminder = (trainee) => { const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh']; const template = dict.msgs[msgTemplate] || dict.msgs['gentle']; const bankInfo = dict.bankDetails.replace('{bankName}', BANK_INFO.bankName).replace('{accNum}', BANK_INFO.accNum).replace('{holder}', BANK_INFO.holder); const msgBody = template.replace('{name}', trainee.name).replace('{month}', financeMonth).replace('{amount}', monthlyFee); const fullMsg = msgBody + bankInfo; window.open(`https://wa.me/?text=${encodeURIComponent(fullMsg)}`, '_blank'); };
+            const copyBankInfo = () => { const text = `${BANK_INFO.bankName}\n${BANK_INFO.accNum}\n${BANK_INFO.holder}`; safeCopy(text, t('alerts', 'copied')); };
             const parseImportText = () => { if (!importText) return; const text = importText.toLowerCase(); const matchedIds = (attTab === 'trainees' ? filteredTrainees : coaches).filter(item => text.includes(item.name.toLowerCase())).map(item => item.id); if (attTab === 'trainees') setAttendanceList(matchedIds); else setCoachAttendanceList(matchedIds); alert(`Matched ${matchedIds.length}`); };
-            const mockAI = (type, trainee) => { setAiLoading(true); setTimeout(() => { setAiResult({name:trainee.name, content: "Great potential."}); setAiLoading(false); }, 1000); };
+            
+            // 🔥 AI 生成评语功能
+            const mockAI = () => { 
+                setAiLoading(true); 
+                const comments = AI_COMMENTS;
+                const randomComment = comments[Math.floor(Math.random() * comments.length)];
+                setTimeout(() => { 
+                    setFormData(p => ({ ...p, coachComment: randomComment }));
+                    setAiLoading(false); 
+                }, 1000); 
+            };
+            
             const saveImgConfig = () => { if(imgConfig.cloudName) { localStorage.setItem('cfc_cloudinary_config', JSON.stringify(imgConfig)); setIsImgCloudReady(true); alert("Saved"); } };
             const testCloudinary = async () => { const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="; const url = await uploadToCloudinary(testPixel); if (url) alert("Connected!"); };
             const handleWhatsappShare = () => { const names = attendanceFiltered.filter(i => attTab === 'trainees' ? attendanceList.includes(i.id) : coachAttendanceList.includes(i.id)).map(i => i.name); window.open(`https://wa.me/?text=${encodeURIComponent(`📅 ${attendanceDate} Attendance:\n${names.join('\n')}`)}`, '_blank'); };
-            const handleExportAttendanceExcel = () => { 
-                const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
-                let csvContent = "\uFEFFName,Team,Status\n";
-                const list = attTab === 'trainees' ? filteredTrainees : coaches;
-                const ids = attTab === 'trainees' ? attendanceList : coachAttendanceList;
-                list.forEach(item => {
-                    const status = ids.includes(item.id) ? "Present" : "Absent";
-                    csvContent += `${item.name},${item.team || item.role},${status}\n`;
-                });
-                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-                const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `CFC_Att_${attendanceDate}.csv`; link.click();
-            };
-            const exportFinanceExcel = () => { 
-                let csvContent = "\uFEFFName,Team,Status,Amount\n";
-                financeFiltered.forEach(t => {
-                    const isPaid = t.feeHistory && t.feeHistory[financeMonth];
-                    csvContent += `${t.name},${t.team},${isPaid ? 'PAID' : 'PENDING'},${monthlyFee}\n`;
-                });
-                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-                const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `CFC_Finance_${financeMonth}.csv`; link.click();
-            };
+            const handleExportAttendanceExcel = () => { const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, ''); let csvContent = "\uFEFFName,Team,Status\n"; const list = attTab === 'trainees' ? filteredTrainees : coaches; const ids = attTab === 'trainees' ? attendanceList : coachAttendanceList; list.forEach(item => { const status = ids.includes(item.id) ? "Present" : "Absent"; csvContent += `${item.name},${item.team || item.role},${status}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `CFC_Att_${attendanceDate}.csv`; link.click(); };
+            const exportFinanceExcel = () => { let csvContent = "\uFEFFName,Team,Status,Amount\n"; financeFiltered.forEach(t => { const isPaid = t.feeHistory && t.feeHistory[financeMonth]; csvContent += `${t.name},${t.team},${isPaid ? 'PAID' : 'PENDING'},${monthlyFee}\n`; }); const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `CFC_Finance_${financeMonth}.csv`; link.click(); };
             
-            // 🔥 更新：使用 safeCopy
-            const generateShareText = (t) => {
-                const L = TRANSLATIONS[lang] || TRANSLATIONS['zh'];
-                let text = `⚽ ${L.appTitle}\n\n👤 ${t.name}\n🏫 ${t.team}\n📍 ${t.primaryPosition}\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}\n\n📈 Attendance: ${t.attendance}%`;
-                if (t.coachComment) text += `\n\n💬 Coach: ${t.coachComment}`;
-                return text;
-            };
-
-            const handleSystemShare = (t) => { 
-                const text = generateShareText(t);
-                if(navigator.share) {
-                    navigator.share({title:t.name, text: text}).catch(err => {
-                        // 忽略取消错误
-                        if (err.name !== 'AbortError') setShareTarget(t);
-                    });
-                } else {
-                    setShareTarget(t); 
-                }
-            };
+            const generateShareText = (t) => { const L = TRANSLATIONS[lang] || TRANSLATIONS['zh']; let text = `⚽ ${L.appTitle}\n\n👤 ${t.name}\n🏫 ${t.team}\n📍 ${t.primaryPosition}\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}\n\n📈 Attendance: ${t.attendance}%`; if (t.coachComment) text += `\n\n💬 Coach: ${t.coachComment}`; return text; };
+            const handleSystemShare = (t) => { const text = generateShareText(t); if(navigator.share) { navigator.share({title:t.name, text: text}).catch(err => { if (err.name !== 'AbortError') setShareTarget(t); }); } else { setShareTarget(t); } };
+            const t = (k, sk) => { const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh']; if(sk) return dict[k]?.[sk] || (TRANSLATIONS['zh'][k]?.[sk] || k); return dict[k] || (TRANSLATIONS['zh'][k] || k); };
 
             // --- 🔄 初始化载入 ---
             useEffect(() => {
@@ -516,7 +365,9 @@
                 setCoaches(local.coaches || INITIAL_COACHES);
                 setLeagueName(local.leagueName || 'CFC YOUTH ACADEMY');
                 setAppLogo(local.appLogo || null);
-                if (local.teams) setTeams(local.teams);
+                if (local.teams && local.teams.length > 0) setTeams(local.teams); // 🔥 修复：防止 schools 为空
+                else setTeams(INITIAL_TEAMS);
+                
                 const savedCloud = JSON.parse(localStorage.getItem('cfc_jsonbin_config') || '{}');
                 if (savedCloud.binId) { setCloudConfig(savedCloud); syncFromCloud(savedCloud.key, savedCloud.binId); }
                 const savedImgCloud = JSON.parse(localStorage.getItem('cfc_cloudinary_config') || '{}');
@@ -551,7 +402,6 @@
                                 </div>
                             </div>
                         )}
-                        {/* 🌐 Language Switcher */}
                         <div className="flex justify-center gap-6 mt-8">
                             <button onClick={() => setLang('zh')} className={`text-2xl transition-opacity ${lang === 'zh' ? 'opacity-100 scale-110' : 'opacity-40 grayscale'}`}>🇨🇳</button>
                             <button onClick={() => setLang('ms')} className={`text-2xl transition-opacity ${lang === 'ms' ? 'opacity-100 scale-110' : 'opacity-40 grayscale'}`}>🇲🇾</button>
@@ -608,17 +458,13 @@
                                     <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent opacity-80"></div>
                                     <span className="absolute top-3 left-3 bg-yellow-500 text-black text-[10px] font-black px-1.5 rounded shadow-lg">{getPositionCode(t.primaryPosition)}</span>
                                     <div className="absolute bottom-3 left-4 right-4 truncate leading-tight font-black uppercase text-white drop-shadow-md">{t.name}</div>
-                                    {/* 🔥 RE-ADDED: Share Button on Card */}
                                     <button onClick={(e)=>{e.stopPropagation(); handleSystemShare(t);}} className="absolute bottom-2 right-2 w-7 h-7 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-emerald-600 transition-all border border-white/20 shadow-lg z-20 active:scale-90"><i className="fa-solid fa-share-nodes text-[10px]"></i></button>
                                 </div>
                                 <div className="p-3 flex-1 flex flex-col">
                                     <div className="grid grid-cols-3 gap-1 mb-2">
                                         {['pace', 'shooting', 'passing'].map(s => <div key={s} className="bg-black/30 p-1 rounded-xl flex flex-col items-center border border-zinc-800/50 shadow-inner font-black uppercase tracking-tighter"><span className="text-zinc-600 text-[8px]">{s.slice(0,3)}</span><span className={`text-xs ${getGradeColor(getStatGrade(t.stats?.[s]))}`}>{getStatGrade(t.stats?.[s])}</span></div>)}
                                     </div>
-                                    
-                                    {/* 🔥 NEW: Coach Comment Indicator */}
                                     {t.coachComment && <div className="mb-2 px-1"><p className="text-[9px] text-zinc-500 truncate italic"><i className="fa-solid fa-comment-dots mr-1"></i> {t.coachComment}</p></div>}
-
                                     <div className="mt-auto pt-3 border-t border-zinc-800/50 flex justify-between items-center">
                                         <div className={`w-2.5 h-2.5 rounded-full ${getAttendanceColor(t.attendance || 0)}`}></div>
                                         {userRole === 'admin' && (
@@ -742,8 +588,8 @@
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-2">{t('common', 'comment')}</label>
-                                        <textarea className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-6 py-3.5 font-bold text-white focus:border-indigo-500 outline-none transition-all shadow-inner text-xs h-24 resize-none" placeholder="..." value={formData.coachComment || ''} onChange={e => setFormData({...formData, coachComment: e.target.value})}></textarea>
+                                        <div className="flex justify-between items-center"><label className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-2">{t('common', 'comment')}</label><button onClick={mockAI} className="text-[10px] bg-indigo-900/50 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/30 flex items-center gap-1 hover:bg-indigo-900 hover:text-white transition-colors">{aiLoading ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-wand-magic-sparkles"></i>} {t('common', 'generate')}</button></div>
+                                        <textarea className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-6 py-3.5 font-bold text-white focus:border-indigo-500 outline-none transition-all shadow-inner text-xs h-24 resize-none leading-relaxed" placeholder="..." value={formData.coachComment || ''} onChange={e => setFormData({...formData, coachComment: e.target.value})}></textarea>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 uppercase font-black text-[10px] tracking-widest">
                                         {Object.keys(formData.stats || {}).map(s => (
@@ -767,8 +613,7 @@
                                 <h2 className="text-2xl font-black text-white mb-2 tracking-tight uppercase tracking-widest leading-none">CFC YOUTH ACADEMY</h2>
                                 <p className="text-zinc-500 text-sm mb-8 leading-relaxed px-4">使用浏览器“添加到主屏幕”安装 App</p>
                                 <div className="bg-white p-4 rounded-[2rem] mb-8 w-fit mx-auto shadow-2xl"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shareUrl)}&margin=10`} className="w-48 h-48 rounded-lg" alt="QR"/></div>
-                                {/* 🔥 修复点：使用 safeCopy */}
-                                <button onClick={() => { safeCopy(shareUrl, t('alerts', 'linkCopied')); }} className="w-full py-4 bg-zinc-100 text-zinc-900 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 uppercase text-sm tracking-widest shadow-xl"><i className="fa-solid fa-link"></i> {t('copyLink')}</button>
+                                <button onClick={() => { safeCopy(shareUrl, t('alerts', 'linkCopied')); }} className="w-full py-4 bg-zinc-100 text-zinc-900 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 uppercase text-sm tracking-widest shadow-xl"><i className="fa-solid fa-link"></i> Copy Link</button>
                             </div>
                         </div>
                     )}
@@ -818,9 +663,7 @@
                         ))}
                     </div><div className="flex gap-2"><button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button><button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button><button onClick={handleWhatsappShare} className="px-4 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl shadow-lg" title={t('attWhatsapp')}><i className="fa-brands fa-whatsapp text-xl"></i></button></div></div></div>)}
                     {/* Finance Modal */}
-                    {isFinanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-yellow-600 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-sack-dollar text-yellow-500"></i> {t('finTitle')}</h2><div className="flex items-center gap-2"><input type="month" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-yellow-500 outline-none" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} /><button onClick={() => setIsFinanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-yellow-900/20 border border-yellow-800 p-3 rounded-xl mb-4 flex justify-between items-center relative group"><div className="text-xs text-yellow-200"><p className="font-bold">{BANK_INFO.bankName}</p><p className="font-mono text-yellow-400 text-sm my-0.5">{BANK_INFO.accNum}</p><p className="text-[10px] opacity-70">{BANK_INFO.holder}</p></div>
-                    {/* 🔥 修复点：使用 safeCopy */}
-                    <button onClick={copyBankInfo} className="bg-yellow-700/50 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1"><i className="fa-regular fa-copy"></i> {t('finCopy')}</button></div><div className="grid grid-cols-2 gap-3 mb-4"><div className="bg-emerald-900/30 border border-emerald-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-emerald-400 uppercase">{t('finTotal')}</span><span className="text-xl font-bold text-white">RM {financeSummary.total}</span><span className="text-[10px] text-zinc-400">({financeSummary.paidCount} pax)</span></div><div className="bg-red-900/30 border border-red-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-red-400 uppercase">{t('finPending')}</span><span className="text-xl font-bold text-white">RM {financeSummary.pending}</span><span className="text-[10px] text-zinc-400">({filteredTrainees.length - financeSummary.paidCount} pax)</span></div></div>
+                    {isFinanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-yellow-600 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-sack-dollar text-yellow-500"></i> {t('finTitle')}</h2><div className="flex items-center gap-2"><input type="month" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-yellow-500 outline-none" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} /><button onClick={() => setIsFinanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-yellow-900/20 border border-yellow-800 p-3 rounded-xl mb-4 flex justify-between items-center relative group"><div className="text-xs text-yellow-200"><p className="font-bold">{BANK_INFO.bankName}</p><p className="font-mono text-yellow-400 text-sm my-0.5">{BANK_INFO.accNum}</p><p className="text-[10px] opacity-70">{BANK_INFO.holder}</p></div><button onClick={copyBankInfo} className="bg-yellow-700/50 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1"><i className="fa-regular fa-copy"></i> {t('finCopy')}</button></div><div className="grid grid-cols-2 gap-3 mb-4"><div className="bg-emerald-900/30 border border-emerald-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-emerald-400 uppercase">{t('finTotal')}</span><span className="text-xl font-bold text-white">RM {financeSummary.total}</span><span className="text-[10px] text-zinc-400">({financeSummary.paidCount} pax)</span></div><div className="bg-red-900/30 border border-red-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-red-400 uppercase">{t('finPending')}</span><span className="text-xl font-bold text-white">RM {financeSummary.pending}</span><span className="text-[10px] text-zinc-400">({filteredTrainees.length - financeSummary.paidCount} pax)</span></div></div>
                     <div className="mb-2 px-1">
                         <input className="w-full bg-black/50 border border-zinc-700 rounded-lg text-xs px-2 py-1.5 text-white focus:border-yellow-500 outline-none" placeholder={t('finSearch')} value={financeSearchTerm} onChange={e => setFinanceSearchTerm(e.target.value)} />
                     </div>
