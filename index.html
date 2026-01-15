@@ -80,7 +80,7 @@
                 attendanceTool: "出席库", financeTool: "财务", register: "注册", coachTool: "教练", backupTools: "备份工具",
                 manageSchools: "学校管理", addSchool: "增加新学校", coachDetails: "查看明细",
                 auth: { welcome: "YOUR FUTURE IS NOW!", adminMode: "MASTER MODE", userMode: "PLAYER MODE", enterPin: "请输入管理员密码", wrongPin: "密码错误" },
-                alerts: { deleteConfirm: "确定要删除吗？", updated: "✅ 数据已同步！", resetConfirm: "确定重置统计数据吗？", linkCopied: "链接已复制！", fileError: "文件解析失败" },
+                alerts: { deleteConfirm: "确定要删除吗？", updated: "✅ 数据已同步！", resetConfirm: "确定重置统计数据吗？", linkCopied: "链接已复制！", fileError: "文件解析失败", imgLocalWarning: "⚠️ 图片为本地数据，请手动发送。" },
                 stats: { pace: "速度", shooting: "射门", passing: "传球", dribbling: "盘带", defending: "防守", physical: "体能" },
                 msgTemplates: { gentle: "温柔提醒", friendly: "朋友语气", soft: "婉转提醒", formal: "正式通知" },
                 msgs: {
@@ -90,29 +90,26 @@
                     formal: "【CFC 财务通知】您好，请查收 {name} {month} 月份的学费单 (RM{amount})。请在近期内完成缴费，感谢配合。"
                 },
                 bankDetails: "\n\n🏦 汇款资料:\n{bankName}\n{accNum}\n{holder}\n\n汇款后请发收据，谢谢！",
-                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交" },
-                share: { sendToParents: "发送给家长", textOnly: "仅发送文字" },
-                finCopied: "银行信息已复制！"
+                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", comment: "教练评语" },
+                share: { sendToParents: "发送给家长", textOnly: "仅发送文字" }
             },
             en: {
                 appTitle: "CFC YOUTH ACADEMY", systemName: "ACADEMY SYSTEM", localMode: "Local", cloudMode: "Cloud Sync",
                 backupRestore: "Backup", manageSchools: "Schools", attendanceTool: "Attendance", financeTool: "Finance",
                 register: "Register", searchPlaceholder: "Search...", noData: "No Data",
                 auth: { welcome: "YOUR FUTURE IS NOW!", selectMode: "Select Login Mode", adminMode: "MASTER MODE", userMode: "PLAYER MODE", enterPin: "Enter Master Pin", wrongPin: "Wrong PIN" },
-                alerts: { deleteConfirm: "Confirm delete?", updated: "✅ Data synced!", linkCopied: "Link copied!" },
-                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID" },
-                share: { sendToParents: "Send to Parents", textOnly: "Text Only" },
-                finCopied: "Bank Info Copied!"
+                alerts: { deleteConfirm: "Confirm delete?", updated: "✅ Data synced!", linkCopied: "Link copied!", imgLocalWarning: "⚠️ Local image, attach manually." },
+                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", comment: "Comment" },
+                share: { sendToParents: "Send to Parents", textOnly: "Text Only" }
             },
             ms: {
                 appTitle: "AKADEMI BELIA CFC", localMode: "Tempatan", cloudMode: "Awan",
                 attendanceTool: "Kehadiran", financeTool: "Kewangan", register: "Daftar", coachTool: "Jurulatih", backupTools: "Sandaran",
                 manageSchools: "Sekolah", addSchool: "Tambah", coachDetails: "Butiran",
                 auth: { welcome: "MASA DEPAN ANDA BERMULA SEKARANG!", adminMode: "MOD UTAMA", userMode: "MOD PEMAIN", enterPin: "Masukkan Pin", wrongPin: "Pin Salah" },
-                alerts: { deleteConfirm: "Padam?", updated: "✅ Dikemaskini!", linkCopied: "Disalin!" },
-                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM" },
-                share: { sendToParents: "Hantar ke Ibu Bapa", textOnly: "Teks Sahaja" },
-                finCopied: "Info Bank Disalin!"
+                alerts: { deleteConfirm: "Padam?", updated: "✅ Dikemaskini!", linkCopied: "Disalin!", imgLocalWarning: "⚠️ Gambar tempatan, sila lampirkan." },
+                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", comment: "Komen" },
+                share: { sendToParents: "Hantar ke Ibu Bapa", textOnly: "Teks Sahaja" }
             }
         };
 
@@ -197,6 +194,7 @@
             const [financeMonth, setFinanceMonth] = useState(new Date().toISOString().slice(0, 7));
             const [financeSearchTerm, setFinanceSearchTerm] = useState('');
             const [monthlyFee, setMonthlyFee] = useState(150);
+            
             const [msgTemplate, setMsgTemplate] = useState('gentle'); 
 
             // 🔥 Share Target State
@@ -214,10 +212,18 @@
             const [aiResult, setAiResult] = useState({content: null, name: null});
             const [aiLoading, setAiLoading] = useState(false);
 
-            // --- 1. Filter Logic ---
+            // --- 1. Helper for Translations ---
+            const t = (k, sk) => {
+                const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh'];
+                if(sk) return dict[k]?.[sk] || (TRANSLATIONS['zh'][k]?.[sk] || k);
+                return dict[k] || (TRANSLATIONS['zh'][k] || k);
+            };
+
+            // --- 2. Filter Logic ---
             const filteredTrainees = useMemo(() => trainees.filter(t => (selectedTeam === '全部' || t.team === selectedTeam) && t.name.toLowerCase().includes(searchTerm.toLowerCase())), [trainees, selectedTeam, searchTerm]);
             const financeFiltered = useMemo(() => filteredTrainees.filter(t => (t.name || '').toLowerCase().includes(financeSearchTerm.toLowerCase())), [filteredTrainees, financeSearchTerm]);
             const attendanceFiltered = useMemo(() => { const term = attendanceSearchTerm.toLowerCase(); return (attTab === 'trainees' ? filteredTrainees : coaches).filter(i => i.name.toLowerCase().includes(term)); }, [attTab, filteredTrainees, coaches, attendanceSearchTerm]);
+            
             const financeSummary = useMemo(() => { 
                 const paidCount = financeFiltered.filter(t => t.feeHistory?.[financeMonth]).length; 
                 return { total: financeFiltered.length * monthlyFee, paid: paidCount * monthlyFee, pending: (financeFiltered.length - paidCount) * monthlyFee, paidCount }; 
@@ -239,7 +245,7 @@
                 return { list, total };
             }, [coaches, financeMonth]);
 
-            // --- 2. Data Persistence ---
+            // --- 3. Data Persistence ---
             const updateData = (newData) => {
                 const updated = {
                     trainees: newData.trainees !== undefined ? newData.trainees : trainees,
@@ -289,7 +295,7 @@
                 } catch (error) { setUploadingStatus("❌"); return null; }
             };
 
-            // --- 3. Handlers ---
+            // --- 4. Handlers ---
             const handleLogin = (role) => {
                 if (role === 'admin') {
                     if (pinInput === ADMIN_PIN) { setUserRole('admin'); setPinInput(""); setShowPinInput(false); }
@@ -441,7 +447,6 @@
             const toggleAllFeeStatus = () => { const allPaid = financeFiltered.every(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]); const targetStatus = !allPaid; if (!confirm(`Mark all as ${targetStatus?'Paid':'Unpaid'}?`)) return; const newTrainees = trainees.map(trainee => { if (financeFiltered.some(rt => rt.id === trainee.id)) { const history = trainee.feeHistory || {}; return { ...trainee, feeHistory: { ...history, [financeMonth]: targetStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
             const toggleAllAttendanceStatus = () => { const currentIds = attTab === 'trainees' ? attendanceList : coachAttendanceList; const filteredIds = attendanceFiltered.map(i => i.id); const allSelected = filteredIds.every(id => currentIds.includes(id)); if (allSelected) { if (attTab === 'trainees') setAttendanceList(attendanceList.filter(id => !filteredIds.includes(id))); else setCoachAttendanceList(coachAttendanceList.filter(id => !filteredIds.includes(id))); } else { if (attTab === 'trainees') setAttendanceList([...new Set([...attendanceList, ...filteredIds])]); else setCoachAttendanceList([...new Set([...coachAttendanceList, ...filteredIds])]); } };
             
-            // 🔥 使用 safeCopy 修复
             const sendFeeReminder = (trainee) => { 
                 const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh']; 
                 const template = dict.msgs[msgTemplate] || dict.msgs['gentle'];
@@ -451,9 +456,10 @@
                 window.open(`https://wa.me/?text=${encodeURIComponent(fullMsg)}`, '_blank'); 
             };
             
+            // 🔥 修复点：使用 safeCopy
             const copyBankInfo = () => { 
                 const text = `${BANK_INFO.bankName}\n${BANK_INFO.accNum}\n${BANK_INFO.holder}`; 
-                safeCopy(text, t('finCopied'));
+                safeCopy(text, t('alerts', 'copied'));
             };
 
             const parseImportText = () => { if (!importText) return; const text = importText.toLowerCase(); const matchedIds = (attTab === 'trainees' ? filteredTrainees : coaches).filter(item => text.includes(item.name.toLowerCase())).map(item => item.id); if (attTab === 'trainees') setAttendanceList(matchedIds); else setCoachAttendanceList(matchedIds); alert(`Matched ${matchedIds.length}`); };
@@ -461,13 +467,9 @@
             const saveImgConfig = () => { if(imgConfig.cloudName) { localStorage.setItem('cfc_cloudinary_config', JSON.stringify(imgConfig)); setIsImgCloudReady(true); alert("Saved"); } };
             const testCloudinary = async () => { const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="; const url = await uploadToCloudinary(testPixel); if (url) alert("Connected!"); };
             const handleWhatsappShare = () => { const names = attendanceFiltered.filter(i => attTab === 'trainees' ? attendanceList.includes(i.id) : coachAttendanceList.includes(i.id)).map(i => i.name); window.open(`https://wa.me/?text=${encodeURIComponent(`📅 ${attendanceDate} Attendance:\n${names.join('\n')}`)}`, '_blank'); };
-            
-            // 🔥 导出功能真实实现
-            const handleExportAttendanceExcel = () => {
+            const handleExportAttendanceExcel = () => { 
                 const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
-                let csvContent = "\uFEFF";
-                csvContent += `CFC ATTENDANCE - ${attendanceDate}\n\n`;
-                csvContent += "Name,Team/Role,Status\n";
+                let csvContent = "\uFEFFName,Team,Status\n";
                 const list = attTab === 'trainees' ? filteredTrainees : coaches;
                 const ids = attTab === 'trainees' ? attendanceList : coachAttendanceList;
                 list.forEach(item => {
@@ -486,19 +488,25 @@
                 const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                 const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `CFC_Finance_${financeMonth}.csv`; link.click();
             };
-            const generateShareText = (t) => `${t.name} | ${t.team}`;
+            
+            // 🔥 更新：使用 safeCopy
+            const generateShareText = (t) => {
+                const L = TRANSLATIONS[lang] || TRANSLATIONS['zh'];
+                let text = `⚽ ${L.appTitle}\n\n👤 ${t.name}\n🏫 ${t.team}\n📍 ${t.primaryPosition}\n\n📊 ${L.stats.pace}: ${t.stats.pace} | ${L.stats.shooting}: ${t.stats.shooting}\n${L.stats.passing}: ${t.stats.passing} | ${L.stats.dribbling}: ${t.stats.dribbling}\n${L.stats.defending}: ${t.stats.defending} | ${L.stats.physical}: ${t.stats.physical}\n\n📈 Attendance: ${t.attendance}%`;
+                if (t.coachComment) text += `\n\n💬 Coach: ${t.coachComment}`;
+                return text;
+            };
+
             const handleSystemShare = (t) => { 
                 const text = generateShareText(t);
                 if(navigator.share) {
-                    navigator.share({title:t.name, text: text}).catch(console.error);
+                    navigator.share({title:t.name, text: text}).catch(err => {
+                        // 忽略取消错误
+                        if (err.name !== 'AbortError') setShareTarget(t);
+                    });
                 } else {
-                    setShareTarget(t);
+                    setShareTarget(t); 
                 }
-            };
-            const t = (k, sk) => {
-                const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh'];
-                if(sk) return dict[k]?.[sk] || (TRANSLATIONS['zh'][k]?.[sk] || k);
-                return dict[k] || (TRANSLATIONS['zh'][k] || k);
             };
 
             // --- 🔄 初始化载入 ---
@@ -600,13 +608,17 @@
                                     <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent opacity-80"></div>
                                     <span className="absolute top-3 left-3 bg-yellow-500 text-black text-[10px] font-black px-1.5 rounded shadow-lg">{getPositionCode(t.primaryPosition)}</span>
                                     <div className="absolute bottom-3 left-4 right-4 truncate leading-tight font-black uppercase text-white drop-shadow-md">{t.name}</div>
-                                    {/* 🔥 修复：找回分享按钮 */}
-                                    <button onClick={(e)=>{e.stopPropagation(); handleSystemShare(t);}} className="absolute bottom-2 right-2 w-7 h-7 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-emerald-600 transition-all border border-white/20 shadow-lg"><i className="fa-solid fa-share-nodes text-[10px]"></i></button>
+                                    {/* 🔥 RE-ADDED: Share Button on Card */}
+                                    <button onClick={(e)=>{e.stopPropagation(); handleSystemShare(t);}} className="absolute bottom-2 right-2 w-7 h-7 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-emerald-600 transition-all border border-white/20 shadow-lg z-20 active:scale-90"><i className="fa-solid fa-share-nodes text-[10px]"></i></button>
                                 </div>
                                 <div className="p-3 flex-1 flex flex-col">
                                     <div className="grid grid-cols-3 gap-1 mb-2">
                                         {['pace', 'shooting', 'passing'].map(s => <div key={s} className="bg-black/30 p-1 rounded-xl flex flex-col items-center border border-zinc-800/50 shadow-inner font-black uppercase tracking-tighter"><span className="text-zinc-600 text-[8px]">{s.slice(0,3)}</span><span className={`text-xs ${getGradeColor(getStatGrade(t.stats?.[s]))}`}>{getStatGrade(t.stats?.[s])}</span></div>)}
                                     </div>
+                                    
+                                    {/* 🔥 NEW: Coach Comment Indicator */}
+                                    {t.coachComment && <div className="mb-2 px-1"><p className="text-[9px] text-zinc-500 truncate italic"><i className="fa-solid fa-comment-dots mr-1"></i> {t.coachComment}</p></div>}
+
                                     <div className="mt-auto pt-3 border-t border-zinc-800/50 flex justify-between items-center">
                                         <div className={`w-2.5 h-2.5 rounded-full ${getAttendanceColor(t.attendance || 0)}`}></div>
                                         {userRole === 'admin' && (
@@ -625,7 +637,7 @@
                     {isCoachOpen && (
                         <div className="fixed inset-0 z-[600] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 fade-in" onClick={() => setIsCoachOpen(false)}>
                             <div className="bg-zinc-900 border border-zinc-800 w-full max-w-lg h-[85vh] rounded-[2.5rem] p-6 flex flex-col shadow-2xl shadow-black" onClick={e => e.stopPropagation()}>
-                                <div className="flex justify-between items-center mb-6 shrink-0 font-black"><h2 className="text-xl flex items-center gap-2 text-white uppercase font-bold"><i className="fa-solid fa-user-tie text-blue-500"></i> Coach Hub</h2><button onClick={() => setIsCoachOpen(false)} className="text-zinc-500 hover:text-white transition-colors"><i className="fa-solid fa-xmark text-2xl text-zinc-500"></i></button></div>
+                                <div className="flex justify-between items-center mb-6 shrink-0 font-black"><h2 className="text-xl flex items-center gap-2 text-white uppercase font-bold"><i className="fa-solid fa-user-tie text-blue-500"></i> {t('coachTool')}</h2><button onClick={() => setIsCoachOpen(false)} className="text-zinc-500 hover:text-white transition-colors"><i className="fa-solid fa-xmark text-2xl text-zinc-500"></i></button></div>
                                 <div className="flex bg-zinc-950 p-1 rounded-2xl mb-6 border border-zinc-800 shrink-0 shadow-inner">
                                     {['list', 'attendance', 'finance'].map(v => <button key={v} onClick={() => setCoachView(v)} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${coachView === v ? 'bg-blue-600 text-white shadow-lg' : 'text-zinc-500'}`}>{t('coach' + v.charAt(0).toUpperCase() + v.slice(1)) || v.toUpperCase()}</button>)}
                                 </div>
@@ -634,14 +646,14 @@
                                         <>
                                             <div className="bg-zinc-950 p-4 rounded-3xl border border-zinc-800 flex justify-between items-center mb-2 sticky top-0 z-10 backdrop-blur-lg shadow-lg">
                                                 <input type="month" className="bg-zinc-900 text-white px-3 py-1.5 rounded-xl border border-zinc-700 text-sm outline-none focus:border-blue-500" value={financeMonth} onChange={e => setFinanceMonth(e.target.value)}/>
-                                                <div className="text-right leading-none font-black uppercase tracking-tighter"><p className="text-[10px] text-zinc-500 mb-1">Total Payout</p><p className="text-2xl text-emerald-400 font-black">RM {payrollData.total}</p></div>
+                                                <div className="text-right leading-none font-black uppercase tracking-tighter"><p className="text-[10px] text-zinc-500 mb-1">{t('coachTotalPayout')}</p><p className="text-2xl text-emerald-400 font-black">RM {payrollData.total}</p></div>
                                             </div>
                                             {payrollData.list.map(c => (
                                                 <div key={c.id} className="bg-zinc-800 p-5 rounded-3xl border border-zinc-700 flex flex-col gap-4 shadow-lg shadow-black/20">
                                                     <div className="flex justify-between items-center">
                                                         <div className="flex-1 leading-tight uppercase font-black">
                                                             <div className="flex items-center gap-2 font-bold text-white text-lg leading-none">{c.name}<button onClick={() => setExpandedCoachId(expandedCoachId === c.id ? null : c.id)} className="text-[10px] font-black text-zinc-400 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-700 active:scale-95 transition-transform">{t('coachDetails')}</button></div>
-                                                            <p className="text-xs text-zinc-500 mt-2 font-bold leading-none">Sessions: {c.sessions} x RM{c.rate}</p>
+                                                            <p className="text-xs text-zinc-500 mt-2 font-bold leading-none">{t('coachSessions')}: {c.sessions} x RM{c.rate}</p>
                                                         </div>
                                                         <div className="text-right font-black uppercase tracking-widest leading-none">
                                                             <p className="text-xl text-white leading-none mb-2">RM {c.amount}</p>
@@ -729,6 +741,10 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest ml-2">{t('common', 'comment')}</label>
+                                        <textarea className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-6 py-3.5 font-bold text-white focus:border-indigo-500 outline-none transition-all shadow-inner text-xs h-24 resize-none" placeholder="..." value={formData.coachComment || ''} onChange={e => setFormData({...formData, coachComment: e.target.value})}></textarea>
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4 uppercase font-black text-[10px] tracking-widest">
                                         {Object.keys(formData.stats || {}).map(s => (
                                             <div key={s} className="bg-zinc-800/50 p-4 rounded-3xl border border-zinc-700/50 shadow-inner">
@@ -751,7 +767,8 @@
                                 <h2 className="text-2xl font-black text-white mb-2 tracking-tight uppercase tracking-widest leading-none">CFC YOUTH ACADEMY</h2>
                                 <p className="text-zinc-500 text-sm mb-8 leading-relaxed px-4">使用浏览器“添加到主屏幕”安装 App</p>
                                 <div className="bg-white p-4 rounded-[2rem] mb-8 w-fit mx-auto shadow-2xl"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shareUrl)}&margin=10`} className="w-48 h-48 rounded-lg" alt="QR"/></div>
-                                <button onClick={() => { safeCopy(shareUrl, t('alerts', 'linkCopied')); }} className="w-full py-4 bg-zinc-100 text-zinc-900 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 uppercase text-sm tracking-widest shadow-xl"><i className="fa-solid fa-link"></i> Copy Link</button>
+                                {/* 🔥 修复点：使用 safeCopy */}
+                                <button onClick={() => { safeCopy(shareUrl, t('alerts', 'linkCopied')); }} className="w-full py-4 bg-zinc-100 text-zinc-900 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 uppercase text-sm tracking-widest shadow-xl"><i className="fa-solid fa-link"></i> {t('copyLink')}</button>
                             </div>
                         </div>
                     )}
@@ -801,7 +818,9 @@
                         ))}
                     </div><div className="flex gap-2"><button onClick={submitAttendance} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20">{t('attConfirm')}</button><button onClick={handleExportAttendanceExcel} className="px-4 py-3 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button><button onClick={handleWhatsappShare} className="px-4 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl shadow-lg" title={t('attWhatsapp')}><i className="fa-brands fa-whatsapp text-xl"></i></button></div></div></div>)}
                     {/* Finance Modal */}
-                    {isFinanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-yellow-600 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-sack-dollar text-yellow-500"></i> {t('finTitle')}</h2><div className="flex items-center gap-2"><input type="month" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-yellow-500 outline-none" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} /><button onClick={() => setIsFinanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-yellow-900/20 border border-yellow-800 p-3 rounded-xl mb-4 flex justify-between items-center relative group"><div className="text-xs text-yellow-200"><p className="font-bold">{BANK_INFO.bankName}</p><p className="font-mono text-yellow-400 text-sm my-0.5">{BANK_INFO.accNum}</p><p className="text-[10px] opacity-70">{BANK_INFO.holder}</p></div><button onClick={copyBankInfo} className="bg-yellow-700/50 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1"><i className="fa-regular fa-copy"></i> {t('finCopy')}</button></div><div className="grid grid-cols-2 gap-3 mb-4"><div className="bg-emerald-900/30 border border-emerald-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-emerald-400 uppercase">{t('finTotal')}</span><span className="text-xl font-bold text-white">RM {financeSummary.total}</span><span className="text-[10px] text-zinc-400">({financeSummary.paidCount} pax)</span></div><div className="bg-red-900/30 border border-red-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-red-400 uppercase">{t('finPending')}</span><span className="text-xl font-bold text-white">RM {financeSummary.pending}</span><span className="text-[10px] text-zinc-400">({filteredTrainees.length - financeSummary.paidCount} pax)</span></div></div>
+                    {isFinanceOpen && (<div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in"><div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-yellow-600 shadow-2xl p-6 max-h-[90vh] overflow-y-auto flex flex-col"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="fa-solid fa-sack-dollar text-yellow-500"></i> {t('finTitle')}</h2><div className="flex items-center gap-2"><input type="month" className="bg-zinc-800 text-white text-xs px-2 py-1 rounded border border-zinc-600 focus:border-yellow-500 outline-none" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} /><button onClick={() => setIsFinanceOpen(false)}><i className="fa-solid fa-xmark text-xl text-zinc-500 hover:text-white"></i></button></div></div><div className="bg-yellow-900/20 border border-yellow-800 p-3 rounded-xl mb-4 flex justify-between items-center relative group"><div className="text-xs text-yellow-200"><p className="font-bold">{BANK_INFO.bankName}</p><p className="font-mono text-yellow-400 text-sm my-0.5">{BANK_INFO.accNum}</p><p className="text-[10px] opacity-70">{BANK_INFO.holder}</p></div>
+                    {/* 🔥 修复点：使用 safeCopy */}
+                    <button onClick={copyBankInfo} className="bg-yellow-700/50 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1"><i className="fa-regular fa-copy"></i> {t('finCopy')}</button></div><div className="grid grid-cols-2 gap-3 mb-4"><div className="bg-emerald-900/30 border border-emerald-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-emerald-400 uppercase">{t('finTotal')}</span><span className="text-xl font-bold text-white">RM {financeSummary.total}</span><span className="text-[10px] text-zinc-400">({financeSummary.paidCount} pax)</span></div><div className="bg-red-900/30 border border-red-800 p-3 rounded-xl flex flex-col items-center"><span className="text-[10px] text-red-400 uppercase">{t('finPending')}</span><span className="text-xl font-bold text-white">RM {financeSummary.pending}</span><span className="text-[10px] text-zinc-400">({filteredTrainees.length - financeSummary.paidCount} pax)</span></div></div>
                     <div className="mb-2 px-1">
                         <input className="w-full bg-black/50 border border-zinc-700 rounded-lg text-xs px-2 py-1.5 text-white focus:border-yellow-500 outline-none" placeholder={t('finSearch')} value={financeSearchTerm} onChange={e => setFinanceSearchTerm(e.target.value)} />
                     </div>
