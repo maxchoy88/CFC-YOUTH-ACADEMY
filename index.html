@@ -101,7 +101,7 @@
                     formal: "【CFC 财务通知】您好，请查收 {name} {month} 月份的学费单 (RM{amount})。请在近期内完成缴费，感谢配合。"
                 },
                 bankDetails: "\n\n🏦 汇款资料:\n{bankName}\n{accNum}\n{holder}\n\n汇款后请发收据，谢谢！",
-                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", parent: "家长", secPos: "副位置", all: "全部", comment: "教练评语", generate: "AI生成", role: "角色", rank: "等级", rate: "课时费" },
+                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", parent: "家长", secPos: "副位置", all: "全部", comment: "教练评语", generate: "AI生成", role: "角色", rank: "等级", rate: "课时费", sessionUnit: "节", unknown: "未知" },
                 player: { title: "球员资料" },
                 coach: { list: "名单", attendance: "考勤", finance: "薪资", register: "注册教练", update: "更新资料", sessions: "课时" },
                 coachTotalPayout: "本月总支出", coachExport: "导出薪资单",
@@ -121,7 +121,7 @@
                 auth: { welcome: "YOUR FUTURE IS NOW!", selectMode: "Select Login Mode", adminMode: "MASTER MODE", userMode: "PLAYER MODE", enterPin: "Enter Master Pin", wrongPin: "Wrong PIN" },
                 alerts: { deleteConfirm: "Confirm delete?", updated: "✅ Data synced!", linkCopied: "Link copied!", copied: "Copied!" },
                 stats: { pace: "Pace", shooting: "Shooting", passing: "Passing", dribbling: "Dribbling", defending: "Defending", physical: "Physical" },
-                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", parent: "Parent", secPos: "Sub-Pos", all: "All", comment: "Comment", generate: "AI Generate", role: "Role", rank: "Rank", rate: "Rate/Session" },
+                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", parent: "Parent", secPos: "Sub-Pos", all: "All", comment: "Comment", generate: "AI Generate", role: "Role", rank: "Rank", rate: "Rate/Session", sessionUnit: "Session", unknown: "Unknown" },
                 player: { title: "Player Profile" },
                 coach: { list: "List", attendance: "Attendance", finance: "Payroll", register: "Register Coach", update: "Update Coach", sessions: "Sessions" },
                 coachTotalPayout: "Total Payout", coachExport: "Export Payroll",
@@ -141,7 +141,7 @@
                 auth: { welcome: "MASA DEPAN ANDA BERMULA SEKARANG!", adminMode: "MOD UTAMA", userMode: "MOD PEMAIN", enterPin: "Masukkan Pin", wrongPin: "Pin Salah" },
                 alerts: { deleteConfirm: "Padam?", updated: "✅ Dikemaskini!", linkCopied: "Disalin!", imgLocalWarning: "⚠️ Gambar tempatan, sila lampirkan.", copied: "Disalin!" },
                 stats: { pace: "Laju", shooting: "Tendang", passing: "Hantar", dribbling: "Gelecek", defending: "Pertahanan", physical: "Fizikal" },
-                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", parent: "Ibu Bapa", secPos: "Posisi 2", all: "Semua", comment: "Komen", generate: "AI", role: "Peranan", rank: "Pangkat", rate: "Kadar" },
+                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", parent: "Ibu Bapa", secPos: "Posisi 2", all: "Semua", comment: "Komen", generate: "AI", role: "Peranan", rank: "Pangkat", rate: "Kadar", sessionUnit: "Sesi", unknown: "Tidak Diketahui" },
                 player: { title: "Profil Pemain" },
                 coach: { list: "Senarai", attendance: "Kehadiran", finance: "Gaji", register: "Daftar Jurulatih", update: "Kemaskini", sessions: "Sesi" },
                 coachTotalPayout: "Jumlah Bayaran", coachExport: "Eksport Gaji",
@@ -536,6 +536,7 @@
 
             const parseImportText = () => { if (!importText) return; const text = importText.toLowerCase(); const matchedIds = (attTab === 'trainees' ? filteredTrainees : coaches).filter(item => text.includes(item.name.toLowerCase())).map(item => item.id); if (attTab === 'trainees') setAttendanceList(matchedIds); else setCoachAttendanceList(matchedIds); alert(`Matched ${matchedIds.length}`); };
             
+            // 🔥 更新：生成 300 字深度评估报告
             const mockAI = () => { 
                 setAiLoading(true); 
                 
@@ -551,22 +552,22 @@
                     else if (avg >= 70) grade = 'B级';
                     else if (avg >= 60) grade = 'C级';
 
-                    // 2. 寻找核心竞争力 (最高项)
+                    // 2. 寻找核心竞争力 (最高项) & 弱点 (最低项)
                     const statMap = {
                         pace: '速度', shooting: '射门', passing: '传球', 
                         dribbling: '盘带', defending: '防守', physical: '体能'
                     };
                     let bestStat = 'pace';
                     let maxVal = -1;
+                    let worstStat = 'pace';
+                    let minVal = 101;
                     
-                    // 寻找最大值
                     for (const key in s) {
-                        if (s[key] > maxVal) {
-                            maxVal = s[key];
-                            bestStat = key;
-                        }
+                        if (s[key] > maxVal) { maxVal = s[key]; bestStat = key; }
+                        if (s[key] < minVal) { minVal = s[key]; worstStat = key; }
                     }
-                    const bestStatName = statMap[bestStat] || '综合';
+                    const bestStatName = statMap[bestStat];
+                    const worstStatName = statMap[worstStat];
 
                     // 3. 确定球员定位
                     let playerType = '均衡型球员';
@@ -576,13 +577,41 @@
                         else if (['passing', 'dribbling'].includes(bestStat)) playerType = '中场指挥官';
                     }
 
-                    // 4. 生成模板
-                    const name = (formData.name || '球员').toUpperCase();
-                    const template = `【教练深度评估报告】\n\n👤 球员定位：${playerType}\n⭐ 综合评级：${grade}\n🔥 核心竞争力：${bestStatName} (${maxVal})\n📝 战术建议：需进一步观察。\n\n💬 教练评语：\n"${name} - 潜力不错，建议继续观察。"`;
+                    // 4. 生成详细报告内容
+                    const name = (formData.name || '该球员').toUpperCase();
+                    
+                    // A. 综合表现段落
+                    let performanceText = "";
+                    if (avg >= 85) performanceText = `展现出了超越同龄人的极高竞技水平，是球队体系中不可或缺的核心力量。他在场上的阅读比赛能力极强，战术执行力满分，具备成为职业球员的潜质。`;
+                    else if (avg >= 70) performanceText = `具备良好的足球基础和战术素养，是球队的重要组成部分。在比赛中经常有亮眼表现，基本功扎实，但在高强度对抗下仍需保持稳定性。`;
+                    else performanceText = `尚处于足球生涯的基础发展阶段，虽然目前各项技术指标有待打磨，但展现出了不错的学习态度。需要更多的比赛积累来提升自信心。`;
+
+                    // B. 技术细节段落
+                    let technicalAnalysis = `在技术层面，他的【${bestStatName}】能力尤为突出（${maxVal}分），这已成为他在比赛中的杀手锏。`;
+                    if (bestStat === 'dribbling') technicalAnalysis += " 他在狭小空间内的控球能力极强，能通过个人盘带撕开对手防线。";
+                    else if (bestStat === 'passing') technicalAnalysis += " 他拥有开阔的传球视野，经常能送出极具穿透力的直塞球，有效串联中前场。";
+                    else if (bestStat === 'shooting') technicalAnalysis += " 门前嗅觉灵敏，射门转化率极高，是值得信赖的终结点。";
+                    else if (bestStat === 'pace') technicalAnalysis += " 极快的启动速度让他能瞬间摆脱防守，在反击中极具威胁。";
+                    else if (bestStat === 'defending') technicalAnalysis += " 防守选位精准，抢断果断凶狠，是后防线上的定海神针。";
+                    else if (bestStat === 'physical') technicalAnalysis += " 充沛的体能和强壮的身体素质让他在对抗中占据绝对优势。";
+
+                    // C. 改进建议段落
+                    let improvementPlan = `然而，为了追求卓越，我们需要重点关注他的【${worstStatName}】（${minVal}分）。`;
+                    if (worstStat === 'physical') improvementPlan += " 建议在接下来的周期加强有氧耐力训练和核心力量训练，以应对全场高强度的对抗要求。";
+                    else if (worstStat === 'defending') improvementPlan += " 需要加强防守意识训练，特别是无球跑动时的防守选位和协防意识。";
+                    else if (worstStat === 'passing') improvementPlan += " 建议通过短传配合训练和长传精准度练习来提升出球质量，减少非受迫性失误。";
+                    else if (worstStat === 'shooting') improvementPlan += " 需要增加射门专项训练，提高在压力下的射门稳定性，把握住每一个得分机会。";
+                    else if (worstStat === 'dribbling') improvementPlan += " 建议加强球感练习，提升带球推进的自信心，不要害怕在1对1时做动作。";
+                    else improvementPlan += ` 建议制定针对性的${worstStatName}强化计划，通过课后的专项加练来弥补这一短板，实现全面发展。`;
+
+                    // D. 总结
+                    const summary = `总体而言，${name}是一名极具特色的${playerType}。只要能保持当前的训练热情，并针对短板进行系统性提升，未来发展空间巨大。建议家长多多鼓励，我们将持续关注他的成长。`;
+
+                    const template = `【教练深度评估报告】\n\n👤 球员定位：${playerType}\n⭐ 综合评级：${grade}\n🔥 核心竞争力：${bestStatName} (${maxVal})\n📉 需重点提升：${worstStatName} (${minVal})\n\n📝 综合分析：\n${performanceText}\n\n⚽ 技术细节：\n${technicalAnalysis}\n\n🚀 发展建议：\n${improvementPlan}\n\n💬 教练总结：\n${summary}`;
 
                     setFormData(prev => ({ ...prev, coachComment: template }));
                     setAiLoading(false); 
-                }, 800); 
+                }, 1500); 
             };
 
             const saveImgConfig = () => { if(imgConfig.cloudName) { localStorage.setItem('cfc_cloudinary_config', JSON.stringify(imgConfig)); setIsImgCloudReady(true); alert("Saved"); } };
@@ -770,7 +799,8 @@
                             <div className="bg-zinc-900 border border-zinc-800 w-full max-w-lg h-[85vh] rounded-[2.5rem] p-6 flex flex-col shadow-2xl shadow-black" onClick={e => e.stopPropagation()}>
                                 <div className="flex justify-between items-center mb-6 shrink-0 font-black"><h2 className="text-xl flex items-center gap-2 text-white uppercase font-bold"><i className="fa-solid fa-user-tie text-blue-500"></i> {t('coachTool')}</h2><button onClick={() => setIsCoachOpen(false)} className="text-zinc-500 hover:text-white transition-colors"><i className="fa-solid fa-xmark text-2xl text-zinc-500"></i></button></div>
                                 <div className="flex bg-zinc-950 p-1 rounded-2xl mb-6 border border-zinc-800 shrink-0 shadow-inner">
-                                    {['list', 'attendance', 'finance'].map(v => <button key={v} onClick={() => setCoachView(v)} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${coachView === v ? 'bg-blue-600 text-white shadow-lg' : 'text-zinc-500'}`}>{t('coach' + v.charAt(0).toUpperCase() + v.slice(1)) || v.toUpperCase()}</button>)}
+                                    {/* 🔥 修复：使用 t('coach', v) 正确调用嵌套翻译 */}
+                                    {['list', 'attendance', 'finance'].map(v => <button key={v} onClick={() => setCoachView(v)} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${coachView === v ? 'bg-blue-600 text-white shadow-lg' : 'text-zinc-500'}`}>{t('coach', v)}</button>)}
                                 </div>
                                 <div className="flex-1 overflow-y-auto pr-1 no-scrollbar space-y-4">
                                     {coachView === 'finance' && (
@@ -784,7 +814,8 @@
                                                     <div className="flex justify-between items-center">
                                                         <div className="flex-1 leading-tight uppercase font-black">
                                                             <div className="flex items-center gap-2 font-bold text-white text-lg leading-none">{c.name}<button onClick={() => setExpandedCoachId(expandedCoachId === c.id ? null : c.id)} className="text-[10px] font-black text-zinc-400 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-700 active:scale-95 transition-transform">{t('coachDetails')}</button></div>
-                                                            <p className="text-xs text-zinc-500 mt-2 font-bold leading-none">{t('coachSessions')}: {c.sessions} x RM{c.rate}</p>
+                                                            {/* 🔥 修复：正确调用 'coach', 'sessions' 翻译 */}
+                                                            <p className="text-xs text-zinc-500 mt-2 font-bold leading-none">{t('coach', 'sessions')}: {c.sessions} x RM{c.rate}</p>
                                                         </div>
                                                         <div className="text-right font-black uppercase tracking-widest leading-none">
                                                             <p className="text-xl text-white leading-none mb-2">RM {c.amount}</p>
@@ -798,7 +829,7 @@
                                                                 <div key={i} className="flex justify-between items-center text-[12px] border-b border-zinc-800/50 pb-3 last:border-0 last:pb-0 font-bold uppercase tracking-tighter">
                                                                     <div className="flex flex-col tracking-tighter leading-tight">
                                                                         <span className="text-zinc-200">{d.date}</span>
-                                                                        <span className="text-blue-400 text-[10px] uppercase font-black">{d.school || 'Unknown'}</span>
+                                                                        <span className="text-blue-400 text-[10px] uppercase font-black">{d.school || t('common', 'unknown')}</span>
                                                                     </div>
                                                                     <button onClick={() => removeCoachRecord(c.id, d.date, d.school)} className="w-8 h-8 rounded-xl bg-red-900/20 text-red-500 flex items-center justify-center hover:bg-red-900/50 active:scale-90 transition-all shadow-lg shadow-black/30 border border-red-900/30"><i className="fa-solid fa-trash-can text-[11px]"></i></button>
                                                                 </div>
@@ -828,7 +859,7 @@
                                                     </select>
                                                     <div className="relative">
                                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[10px]">RM</span>
-                                                        <input type="number" className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pl-8 pr-2 py-3 text-sm text-white font-mono focus:border-blue-500 outline-none" placeholder="Rate" value={coachForm.rate} onChange={e => setCoachForm({...coachForm, rate: parseInt(e.target.value) || 0})} />
+                                                        <input type="number" className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pl-8 pr-2 py-3 text-sm text-white font-mono focus:border-blue-500 outline-none" placeholder={t('common', 'rate')} value={coachForm.rate} onChange={e => setCoachForm({...coachForm, rate: parseInt(e.target.value) || 0})} />
                                                     </div>
                                                 </div>
                                                 
@@ -848,7 +879,7 @@
                                                             {/* 显示等级标签 */}
                                                             <span className={`text-[8px] px-1.5 py-0.5 rounded border ${c.rank === 'Director' ? 'bg-purple-900/30 text-purple-400 border-purple-500/30' : c.rank === 'Senior' ? 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30' : 'bg-zinc-700 text-zinc-400 border-zinc-600'}`}>{c.rank || 'Junior'}</span>
                                                         </p>
-                                                        <p className="text-xs text-zinc-500 font-bold uppercase">{c.role} • RM{c.rate}/Session</p>
+                                                        <p className="text-xs text-zinc-500 font-bold uppercase">{c.role} • RM{c.rate} / {t('common', 'sessionUnit')}</p>
                                                     </div>
                                                     <div className="flex gap-2">
                                                         <button onClick={() => sendCoachMessage(c)} className="w-10 h-10 rounded-full bg-[#25D366]/20 text-[#25D366] flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-[#25D366]/10"><i className="fa-brands fa-whatsapp text-xl"></i></button>
