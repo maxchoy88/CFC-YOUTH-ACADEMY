@@ -8,8 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link id="dynamic-favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
-    <link id="dynamic-apple-icon" rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
+    
+    <!-- 🔥 修复 1：浏览器标签页图标 & 手机主屏幕图标统一使用 SVG Data URI -->
+    <link id="dynamic-favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBjLTQ0LjIgMC04MCAzNS44LTgwIDgwdjQ4SDY0Yy0zNS4zIDAtNjQgMjguNy02NCA2NHYxOTJjMCAzNS4zIDI4LjcgNjQgNjQgNjRoMzg0YzM1LjMgMCA2NC0yOC43IDY0LTY0VjE5MmMwLTM1LjMtMjguNy02NC02NC02NGgtMTEyVjgwYzAtNDQuMi0zNS44LTgwLTgwLTgweiIvPjwvc3ZnPg==">
+    <link id="dynamic-apple-icon" rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBjLTQ0LjIgMC04MCAzNS44LTgwIDgwdjQ4SDY0Yy0zNS4zIDAtNjQgMjguNy02NCA2NHYxOTJjMCAzNS4zIDI4LjcgNjQgNjQgNjRoMzg0YzM1LjMgMCA2NC0yOC43IDY0LTY0VjE5MmMwLTM1LjMtMjguNy02NC02NC02NGgtMTEyVjgwYzAtNDQuMi0zNS44LTgwLTgwLTgweiIvPjwvc3ZnPg==">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
@@ -31,7 +34,8 @@
 </head>
 <body>
     <div id="static-loading">
-        <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
+        <!-- 🔥 修复 2：加载画面统一使用 SVG Data URI 图片，替换原来的 font-awesome 图标 -->
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBjLTQ0LjIgMC04MCAzNS44LTgwIDgwdjQ4SDY0Yy0zNS4zIDAtNjQgMjguNy02NCA2NHYxOTJjMCAzNS4zIDI4LjcgNjQgNjQgNjRoMzg0YzM1LjMgMCA2NC0yOC43IDY0LTY0VjE5MmMwLTM1LjMtMjguNy02NC02NC02NGgtMTEyVjgwYzAtNDQuMi0zNS44LTgwLTgwLTgweiIvPjwvc3ZnPg==" class="w-24 h-24 mb-4 animate-bounce" style="filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.5));" />
         <h2 class="text-xl font-bold mt-4 tracking-wider uppercase text-white">CFC YOUTH ACADEMY</h2>
         <p id="loading-text" class="text-zinc-500 text-xs mt-2 font-mono tracking-widest uppercase">System Stabilized...</p>
     </div>
@@ -49,7 +53,7 @@
         const PRESET_YEARLY_TOTAL = 52;
         const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=400&h=400&fit=crop';
         
-        // 🔥 修复：使用 SVG Data URI 作为默认 LOGO，解决防盗链和加载失败问题
+        // 🔥 修复 3：统一的 SVG Data URI 常量，用于 React 组件内部
         const CFC_LOGO = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBjLTQ0LjIgMC04MCAzNS44LTgwIDgwdjQ4SDY0Yy0zNS4zIDAtNjQgMjguNy02NCA2NHYxOTJjMCAzNS4zIDI4LjcgNjQgNjQgNjRoMzg0YzM1LjMgMCA2NC0yOC43IDY0LTY0VjE5MmMwLTM1LjMtMjguNy02NC02NC02NGgtMTEyVjgwYzAtNDQuMi0zNS44LTgwLTgwLTgweiIvPjwvc3ZnPg==";
         
         const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
@@ -679,7 +683,8 @@
             if (!userRole) return (
                 <div className="fixed inset-0 bg-black flex flex-col items-center justify-center p-6 z-[6000] fade-in">
                     <div className="w-24 h-24 mb-6 rounded-2xl overflow-hidden border-2 border-zinc-800 bg-zinc-900 flex items-center justify-center shadow-2xl">
-                        {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-5xl"></i>}
+                        {/* 🔥 修复 4：登录页 Logo 统一使用 CFC_LOGO */}
+                        <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover" />
                     </div>
                     <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">CFC YOUTH ACADEMY</h1>
                     <div className="w-full max-w-sm space-y-4 mt-8">
@@ -714,7 +719,8 @@
                     <header className="relative z-30 flex flex-col xl:flex-row justify-between items-center gap-6 mb-8">
                         <div className="flex items-center gap-4 w-full">
                             <div className="w-16 h-16 rounded-xl overflow-hidden border border-zinc-700 cursor-pointer bg-zinc-900 shrink-0 shadow-lg shadow-black/40" onClick={() => userRole === 'admin' && logoInputRef.current.click()}>
-                                {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <div className="bg-zinc-900 w-full h-full flex items-center justify-center"><i className="fa-solid fa-shield-halved text-yellow-500 text-3xl"></i></div>}
+                                {/* 🔥 修复 5：顶部导航栏 Logo 统一 */}
+                                <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover" />
                                 <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoFile}/>
                             </div>
                             <div className="flex-1">
@@ -987,7 +993,10 @@
                     {isShareAppOpen && (
                         <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6 fade-in" onClick={() => setIsShareAppOpen(false)}>
                             <div className="bg-zinc-900 border border-zinc-800 w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl shadow-black" onClick={e => e.stopPropagation()}>
-                                <div className="w-20 h-20 bg-zinc-800 rounded-3xl mx-auto mb-6 flex items-center justify-center border-2 border-zinc-700 shadow-xl overflow-hidden leading-none">{appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-4xl"></i>}</div>
+                                {/* 🔥 修复 6：分享弹窗 Logo 统一 */}
+                                <div className="w-20 h-20 bg-zinc-800 rounded-3xl mx-auto mb-6 flex items-center justify-center border-2 border-zinc-700 shadow-xl overflow-hidden leading-none">
+                                    <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover" />
+                                </div>
                                 <h2 className="text-2xl font-black text-white mb-2 tracking-tight uppercase tracking-widest leading-none">CFC YOUTH ACADEMY</h2>
                                 <p className="text-zinc-500 text-sm mb-8 leading-relaxed px-4">使用浏览器“添加到主屏幕”安装 App</p>
                                 <div className="bg-white p-4 rounded-[2rem] mb-8 w-fit mx-auto shadow-2xl"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shareUrl)}&margin=10`} className="w-48 h-48 rounded-lg" alt="QR"/></div>
