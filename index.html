@@ -8,8 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link id="dynamic-favicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
-    <link id="dynamic-apple-icon" rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3309/3309991.png">
+    
+    <!-- 🔥 修复 1：浏览器标签页图标 & 手机主屏幕图标统一使用 SVG Data URI -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBcNTAuOCA3Ni41QzUwLjggNzYuNSAyMy40IDI0OS4yIDI1NiA1MTJjMjIyLjYtMjYyLjggMTk1LjItNDM1LjUgMTk1LjItNDM1LjVMMjU2IDB6Ii8+PC9zdmc+">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBcNTAuOCA3Ni41QzUwLjggNzYuNSAyMy40IDI0OS4yIDI1NiA1MTJjMjIyLjYtMjYyLjggMTk1LjItNDM1LjUgMTk1LjItNDM1LjVMMjU2IDB6Ii8+PC9zdmc+">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
@@ -18,22 +21,31 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <style>
-        body { background-color: #09090b; color: #fff; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #000; color: #fff; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .cropper-container { max-height: 60vh; background-color: #000; }
-        #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090b; z-index: 5000; transition: opacity 0.5s; }
+        #static-loading { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; z-index: 5000; transition: opacity 0.5s; }
         .hidden { opacity: 0; pointer-events: none; }
         header { padding-top: env(safe-area-inset-top); }
-        input[type="range"] { accent-color: white; }
+        input[type="range"] { accent-color: #eab308; }
+        
+        /* 🔥 新增：背景动画网格 */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        }
     </style>
 </head>
 <body>
     <div id="static-loading">
-        <i class="fa-solid fa-shield-halved text-yellow-500 text-5xl fa-beat mb-4"></i>
-        <h2 class="text-xl font-bold mt-4 tracking-wider uppercase text-white">CFC YOUTH ACADEMY</h2>
-        <p id="loading-text" class="text-zinc-500 text-xs mt-2 font-mono tracking-widest uppercase">System Stabilized...</p>
+        <!-- 🔥 修复 2：加载动画使用完全相同的 SVG 数据，确保显示 -->
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBcNTAuOCA3Ni41QzUwLjggNzYuNSAyMy40IDI0OS4yIDI1NiA1MTJjMjIyLjYtMjYyLjggMTk1LjItNDM1LjUgMTk1LjItNDM1LjVMMjU2IDB6Ii8+PC9zdmc+" class="w-24 h-24 mb-4 animate-bounce" style="filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.6));" />
+        <h2 class="text-xl font-black mt-4 tracking-[0.2em] uppercase text-white drop-shadow-lg">CFC YOUTH</h2>
+        <p id="loading-text" class="text-yellow-500/50 text-[10px] mt-2 font-mono tracking-widest uppercase animate-pulse">System Stabilized...</p>
     </div>
     <div id="error-box" style="display:none; position:fixed; top:0; left:0; width:100%; background:#ef4444; color:#fff; padding:10px; z-index:9000; font-size:12px; text-align:center;"></div>
     <div id="root"></div>
@@ -49,8 +61,8 @@
         const PRESET_YEARLY_TOTAL = 52;
         const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=400&h=400&fit=crop';
         
-        // 🔥 修复：使用 SVG Data URI 作为默认 LOGO，解决防盗链和加载失败问题
-        const CFC_LOGO = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBjLTQ0LjIgMC04MCAzNS44LTgwIDgwdjQ4SDY0Yy0zNS4zIDAtNjQgMjguNy02NCA2NHYxOTJjMCAzNS4zIDI4LjcgNjQgNjQgNjRoMzg0YzM1LjMgMCA2NC0yOC43IDY0LTY0VjE5MmMwLTM1LjMtMjguNy02NC02NC02NGgtMTEyVjgwYzAtNDQuMi0zNS44LTgwLTgwLTgweiIvPjwvc3ZnPg==";
+        // 🔥 修复 3：统一的 LOGO 常量，更新为新的盾牌 SVG
+        const CFC_LOGO = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBcNTAuOCA3Ni41QzUwLjggNzYuNSAyMy40IDI0OS4yIDI1NiA1MTJjMjIyLjYtMjYyLjggMTk1LjItNDM1LjUgMTk1LjItNDM1LjVMMjU2IDB6Ii8+PC9zdmc+";
         
         const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
         const BANK_INFO = { bankName: "OCBC BANK", accNum: "7091258844", holder: "CFC YOUTH ACADEMY SB" };
@@ -122,7 +134,7 @@
                 auth: { welcome: "YOUR FUTURE IS NOW!", selectMode: "Select Login Mode", adminMode: "MASTER MODE", userMode: "PLAYER MODE", enterPin: "Enter Master Pin", wrongPin: "Wrong PIN" },
                 alerts: { deleteConfirm: "Confirm delete?", updated: "✅ Data synced!", linkCopied: "Link copied!", copied: "Copied!" },
                 stats: { pace: "Pace", shooting: "Shooting", passing: "Passing", dribbling: "Dribbling", defending: "Defending", physical: "Physical" },
-                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", parent: "Parent", secPos: "Sub-Pos", all: "All", comment: "Comment", generate: "AI Generate", role: "Role", rank: "Rank", rate: "Rate/Session", sessionUnit: "Session", unknown: "Unknown" },
+                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", parent: "Parent", secPos: "Sub-Pos", all: "All", comment: "Comment", generate: "AI Generate", role: "Role", rank: "Rank", rate: "Rate/Session", sessionUnit: "Session", unknown: "Unknown", attendanceRate: "Attendance Rate", attendedCount: "Attended", totalCycle: "Total" },
                 player: { title: "Player Profile" },
                 coach: { list: "List", attendance: "Attendance", finance: "Payroll", register: "Register Coach", update: "Update Coach", sessions: "Sessions" },
                 coachTotalPayout: "Total Payout", coachExport: "Export Payroll",
@@ -142,7 +154,7 @@
                 auth: { welcome: "MASA DEPAN ANDA BERMULA SEKARANG!", adminMode: "MOD UTAMA", userMode: "MOD PEMAIN", enterPin: "Masukkan Pin", wrongPin: "Pin Salah" },
                 alerts: { deleteConfirm: "Padam?", updated: "✅ Dikemaskini!", linkCopied: "Disalin!", imgLocalWarning: "⚠️ Gambar tempatan, sila lampirkan.", copied: "Disalin!" },
                 stats: { pace: "Laju", shooting: "Tendang", passing: "Hantar", dribbling: "Gelecek", defending: "Pertahanan", physical: "Fizikal" },
-                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", parent: "Ibu Bapa", secPos: "Posisi 2", all: "Semua", comment: "Komen", generate: "AI", role: "Peranan", rank: "Pangkat", rate: "Kadar", sessionUnit: "Sesi", unknown: "Tidak Diketahui" },
+                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", parent: "Ibu Bapa", secPos: "Posisi 2", all: "Semua", comment: "Komen", generate: "AI", role: "Peranan", rank: "Pangkat", rate: "Kadar", sessionUnit: "Sesi", unknown: "Tidak Diketahui", attendanceRate: "Kadar Kehadiran", attendedCount: "Hadir", totalCycle: "Jumlah" },
                 player: { title: "Profil Pemain" },
                 coach: { list: "Senarai", attendance: "Kehadiran", finance: "Gaji", register: "Daftar Jurulatih", update: "Kemaskini", sessions: "Sesi" },
                 coachTotalPayout: "Jumlah Bayaran", coachExport: "Eksport Gaji",
@@ -161,7 +173,7 @@
         const getStatGrade = (v) => { const val = parseInt(v) || 0; return val >= 90 ? 'S' : val >= 80 ? 'A' : val >= 70 ? 'B' : val >= 60 ? 'C' : 'D'; };
         const getGradeColor = (g) => { 
             switch(g) { 
-                case 'S': return 'text-fuchsia-400 font-black drop-shadow-[0_0_5px_rgba(192,38,211,0.8)]'; 
+                case 'S': return 'text-fuchsia-400 font-black drop-shadow-[0_0_8px_rgba(192,38,211,0.9)]'; 
                 case 'A': return 'text-emerald-400 font-black'; 
                 case 'B': return 'text-blue-400 font-bold'; 
                 case 'C': return 'text-yellow-400 font-bold'; 
@@ -222,7 +234,6 @@
             const [isShareAppOpen, setIsShareAppOpen] = useState(false);
 
             const [coachView, setCoachView] = useState('list');
-            // 🔥 更新：coachForm 增加 rank 和 rate
             const [coachForm, setCoachForm] = useState({ name: '', phone: '', role: 'Assistant', rank: 'Junior', rate: 100 });
             const [expandedCoachId, setExpandedCoachId] = useState(null);
             const [editingCoach, setEditingCoach] = useState(null);
@@ -360,11 +371,16 @@
                 } else setUserRole('user');
             };
 
-            const handleRegister = () => { setEditingTrainee(null); setFormData(DEFAULT_FORM_DATA); setIsModalOpen(true); };
-            const handleEdit = (t) => { setEditingTrainee(t); setFormData({ ...t }); setIsModalOpen(true); };
+            const handleRegister = () => { setEditingTrainee(null); setFormData({...DEFAULT_FORM_DATA, totalSessions: PRESET_YEARLY_TOTAL}); setIsModalOpen(true); };
+            const handleEdit = (t) => { setEditingTrainee(t); setFormData({ ...t, totalSessions: t.totalSessions || PRESET_YEARLY_TOTAL, attendedSessions: t.attendedSessions || (t.attendanceHistory ? t.attendanceHistory.length : 0) }); setIsModalOpen(true); };
             const handleSaveTrainee = () => {
                 if (!formData.name) return;
-                const data = { ...formData, image: formData.image || DEFAULT_IMAGE };
+                // 🔥 自动计算出席率百分比
+                const finalTotal = formData.totalSessions || PRESET_YEARLY_TOTAL;
+                const finalAttended = formData.attendedSessions || 0;
+                const finalRate = Math.round((finalAttended / finalTotal) * 100);
+                
+                const data = { ...formData, image: formData.image || DEFAULT_IMAGE, attendance: finalRate };
                 let newTrainees = editingTrainee 
                     ? trainees.map(t => t.id === editingTrainee.id ? { ...data, id: t.id } : t)
                     : [{ ...data, id: Date.now().toString(), attendanceHistory: [], feeHistory: {} }, ...trainees];
@@ -379,6 +395,42 @@
                 updateData({teams:nt, trainees:ntr}); setRenamingTeam({original:'',current:''}); 
             };
             const handleDeleteTeam = (n) => { if(confirm(`${t('alerts', 'deleteConfirm')} ${n}?`)) { const nt = teams.filter(t => t!==n); const ntr = trainees.map(tr => tr.team===n?{...tr,team:'Free Agent'}:tr); updateData({teams:nt, trainees:ntr}); } };
+
+            // 🔥 新增：极速打卡功能 (Toggle Quick Attendance)
+            const toggleQuickAttendance = (e, player) => {
+                e.stopPropagation(); // 防止触发卡片点击
+                if (userRole !== 'admin') return;
+
+                const today = new Date().toISOString().slice(0, 10);
+                let history = Array.isArray(player.attendanceHistory) ? [...player.attendanceHistory] : [];
+                const exists = history.some(h => (h.date || h) === today);
+                
+                let currentCount = player.attendedSessions !== undefined ? player.attendedSessions : history.length;
+
+                if (exists) {
+                    // 取消今日打卡
+                    history = history.filter(h => (h.date || h) !== today);
+                    currentCount = Math.max(0, currentCount - 1);
+                } else {
+                    // 增加今日打卡
+                    history.push({ date: today, status: 'present' });
+                    currentCount++;
+                }
+
+                // 重新计算百分比
+                const total = player.totalSessions || PRESET_YEARLY_TOTAL;
+                const newRate = Math.min(100, Math.round((currentCount / total) * 100));
+
+                const updatedPlayer = { 
+                    ...player, 
+                    attendance: newRate, 
+                    attendanceHistory: history, 
+                    attendedSessions: currentCount 
+                };
+
+                const newTrainees = trainees.map(t => t.id === player.id ? updatedPlayer : t);
+                updateData({ trainees: newTrainees });
+            };
 
             // 🔥 新增：教练编辑处理
             const handleEditCoach = (c) => {
@@ -472,8 +524,15 @@
                     let history = Array.isArray(t.attendanceHistory) ? [...t.attendanceHistory] : [];
                     history = history.filter(h => (h.date || h) !== attendanceDate);
                     if (attendanceList.includes(t.id)) history.push({ date: attendanceDate, status: 'present' });
-                    const rate = Math.round((history.length / PRESET_YEARLY_TOTAL) * 100);
-                    return { ...t, attendance: rate, attendanceHistory: history };
+                    
+                    // 🔥 升级：使用球员个人的 totalSessions 计算，如果没设置则用默认 52
+                    const customTotal = t.totalSessions || PRESET_YEARLY_TOTAL;
+                    const currentCount = t.attendedSessions !== undefined ? t.attendedSessions + (attendanceList.includes(t.id) ? 1 : 0) : history.length;
+                    
+                    const rate = Math.round((history.length / customTotal) * 100);
+                    
+                    // 更新 attendedSessions 计数器以保持同步
+                    return { ...t, attendance: rate, attendanceHistory: history, attendedSessions: history.length };
                 });
                 const newCoaches = coaches.map(c => {
                     let history = Array.isArray(c.attendanceHistory) ? [...c.attendanceHistory] : [];
@@ -552,22 +611,22 @@
                     else if (avg >= 70) grade = 'B级';
                     else if (avg >= 60) grade = 'C级';
 
-                    // 2. 寻找核心竞争力 (最高项)
+                    // 2. 寻找核心竞争力 (最高项) & 弱点 (最低项)
                     const statMap = {
                         pace: '速度', shooting: '射门', passing: '传球', 
                         dribbling: '盘带', defending: '防守', physical: '体能'
                     };
                     let bestStat = 'pace';
                     let maxVal = -1;
+                    let worstStat = 'pace';
+                    let minVal = 101;
                     
-                    // 寻找最大值
                     for (const key in s) {
-                        if (s[key] > maxVal) {
-                            maxVal = s[key];
-                            bestStat = key;
-                        }
+                        if (s[key] > maxVal) { maxVal = s[key]; bestStat = key; }
+                        if (s[key] < minVal) { minVal = s[key]; worstStat = key; }
                     }
-                    const bestStatName = statMap[bestStat] || '综合';
+                    const bestStatName = statMap[bestStat];
+                    const worstStatName = statMap[worstStat];
 
                     // 3. 确定球员定位
                     let playerType = '均衡型球员';
@@ -649,121 +708,193 @@
             // 🖥️ UI 渲染
             // =================================================================
             if (!userRole) return (
-                <div className="fixed inset-0 bg-black flex flex-col items-center justify-center p-6 z-[6000] fade-in">
-                    <div className="w-24 h-24 mb-6 rounded-2xl overflow-hidden border-2 border-zinc-800 bg-zinc-900 flex items-center justify-center shadow-2xl">
-                        {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-5xl"></i>}
+                <div className="fixed inset-0 bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-black via-zinc-950 to-black flex flex-col items-center justify-center p-6 z-[6000] fade-in">
+                    <div className="w-28 h-28 mb-8 rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl flex items-center justify-center shadow-[0_0_40px_-10px_rgba(234,179,8,0.3)]">
+                        {/* 🔥 修复 4：登录页 Logo 统一使用 CFC_LOGO */}
+                        <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover p-2" />
                     </div>
-                    <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">CFC YOUTH ACADEMY</h1>
-                    <div className="w-full max-w-sm space-y-4 mt-8">
+                    <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-500 to-yellow-200 mb-2 uppercase tracking-tighter drop-shadow-lg text-center">CFC YOUTH</h1>
+                    <p className="text-zinc-500 text-xs tracking-[0.3em] uppercase mb-10 font-bold">Academy Management System</p>
+                    <div className="w-full max-w-sm space-y-4">
                         {!showPinInput ? (
-                            <>
-                                <button onClick={() => setShowPinInput(true)} className="w-full py-4 bg-zinc-800 rounded-xl font-bold flex items-center justify-center gap-3 border border-zinc-700 active:scale-95 transition-all text-white uppercase shadow-xl"><i className="fa-solid fa-user-shield text-emerald-400"></i> {t('auth', 'adminMode')}</button>
-                                <button onClick={() => handleLogin('user')} className="w-full py-4 bg-zinc-900 rounded-xl font-bold flex items-center justify-center gap-3 border border-zinc-800 active:scale-95 transition-all text-white uppercase text-sm"><i className="fa-solid fa-users text-blue-400"></i> {t('auth', 'userMode')}</button>
-                            </>
+                            <div className="space-y-3">
+                                <button onClick={() => setShowPinInput(true)} className="w-full py-5 bg-gradient-to-r from-zinc-800 to-zinc-900 rounded-2xl font-bold flex items-center justify-center gap-4 border border-white/5 active:scale-[0.98] transition-all text-white uppercase shadow-xl hover:border-emerald-500/30 hover:shadow-emerald-900/20 group relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                                    <i className="fa-solid fa-user-shield text-emerald-400 text-xl"></i> 
+                                    <span className="tracking-widest text-sm">{t('auth', 'adminMode')}</span>
+                                </button>
+                                <button onClick={() => handleLogin('user')} className="w-full py-5 bg-black/40 backdrop-blur-md rounded-2xl font-bold flex items-center justify-center gap-4 border border-white/5 active:scale-[0.98] transition-all text-zinc-400 uppercase text-sm hover:text-white hover:border-white/20">
+                                    <i className="fa-solid fa-users text-blue-500/70 text-xl"></i> 
+                                    <span className="tracking-widest">{t('auth', 'userMode')}</span>
+                                </button>
+                            </div>
                         ) : (
-                            <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-2xl">
-                                <h3 className="text-center text-zinc-400 text-sm mb-4 uppercase font-bold tracking-widest leading-none">{t('auth', 'enterPin')}</h3>
+                            <div className="bg-zinc-900/80 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 shadow-2xl">
+                                <h3 className="text-center text-yellow-500/80 text-xs mb-6 uppercase font-black tracking-[0.2em]">{t('auth', 'enterPin')}</h3>
                                 <div className="grid grid-cols-3 gap-3">
-                                    {[1,2,3,4,5,6,7,8,9,0].map(n => <button key={n} onClick={() => setPinInput(p => (p+n).slice(0,4))} className="py-4 bg-zinc-800 rounded-lg font-bold text-xl text-white active:bg-zinc-700">{n}</button>)}
-                                    <button onClick={() => {setShowPinInput(false); setPinInput("");}} className="text-red-500 text-[10px] font-black uppercase tracking-tighter">BACK</button>
-                                    <button onClick={() => handleLogin('admin')} className="bg-emerald-600 rounded-lg flex items-center justify-center text-white active:bg-emerald-500 shadow-lg shadow-emerald-600/20"><i className="fa-solid fa-check text-xl"></i></button>
+                                    {[1,2,3,4,5,6,7,8,9,0].map(n => <button key={n} onClick={() => setPinInput(p => (p+n).slice(0,4))} className="h-16 bg-white/5 rounded-2xl font-bold text-xl text-white active:bg-white/20 transition-colors border border-white/5 hover:border-white/10">{n}</button>)}
+                                    <button onClick={() => {setShowPinInput(false); setPinInput("");}} className="text-red-500 text-[10px] font-black uppercase tracking-tighter hover:text-red-400 transition-colors">BACK</button>
+                                    <button onClick={() => handleLogin('admin')} className="bg-emerald-500 rounded-2xl flex items-center justify-center text-black active:bg-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all"><i className="fa-solid fa-check text-xl"></i></button>
                                 </div>
                             </div>
                         )}
                         {/* 🌐 Language Switcher */}
-                        <div className="flex justify-center gap-6 mt-8">
-                            <button onClick={() => setLang('zh')} className={`text-2xl transition-opacity ${lang === 'zh' ? 'opacity-100 scale-110' : 'opacity-40 grayscale'}`}>🇨🇳</button>
-                            <button onClick={() => setLang('ms')} className={`text-2xl transition-opacity ${lang === 'ms' ? 'opacity-100 scale-110' : 'opacity-40 grayscale'}`}>🇲🇾</button>
-                            <button onClick={() => setLang('en')} className={`text-2xl transition-opacity ${lang === 'en' ? 'opacity-100 scale-110' : 'opacity-40 grayscale'}`}>🇬🇧</button>
+                        <div className="flex justify-center gap-8 mt-12 opacity-50">
+                            <button onClick={() => setLang('zh')} className={`text-2xl transition-all hover:scale-125 ${lang === 'zh' ? 'scale-125 opacity-100' : 'grayscale opacity-50'}`}>🇨🇳</button>
+                            <button onClick={() => setLang('ms')} className={`text-2xl transition-all hover:scale-125 ${lang === 'ms' ? 'scale-125 opacity-100' : 'grayscale opacity-50'}`}>🇲🇾</button>
+                            <button onClick={() => setLang('en')} className={`text-2xl transition-all hover:scale-125 ${lang === 'en' ? 'scale-125 opacity-100' : 'grayscale opacity-50'}`}>🇬🇧</button>
                         </div>
                     </div>
                 </div>
             );
 
             return (
-                <div className="max-w-[1920px] mx-auto p-4 md:p-8 pb-24 fade-in font-sans">
-                    <div className="h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-yellow-500 mb-6 rounded-full shadow-lg"></div>
-                    <header className="relative z-30 flex flex-col xl:flex-row justify-between items-center gap-6 mb-8">
-                        <div className="flex items-center gap-4 w-full">
-                            <div className="w-16 h-16 rounded-xl overflow-hidden border border-zinc-700 cursor-pointer bg-zinc-900 shrink-0 shadow-lg shadow-black/40" onClick={() => userRole === 'admin' && logoInputRef.current.click()}>
-                                {appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <div className="bg-zinc-900 w-full h-full flex items-center justify-center"><i className="fa-solid fa-shield-halved text-yellow-500 text-3xl"></i></div>}
-                                <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoFile}/>
-                            </div>
-                            <div className="flex-1">
-                                <h1 className="text-2xl font-black text-white tracking-tight uppercase leading-none mb-1">{leagueName}</h1>
-                                <div className="flex flex-wrap items-center gap-3 mt-1 text-zinc-500 font-bold">
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border tracking-widest ${userRole==='admin'?'bg-emerald-900/50 text-emerald-400 border-emerald-500/30 shadow-lg':'bg-blue-900/50 text-blue-400 border-blue-500/30'}`}>{userRole.toUpperCase()}</span>
-                                    {userRole === 'admin' && (
-                                        <button onClick={() => setIsCloudModalOpen(true)} className={`px-2 py-0.5 rounded flex items-center gap-1 transition-all border text-[10px] font-bold ${isCloudConnected ? 'bg-indigo-900/40 text-indigo-400 border-indigo-500/30' : 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>
-                                            <i className={`fa-solid fa-cloud ${isCloudConnected ? 'animate-pulse' : ''}`}></i> {cloudStatus || "未同步"}
-                                        </button>
-                                    )}
-                                    <button onClick={() => setIsShareAppOpen(true)} className="hover:text-white transition-colors"><i className="fa-solid fa-qrcode text-sm"></i></button>
-                                    <button onClick={() => setUserRole(null)} className="hover:text-red-400 transition-colors"><i className="fa-solid fa-right-from-bracket"></i></button>
+                <div className="min-h-screen bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-zinc-900 via-black to-zinc-950 font-sans text-white pb-24 bg-grid">
+                    <div className="max-w-[1920px] mx-auto p-4 md:p-8 fade-in relative z-10">
+                        
+                        {/* 顶部导航 */}
+                        <header className="flex flex-col xl:flex-row justify-between items-center gap-6 mb-10 bg-zinc-900/50 backdrop-blur-xl border border-white/5 p-4 rounded-[2rem] shadow-2xl relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                            <div className="flex items-center gap-5 w-full relative z-10">
+                                <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 cursor-pointer bg-black/50 shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-500" onClick={() => userRole === 'admin' && logoInputRef.current.click()}>
+                                    {/* 🔥 修复 5：顶部导航栏 Logo 统一 */}
+                                    <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover p-1" />
+                                    <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoFile}/>
                                 </div>
-                            </div>
-                        </div>
-                        {userRole === 'admin' && (
-                            <div className="grid grid-cols-4 sm:flex gap-2 w-full">
-                                {/* 🔥 Scrollable Toolbar Container */}
-                                <div className="col-span-4 flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                                    <button onClick={() => setIsFinanceOpen(true)} className="flex-1 min-w-[80px] px-2 py-3 bg-yellow-600 rounded-xl font-bold text-[10px] shadow-lg uppercase active:scale-95 transition-all flex flex-col items-center justify-center gap-1 whitespace-nowrap"><i className="fa-solid fa-sack-dollar text-lg"></i>{t('financeTool')}</button>
-                                    <button onClick={openAttendanceModal} className="flex-1 min-w-[80px] px-2 py-3 bg-emerald-700 rounded-xl font-bold text-[10px] shadow-lg uppercase active:scale-95 transition-all flex flex-col items-center justify-center gap-1 whitespace-nowrap"><i className="fa-solid fa-calendar-check text-lg"></i>{t('attendanceTool')}</button>
-                                    <button onClick={() => { setIsCoachOpen(true); setCoachView('list'); }} className="flex-1 min-w-[80px] px-2 py-3 bg-blue-800 rounded-xl font-bold text-[10px] shadow-lg uppercase active:scale-95 transition-all flex flex-col items-center justify-center gap-1 whitespace-nowrap"><i className="fa-solid fa-user-tie text-lg"></i>{t('coachTool')}</button>
-                                    <button onClick={() => setIsSchoolManagerOpen(true)} className="flex-1 min-w-[80px] px-2 py-3 bg-zinc-800 rounded-xl font-bold text-[10px] border border-zinc-700 active:scale-95 shadow-lg uppercase flex flex-col items-center justify-center gap-1 whitespace-nowrap"><i className="fa-solid fa-school text-lg"></i>{t('manageSchools')}</button>
-                                    <button onClick={() => setIsDataToolsOpen(true)} className="flex-1 min-w-[80px] px-2 py-3 bg-indigo-800 rounded-xl font-bold text-[10px] shadow-lg uppercase active:scale-95 transition-all flex flex-col items-center justify-center gap-1 whitespace-nowrap"><i className="fa-solid fa-cloud-arrow-up text-lg"></i>{t('backupTools')}</button>
-                                    <button onClick={handleRegister} className="flex-1 min-w-[80px] px-2 py-3 bg-white text-black rounded-xl font-black text-[10px] active:scale-95 shadow-xl uppercase tracking-tighter shadow-white/5 flex flex-col items-center justify-center gap-1 whitespace-nowrap"><i className="fa-solid fa-user-plus text-lg"></i>{t('register')}</button>
-                                </div>
-                            </div>
-                        )}
-                    </header>
-
-                    {/* Filter & Grid */}
-                    <div className="mb-8 space-y-4">
-                        <input className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 px-6 outline-none focus:border-indigo-500 text-lg shadow-xl text-white placeholder-zinc-700 font-bold" placeholder={t('searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                        {/* 🔥 Restored School Buttons */}
-                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                             {[t('common', 'all'), ...teams].map(team => (
-                                <button 
-                                    key={team} 
-                                    onClick={() => setSelectedTeam(team)} 
-                                    className={`px-4 py-2 rounded-xl border font-bold whitespace-nowrap transition-all ${selectedTeam === team ? 'bg-yellow-500 text-black border-yellow-500 shadow-lg' : 'bg-zinc-900 text-zinc-500 border-zinc-800'}`}
-                                >
-                                    {team}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                        {filteredTrainees.map(t => (
-                            <div key={t.id} className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden flex flex-col group hover:border-zinc-500 shadow-xl transition-all relative">
-                                <div className="h-32 relative overflow-hidden">
-                                    <img src={getOptimizedImageUrl(t.image)} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" onError={e => e.target.src = DEFAULT_IMAGE}/>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent opacity-80"></div>
-                                    <span className="absolute top-3 left-3 bg-yellow-500 text-black text-[10px] font-black px-1.5 rounded shadow-lg">{getPositionCode(t.primaryPosition)}</span>
-                                    <div className="absolute bottom-3 left-4 right-4 truncate leading-tight font-black uppercase text-white drop-shadow-md">{t.name}</div>
-                                    {/* 🔥 Share Button on Card */}
-                                    <button onClick={(e)=>{e.stopPropagation(); handleSystemShare(t);}} className="absolute bottom-2 right-2 w-7 h-7 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-emerald-600 transition-all border border-white/20 shadow-lg z-20 active:scale-90"><i className="fa-solid fa-share-nodes text-[10px]"></i></button>
-                                </div>
-                                <div className="p-3 flex-1 flex flex-col">
-                                    <div className="grid grid-cols-3 gap-1 mb-2">
-                                        {['pace', 'shooting', 'passing'].map(s => <div key={s} className="bg-black/30 p-1 rounded-xl flex flex-col items-center border border-zinc-800/50 shadow-inner font-black uppercase tracking-tighter"><span className="text-zinc-600 text-[8px]">{s.slice(0,3)}</span><span className={`text-xs ${getGradeColor(getStatGrade(t.stats?.[s]))}`}>{getStatGrade(t.stats?.[s])}</span></div>)}
-                                    </div>
-                                    {t.coachComment && <div className="mb-2 px-1"><p className="text-[9px] text-zinc-500 truncate italic"><i className="fa-solid fa-comment-dots mr-1"></i> {t.coachComment}</p></div>}
-                                    <div className="mt-auto pt-3 border-t border-zinc-800/50 flex justify-between items-center">
-                                        <div className={`w-2.5 h-2.5 rounded-full ${getAttendanceColor(t.attendance || 0)}`}></div>
+                                <div className="flex-1">
+                                    <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-500 tracking-tighter uppercase leading-none mb-1.5">{leagueName}</h1>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black border tracking-widest uppercase shadow-lg ${userRole==='admin'?'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-900/20':'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>{userRole}</span>
                                         {userRole === 'admin' && (
-                                            <div className="flex gap-1">
-                                                <button onClick={() => handleEdit(t)} className="w-7 h-7 rounded-full bg-zinc-800 text-zinc-400 flex items-center justify-center active:scale-90 transition-transform"><i className="fa-solid fa-pen text-xs"></i></button>
-                                                <button onClick={() => deleteTrainee(t.id)} className="w-7 h-7 rounded-full bg-red-900/20 text-red-500 flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-red-900/10"><i className="fa-solid fa-trash-can text-xs"></i></button>
-                                            </div>
+                                            <button onClick={() => setIsCloudModalOpen(true)} className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all border text-[10px] font-bold uppercase tracking-wider ${isCloudConnected ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.2)]' : 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>
+                                                <i className={`fa-solid fa-cloud ${isCloudConnected ? 'animate-pulse' : ''}`}></i> {cloudStatus || "OFFLINE"}
+                                            </button>
                                         )}
+                                        <button onClick={() => setIsShareAppOpen(true)} className="text-zinc-500 hover:text-white transition-colors p-1"><i className="fa-solid fa-qrcode"></i></button>
+                                        <button onClick={() => setUserRole(null)} className="text-zinc-500 hover:text-red-400 transition-colors p-1"><i className="fa-solid fa-power-off"></i></button>
                                     </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
+                            
+                            {/* 管理员快捷控制台 */}
+                            {userRole === 'admin' && (
+                                <div className="w-full xl:w-auto flex gap-3 overflow-x-auto no-scrollbar py-1 relative z-10">
+                                    {[
+                                        { icon: 'fa-sack-dollar', label: t('financeTool'), color: 'text-yellow-400', bg: 'hover:bg-yellow-500/10 hover:border-yellow-500/30', action: () => setIsFinanceOpen(true) },
+                                        { icon: 'fa-calendar-check', label: t('attendanceTool'), color: 'text-emerald-400', bg: 'hover:bg-emerald-500/10 hover:border-emerald-500/30', action: openAttendanceModal },
+                                        { icon: 'fa-user-tie', label: t('coachTool'), color: 'text-blue-400', bg: 'hover:bg-blue-500/10 hover:border-blue-500/30', action: () => { setIsCoachOpen(true); setCoachView('list'); } },
+                                        { icon: 'fa-school', label: t('manageSchools'), color: 'text-purple-400', bg: 'hover:bg-purple-500/10 hover:border-purple-500/30', action: () => setIsSchoolManagerOpen(true) },
+                                        { icon: 'fa-cloud-arrow-up', label: t('backupTools'), color: 'text-indigo-400', bg: 'hover:bg-indigo-500/10 hover:border-indigo-500/30', action: () => setIsDataToolsOpen(true) },
+                                        { icon: 'fa-user-plus', label: t('register'), color: 'text-white', bg: 'bg-white/10 hover:bg-white/20 border-white/10', action: handleRegister }
+                                    ].map((btn, i) => (
+                                        <button key={i} onClick={btn.action} className={`flex flex-col items-center justify-center w-20 h-20 rounded-2xl border border-white/5 bg-black/20 backdrop-blur-sm transition-all active:scale-95 group ${btn.bg}`}>
+                                            <i className={`fa-solid ${btn.icon} text-xl mb-2 ${btn.color} group-hover:scale-110 transition-transform`}></i>
+                                            <span className="text-[9px] font-bold text-zinc-400 group-hover:text-white uppercase tracking-tighter">{btn.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </header>
+
+                        {/* 搜索与筛选 */}
+                        <div className="mb-10 space-y-5">
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                    <i className="fa-solid fa-search text-zinc-600 group-focus-within:text-yellow-500 transition-colors"></i>
+                                </div>
+                                <input className="w-full bg-black/30 border border-white/10 rounded-2xl py-4 pl-12 pr-6 outline-none focus:border-yellow-500/50 text-white placeholder-zinc-600 font-bold backdrop-blur-md transition-all shadow-xl" placeholder={t('searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                            </div>
+                            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                                 {[t('common', 'all'), ...teams].map(team => (
+                                    <button 
+                                        key={team} 
+                                        onClick={() => setSelectedTeam(team)} 
+                                        className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all border ${selectedTeam === team ? 'bg-yellow-500 text-black border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.4)]' : 'bg-zinc-900/50 text-zinc-500 border-white/5 hover:border-white/20 hover:text-zinc-300'}`}
+                                    >
+                                        {team}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* 球员卡片网格 */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+                            {filteredTrainees.map(t => {
+                                // 动态计算评级颜色
+                                const vals = Object.values(t.stats || {});
+                                const avg = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+                                const grade = getStatGrade(avg);
+                                
+                                return (
+                                    <div key={t.id} className={`bg-zinc-900/40 rounded-[2rem] border overflow-hidden flex flex-col group transition-all duration-500 relative backdrop-blur-md hover:-translate-y-2 ${grade === 'S' ? 'border-fuchsia-500/30 hover:border-fuchsia-500 hover:shadow-[0_0_30px_-5px_rgba(192,38,211,0.3)]' : 'border-white/5 hover:border-yellow-500/50 hover:shadow-[0_0_30px_-5px_rgba(234,179,8,0.15)]'}`}>
+                                        
+                                        {/* S级专属流光特效 */}
+                                        {grade === 'S' && <div className="absolute inset-0 bg-gradient-to-tr from-fuchsia-500/10 via-transparent to-transparent opacity-50 pointer-events-none"></div>}
+
+                                        <div className="h-40 relative overflow-hidden">
+                                            <img src={getOptimizedImageUrl(t.image)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1 filter grayscale-[30%] group-hover:grayscale-0" onError={e => e.target.src = DEFAULT_IMAGE}/>
+                                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900/20 to-transparent"></div>
+                                            
+                                            {/* 这里的评级角标 */}
+                                            <div className="absolute top-3 right-3 flex flex-col items-center z-10">
+                                                <span className={`text-2xl italic leading-none drop-shadow-lg ${getGradeColor(grade)}`}>{grade}</span>
+                                            </div>
+
+                                            <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+                                                <span className="inline-block bg-yellow-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded mb-1 shadow-lg tracking-widest">{getPositionCode(t.primaryPosition)}</span>
+                                                <div className="truncate text-lg font-black uppercase text-white leading-none tracking-tight drop-shadow-md">{t.name}</div>
+                                            </div>
+                                            
+                                            {/* Share Button */}
+                                            <button onClick={(e)=>{e.stopPropagation(); handleSystemShare(t);}} className="absolute top-3 left-3 w-8 h-8 bg-black/30 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white hover:text-black transition-all border border-white/10 z-20 active:scale-90"><i className="fa-solid fa-share-nodes text-xs"></i></button>
+                                        </div>
+
+                                        <div className="p-4 flex-1 flex flex-col gap-3 relative z-10">
+                                            <div className="grid grid-cols-3 gap-1.5">
+                                                {['pace', 'shooting', 'passing'].map(s => <div key={s} className="bg-black/40 py-1.5 rounded-lg flex flex-col items-center border border-white/5"><span className="text-zinc-500 text-[7px] font-black uppercase tracking-widest mb-0.5">{s.slice(0,3)}</span><span className={`text-[10px] ${getGradeColor(getStatGrade(t.stats?.[s]))}`}>{getStatGrade(t.stats?.[s])}</span></div>)}
+                                            </div>
+                                            
+                                            {t.coachComment && <div className="px-1"><p className="text-[10px] text-zinc-500 truncate italic leading-relaxed"><i className="fa-solid fa-quote-left text-zinc-700 mr-1 text-[8px]"></i> {t.coachComment}</p></div>}
+                                            
+                                            <div className="mt-auto pt-3 border-t border-white/5 flex justify-between items-center">
+                                                {/* 🔥 修复：将圆点改为可点击的极速打卡键 */}
+                                                <div 
+                                                    className={`flex items-center gap-2 group/att ${userRole === 'admin' ? 'cursor-pointer hover:opacity-80' : ''}`}
+                                                    onClick={(e) => toggleQuickAttendance(e, t)}
+                                                    title={userRole === 'admin' ? "点击切换今日考勤" : "出席率"}
+                                                >
+                                                    <div className={`relative w-2.5 h-2.5 rounded-full ${getAttendanceColor(t.attendance || 0)} transition-all duration-300 group-hover/att:scale-125`}>
+                                                        {/* 打卡成功时的波纹特效 */}
+                                                        {t.attendanceHistory?.some(h => (h.date||h) === new Date().toISOString().slice(0, 10)) && (
+                                                            <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75"></span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-col leading-none">
+                                                        <span className="text-[10px] text-zinc-400 font-bold tracking-wider group-hover/att:text-white transition-colors">
+                                                            {t.attendance || 0}% 
+                                                            <span className="text-zinc-600 text-[8px] ml-1">({t.totalSessions || PRESET_YEARLY_TOTAL}W)</span>
+                                                        </span>
+                                                        {/* 显示今日是否已打卡的小提示 */}
+                                                        {userRole === 'admin' && (
+                                                            <span className="text-[7px] text-zinc-600 scale-0 group-hover/att:scale-100 transition-transform origin-left font-bold uppercase">
+                                                                {t.attendanceHistory?.some(h => (h.date||h) === new Date().toISOString().slice(0, 10)) ? 'TAP TO CANCEL' : 'TAP TO SIGN'}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                
+                                                {userRole === 'admin' && (
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => handleEdit(t)} className="text-zinc-500 hover:text-white transition-colors"><i className="fa-solid fa-pen-to-square"></i></button>
+                                                        <button onClick={() => deleteTrainee(t.id)} className="text-zinc-500 hover:text-red-500 transition-colors"><i className="fa-solid fa-trash"></i></button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
 
                     {/* --- Coach Hub Modal --- */}
                     {isCoachOpen && (
@@ -981,7 +1112,10 @@
                     {isShareAppOpen && (
                         <div className="fixed inset-0 z-[6000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6 fade-in" onClick={() => setIsShareAppOpen(false)}>
                             <div className="bg-zinc-900 border border-zinc-800 w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl shadow-black" onClick={e => e.stopPropagation()}>
-                                <div className="w-20 h-20 bg-zinc-800 rounded-3xl mx-auto mb-6 flex items-center justify-center border-2 border-zinc-700 shadow-xl overflow-hidden leading-none">{appLogo ? <img src={appLogo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-shield-halved text-yellow-500 text-4xl"></i>}</div>
+                                {/* 🔥 修复 6：分享弹窗 Logo 统一 */}
+                                <div className="w-20 h-20 bg-zinc-800 rounded-3xl mx-auto mb-6 flex items-center justify-center border-2 border-zinc-700 shadow-xl overflow-hidden leading-none">
+                                    <img src={appLogo || CFC_LOGO} className="w-full h-full object-cover" />
+                                </div>
                                 <h2 className="text-2xl font-black text-white mb-2 tracking-tight uppercase tracking-widest leading-none">CFC YOUTH ACADEMY</h2>
                                 <p className="text-zinc-500 text-sm mb-8 leading-relaxed px-4">使用浏览器“添加到主屏幕”安装 App</p>
                                 <div className="bg-white p-4 rounded-[2rem] mb-8 w-fit mx-auto shadow-2xl"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shareUrl)}&margin=10`} className="w-48 h-48 rounded-lg" alt="QR"/></div>
@@ -1058,6 +1192,7 @@
                             </div>
                         </div>
                     )}
+                </div>
                 </div>
             );
         };
