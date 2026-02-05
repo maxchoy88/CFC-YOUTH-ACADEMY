@@ -101,8 +101,8 @@
                     formal: "【CFC 财务通知】您好，请查收 {name} {month} 月份的学费单 (RM{amount})。请在近期内完成缴费，感谢配合。"
                 },
                 bankDetails: "\n\n🏦 汇款资料:\n{bankName}\n{accNum}\n{holder}\n\n汇款后请发收据，谢谢！",
-                // 🔥 更新翻译：加入 attHistory, addDate
-                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", parent: "家长", secPos: "副位置", all: "全部", comment: "教练评语", generate: "AI生成", role: "角色", rank: "等级", rate: "课时费", sessionUnit: "节", unknown: "未知", attendanceRate: "出席率", attendedCount: "次数", totalCycle: "总次数", attHistory: "考勤记录", addDate: "补录日期" },
+                // 🔥 更新翻译：attendedCount 改为 "次数", totalCycle 改为 "总次数"
+                common: { name: "姓名", age: "年龄", nationality: "国籍", school: "学校", category: "组别", phone: "电话", email: "电邮", tin: "TIN", cancel: "取消", save: "保存", confirm: "确认", paid: "已交", unpaid: "未交", parent: "家长", secPos: "副位置", all: "全部", comment: "教练评语", generate: "AI生成", role: "角色", rank: "等级", rate: "课时费", sessionUnit: "节", unknown: "未知", attendanceRate: "出席率", attendedCount: "次数", totalCycle: "总次数" },
                 player: { title: "球员资料" },
                 coach: { list: "名单", attendance: "考勤", finance: "薪资", register: "注册教练", update: "更新资料", sessions: "课时" },
                 coachTotalPayout: "本月总支出", coachExport: "导出薪资单",
@@ -122,8 +122,7 @@
                 auth: { welcome: "YOUR FUTURE IS NOW!", selectMode: "Select Login Mode", adminMode: "MASTER MODE", userMode: "PLAYER MODE", enterPin: "Enter Master Pin", wrongPin: "Wrong PIN" },
                 alerts: { deleteConfirm: "Confirm delete?", updated: "✅ Data synced!", linkCopied: "Link copied!", copied: "Copied!" },
                 stats: { pace: "Pace", shooting: "Shooting", passing: "Passing", dribbling: "Dribbling", defending: "Defending", physical: "Physical" },
-                // 🔥 Update Translation
-                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", parent: "Parent", secPos: "Sub-Pos", all: "All", comment: "Comment", generate: "AI Generate", role: "Role", rank: "Rank", rate: "Rate/Session", sessionUnit: "Session", unknown: "Unknown", attendanceRate: "Attendance Rate", attendedCount: "Attended", totalCycle: "Total", attHistory: "Attendance Log", addDate: "Add Date" },
+                common: { name: "Name", age: "Age", nationality: "Nationality", school: "School", category: "Category", phone: "Phone", email: "Email", tin: "TIN", cancel: "Cancel", save: "Save", confirm: "Confirm", paid: "PAID", unpaid: "UNPAID", parent: "Parent", secPos: "Sub-Pos", all: "All", comment: "Comment", generate: "AI Generate", role: "Role", rank: "Rank", rate: "Rate/Session", sessionUnit: "Session", unknown: "Unknown" },
                 player: { title: "Player Profile" },
                 coach: { list: "List", attendance: "Attendance", finance: "Payroll", register: "Register Coach", update: "Update Coach", sessions: "Sessions" },
                 coachTotalPayout: "Total Payout", coachExport: "Export Payroll",
@@ -143,8 +142,7 @@
                 auth: { welcome: "MASA DEPAN ANDA BERMULA SEKARANG!", adminMode: "MOD UTAMA", userMode: "MOD PEMAIN", enterPin: "Masukkan Pin", wrongPin: "Pin Salah" },
                 alerts: { deleteConfirm: "Padam?", updated: "✅ Dikemaskini!", linkCopied: "Disalin!", imgLocalWarning: "⚠️ Gambar tempatan, sila lampirkan.", copied: "Disalin!" },
                 stats: { pace: "Laju", shooting: "Tendang", passing: "Hantar", dribbling: "Gelecek", defending: "Pertahanan", physical: "Fizikal" },
-                // 🔥 Update Translation
-                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", parent: "Ibu Bapa", secPos: "Posisi 2", all: "Semua", comment: "Komen", generate: "AI", role: "Peranan", rank: "Pangkat", rate: "Kadar", sessionUnit: "Sesi", unknown: "Tidak Diketahui", attendanceRate: "Kadar Kehadiran", attendedCount: "Hadir", totalCycle: "Jumlah", attHistory: "Rekod Kehadiran", addDate: "Tambah Tarikh" },
+                common: { name: "Nama", age: "Umur", nationality: "Warganegara", school: "Sekolah", category: "Kategori", phone: "Tel", email: "E-mel", tin: "TIN", cancel: "Batal", save: "Simpan", confirm: "Sahkan", paid: "BAYAR", unpaid: "BELUM", parent: "Ibu Bapa", secPos: "Posisi 2", all: "Semua", comment: "Komen", generate: "AI", role: "Peranan", rank: "Pangkat", rate: "Kadar", sessionUnit: "Sesi", unknown: "Tidak Diketahui" },
                 player: { title: "Profil Pemain" },
                 coach: { list: "Senarai", attendance: "Kehadiran", finance: "Gaji", register: "Daftar Jurulatih", update: "Kemaskini", sessions: "Sesi" },
                 coachTotalPayout: "Jumlah Bayaran", coachExport: "Eksport Gaji",
@@ -262,9 +260,6 @@
             const backupInputRef = useRef(null);
             const [aiResult, setAiResult] = useState({content: null, name: null});
             const [aiLoading, setAiLoading] = useState(false);
-            
-            // 🔥 新增：用于补录日期的状态
-            const [historyDateInput, setHistoryDateInput] = useState('');
 
             // --- 1. Helper for Translations ---
             const t = (k, sk) => {
@@ -385,39 +380,39 @@
             };
             const handleDeleteTeam = (n) => { if(confirm(`${t('alerts', 'deleteConfirm')} ${n}?`)) { const nt = teams.filter(t => t!==n); const ntr = trainees.map(tr => tr.team===n?{...tr,team:'Free Agent'}:tr); updateData({teams:nt, trainees:ntr}); } };
 
-            // 🔥 新增：处理历史记录的添加和删除
-            const addHistoryRecord = () => {
-                if (!historyDateInput) return;
-                const list = [...(formData.attendanceHistory || [])];
-                // 检查重复
-                if (list.some(h => (h.date || h) === historyDateInput)) return alert("Date already exists!");
-                
-                list.push({ date: historyDateInput, status: 'present' });
-                // 按日期降序排列
-                list.sort((a, b) => (b.date || b).localeCompare(a.date || a));
-                
-                // 更新历史记录和总次数
-                setFormData({ 
-                    ...formData, 
-                    attendanceHistory: list, 
-                    attendedSessions: list.length // 自动同步次数
-                });
-                setHistoryDateInput('');
-            };
-
-            const removeHistoryRecord = (index) => {
-                if(!confirm(t('alerts', 'deleteConfirm'))) return;
-                const list = [...(formData.attendanceHistory || [])];
-                list.splice(index, 1);
-                setFormData({ 
-                    ...formData, 
-                    attendanceHistory: list, 
-                    attendedSessions: list.length // 自动同步次数
+            // 🔥 新增：教练编辑处理
+            const handleEditCoach = (c) => {
+                setEditingCoach(c);
+                setCoachForm({ 
+                    name: c.name, 
+                    phone: c.phone, 
+                    role: c.role || 'Assistant', 
+                    rank: c.rank || 'Junior', 
+                    rate: c.rate || 100 
                 });
             };
 
-            // 🔥 新增：极速打卡功能 (Toggle Quick Attendance)
-            const toggleQuickAttendance = (e, player) => {
+            const cancelEditCoach = () => {
+                setEditingCoach(null);
+                setCoachForm({ name: '', phone: '', role: 'Assistant', rank: 'Junior', rate: 100 });
+            };
+
+            // 🔥 更新：保存教练逻辑
+            const saveCoach = () => {
+                if(!coachForm.name) return;
+                let newCoaches;
+                if(editingCoach) {
+                    newCoaches = coaches.map(c => c.id === editingCoach.id ? { ...c, ...coachForm, id: c.id, attendanceHistory: c.attendanceHistory, paymentHistory: c.paymentHistory } : c);
+                } else {
+                    newCoaches = [...coaches, { ...coachForm, id: Date.now().toString(), attendanceHistory: [], paymentHistory: {} }];
+                }
+                updateData({ coaches: newCoaches });
+                cancelEditCoach();
+            };
+
+            const deleteCoach = (id) => { if(!confirm("Delete Coach?")) return; updateData({ coaches: coaches.filter(c => c.id !== id) }); };
+
+            const removeCoachRecord = (coachId, dateToRemove, schoolToRemove) => {
                 if (!confirm(`Delete record?`)) return;
                 const newCoaches = coaches.map(c => {
                     if (c.id === coachId) {
@@ -993,34 +988,6 @@
                                                 <label className="text-[9px] text-zinc-500 font-bold block mb-1 uppercase tracking-wider">{t('common', 'totalCycle')}</label>
                                                 <input type="number" className="w-full bg-black/50 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white font-mono focus:border-emerald-500 outline-none text-center transition-colors hover:border-zinc-600" value={formData.totalSessions || PRESET_YEARLY_TOTAL} onChange={e => setFormData({...formData, totalSessions: parseInt(e.target.value) || PRESET_YEARLY_TOTAL})}/>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    {/* 🔥 新增：考勤历史记录管理面板 */}
-                                    <div className="bg-zinc-950/50 p-4 rounded-3xl border border-white/5 shadow-inner mt-4 backdrop-blur-sm">
-                                        <div className="flex justify-between items-center mb-3">
-                                            <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">{t('common', 'attHistory')}</span>
-                                            <span className="text-[9px] text-zinc-600 font-mono">{formData.attendanceHistory?.length || 0} RECORDS</span>
-                                        </div>
-                                        
-                                        {/* 列表区域 */}
-                                        <div className="max-h-32 overflow-y-auto no-scrollbar space-y-2 mb-3">
-                                            {(formData.attendanceHistory && formData.attendanceHistory.length > 0) ? (
-                                                formData.attendanceHistory.map((h, idx) => (
-                                                    <div key={idx} className="flex justify-between items-center bg-black/40 px-3 py-2 rounded-xl border border-white/5">
-                                                        <span className="text-xs font-mono text-zinc-300">{h.date || h}</span>
-                                                        <button onClick={() => removeHistoryRecord(idx)} className="text-red-500 hover:text-red-400 p-1"><i className="fa-solid fa-trash-can text-xs"></i></button>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="text-center text-[10px] text-zinc-600 italic py-2">{t('noData')}</p>
-                                            )}
-                                        </div>
-
-                                        {/* 补录区域 */}
-                                        <div className="flex gap-2">
-                                            <input type="date" className="flex-1 bg-black/50 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-emerald-500" value={historyDateInput} onChange={e => setHistoryDateInput(e.target.value)} />
-                                            <button onClick={addHistoryRecord} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-lg active:scale-95 transition-all"><i className="fa-solid fa-plus"></i></button>
                                         </div>
                                     </div>
 
