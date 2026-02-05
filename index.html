@@ -267,12 +267,31 @@
             
             const [historyDateInput, setHistoryDateInput] = useState('');
 
+            // --- 1. Helper for Translations ---
             const t = (k, sk) => {
                 const dict = TRANSLATIONS[lang] || TRANSLATIONS['zh'];
                 if(sk) return dict[k]?.[sk] || (TRANSLATIONS['zh'][k]?.[sk] || k);
                 return dict[k] || (TRANSLATIONS['zh'][k] || k);
             };
 
+            // 🔥 新增：监听考勤日期变化，自动刷新选中名单，防止数据覆盖错误
+            useEffect(() => {
+                if (isAttendanceOpen) {
+                    // 1. 获取该日期下已出席的球员 ID
+                    const currentTraineeIds = trainees
+                        .filter(t => t.attendanceHistory && Array.isArray(t.attendanceHistory) && t.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === attendanceDate))
+                        .map(t => t.id);
+                    setAttendanceList(currentTraineeIds);
+
+                    // 2. 获取该日期下已出席的教练 ID
+                    const currentCoachIds = coaches
+                        .filter(c => c.attendanceHistory && Array.isArray(c.attendanceHistory) && c.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === attendanceDate))
+                        .map(c => c.id);
+                    setCoachAttendanceList(currentCoachIds);
+                }
+            }, [attendanceDate, isAttendanceOpen]); // 当日期或弹窗状态改变时触发
+
+            // --- 2. Filter Logic ---
             const filteredTrainees = useMemo(() => trainees.filter(t => {
                 const searchLower = searchTerm.toLowerCase();
                 const teamMatch = selectedTeam === '全部' || selectedTeam === 'All' || selectedTeam === 'Semua' || t.team === selectedTeam;
@@ -399,27 +418,12 @@
             const handleRegister = () => { setEditingTrainee(null); setFormData({...DEFAULT_FORM_DATA, totalSessions: PRESET_YEARLY_TOTAL}); setIsModalOpen(true); };
             const handleEdit = (t) => { setEditingTrainee(t); setFormData({ ...t, totalSessions: t.totalSessions || PRESET_YEARLY_TOTAL, attendedSessions: t.attendedSessions || (t.attendanceHistory ? t.attendanceHistory.length : 0) }); setIsModalOpen(true); };
             
+            // 🔥 修复：openAttendanceModal 只负责打开，数据加载交给 useEffect
             const openAttendanceModal = () => {
-                try {
-                    const today = new Date().toISOString().slice(0, 10);
-                    setAttendanceDate(today);
-                    setAttTab('trainees');
-                    
-                    const traineeIds = trainees
-                        .filter(t => t.attendanceHistory && Array.isArray(t.attendanceHistory) && t.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today))
-                        .map(t => t.id);
-                    setAttendanceList(traineeIds);
-
-                    const coachIds = coaches
-                        .filter(c => c.attendanceHistory && Array.isArray(c.attendanceHistory) && c.attendanceHistory.some(h => (typeof h === 'string' ? h : h.date) === today))
-                        .map(c => c.id);
-                    setCoachAttendanceList(coachIds);
-                    
-                    setIsAttendanceOpen(true);
-                } catch (e) {
-                    console.error("Error opening attendance:", e);
-                    alert("System Error: Check console");
-                }
+                const today = new Date().toISOString().slice(0, 10);
+                setAttendanceDate(today);
+                setAttTab('trainees');
+                setIsAttendanceOpen(true);
             };
 
             const handleSaveTrainee = () => {
