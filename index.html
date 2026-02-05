@@ -588,24 +588,109 @@
 
             const saveImgConfig = () => { if(imgConfig.cloudName) { localStorage.setItem('cfc_cloudinary_config', JSON.stringify(imgConfig)); setIsImgCloudReady(true); alert("Saved"); } };
             const testCloudinary = async () => { const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="; const url = await uploadToCloudinary(testPixel); if (url) alert("Connected!"); };
-            const handleWhatsappShare = () => { const names = attendanceFiltered.filter(i => attTab === 'trainees' ? attendanceList.includes(i.id) : coachAttendanceList.includes(i.id)).map(i => i.name); window.open(`https://wa.me/?text=${encodeURIComponent(`📅 ${attendanceDate} Attendance:\n${names.join('\n')}`)}`, '_blank'); };
+            
+            // 🔥 更新：分享时强制大写
+            const handleWhatsappShare = () => { const names = attendanceFiltered.filter(i => attTab === 'trainees' ? attendanceList.includes(i.id) : coachAttendanceList.includes(i.id)).map(i => i.name.toUpperCase()); window.open(`https://wa.me/?text=${encodeURIComponent(`📅 ${attendanceDate} Attendance:\n${names.join('\n')}`)}`, '_blank'); };
+            
+            // 🔥 更新：导出单日表时强制大写
             const handleExportAttendanceExcel = () => { 
-                const targetSchool = selectedTeam === '全部' ? 'All_Schools' : selectedTeam.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
                 let csvContent = "\uFEFFName,Team,Status\n";
                 const list = attTab === 'trainees' ? filteredTrainees : coaches;
                 const ids = attTab === 'trainees' ? attendanceList : coachAttendanceList;
                 list.forEach(item => {
                     const status = ids.includes(item.id) ? "Present" : "Absent";
-                    csvContent += `${item.name},${item.team || item.role},${status}\n`;
+                    csvContent += `${item.name.toUpperCase()},${item.team || item.role},${status}\n`;
                 });
                 const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                 const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `CFC_Att_${attendanceDate}.csv`; link.click();
             };
+
+            // 🔥 更新：导出完整历史时强制大写
+            const handleExportFullHistory = () => {
+                const targetSchool = selectedTeam === '全部' || selectedTeam === 'All' || selectedTeam === 'Semua' ? 'All_Schools' : selectedTeam;
+                const list = attTab === 'trainees' ? filteredTrainees : coaches;
+                
+                let csvContent = `\uFEFFName,School/Role,Date,Status\n`;
+                
+                list.forEach(item => {
+                    const history = item.attendanceHistory || [];
+                    const upperName = item.name.toUpperCase();
+                    if (history.length > 0) {
+                        history.forEach(h => {
+                            const dateStr = (typeof h === 'string') ? h : (h.date || 'N/A');
+                            csvContent += `"${upperName}","${item.team || item.role}","${dateStr}","PRESENT"\n`;
+                        });
+                    } else {
+                        csvContent += `"${upperName}","${item.team || item.role}","N/A","NO_HISTORY"\n`;
+                    }
+                });
+
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a"); 
+                link.href = URL.createObjectURL(blob); 
+                link.download = `CFC_FullHistory_${targetSchool}_${new Date().toISOString().slice(0, 10)}.csv`; 
+                link.click();
+            };
+
+            // 🔥 更新：导出月报时强制大写
+            const handleExportMonthlyReport = () => {
+                const month = attendanceDate.slice(0, 7); 
+                const targetSchool = selectedTeam === '全部' || selectedTeam === 'All' || selectedTeam === 'Semua' ? 'All_Schools' : selectedTeam;
+                
+                const list = attTab === 'trainees' ? filteredTrainees : coaches;
+                
+                const allDates = new Set();
+                list.forEach(item => {
+                    const history = item.attendanceHistory || [];
+                    history.forEach(h => {
+                        const d = (typeof h === 'string' ? h : h.date);
+                        if (d && d.startsWith(month)) allDates.add(d);
+                    });
+                });
+                
+                const sortedDates = Array.from(allDates).sort();
+                
+                if (sortedDates.length === 0) {
+                    alert(`${t('noData')} (${month})`);
+                    return;
+                }
+
+                let csvContent = `\uFEFF${targetSchool} - ${month} Report\n`;
+                csvContent += `Name,Team,${sortedDates.join(',')},Total\n`;
+                
+                list.forEach(item => {
+                    const history = item.attendanceHistory || [];
+                    const presentDates = new Set(history.map(h => (typeof h === 'string' ? h : h.date)));
+                    
+                    let row = `${item.name.toUpperCase()},${item.team || item.role}`;
+                    let count = 0;
+                    
+                    sortedDates.forEach(date => {
+                        if (presentDates.has(date)) {
+                            row += `,1`;
+                            count++;
+                        } else {
+                            row += `,0`;
+                        }
+                    });
+                    
+                    row += `,${count}\n`;
+                    csvContent += row;
+                });
+
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a"); 
+                link.href = URL.createObjectURL(blob); 
+                link.download = `CFC_Report_${targetSchool}_${month}.csv`; 
+                link.click();
+            };
+
             const exportFinanceExcel = () => { 
                 let csvContent = "\uFEFFName,Team,Status,Amount\n";
                 financeFiltered.forEach(t => {
                     const isPaid = t.feeHistory && t.feeHistory[financeMonth];
-                    csvContent += `${t.name},${t.team},${isPaid ? 'PAID' : 'PENDING'},${monthlyFee}\n`;
+                    // 🔥 导出时转大写
+                    csvContent += `${t.name.toUpperCase()},${t.team},${isPaid ? 'PAID' : 'PENDING'},${monthlyFee}\n`;
                 });
                 const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                 const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `CFC_Finance_${financeMonth}.csv`; link.click();
