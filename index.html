@@ -293,12 +293,10 @@
                 return dict[k] || (TRANSLATIONS['zh'][k] || k);
             };
 
-            // 🔥 安全获取数组
             const safeTrainees = Array.isArray(trainees) ? trainees : [];
             const safeCoaches = Array.isArray(coaches) ? coaches : [];
             const safeTeams = Array.isArray(teams) ? teams : [];
 
-            // --- 2. Filter Logic ---
             const filteredTrainees = useMemo(() => safeTrainees.filter(t => {
                 const searchLower = searchTerm.toLowerCase();
                 const teamMatch = selectedTeam === '全部' || selectedTeam === 'All' || selectedTeam === 'Semua' || t.team === selectedTeam;
@@ -310,7 +308,6 @@
             
             const financeFiltered = useMemo(() => filteredTrainees.filter(t => (t.name || '').toLowerCase().includes(financeSearchTerm.toLowerCase())), [filteredTrainees, financeSearchTerm]);
             
-            // 🔥 核心修复：独立计算考勤名单
             const attendanceFiltered = useMemo(() => { 
                 const term = attendanceSearchTerm.toLowerCase(); 
                 const sourceList = attTab === 'trainees' ? safeTrainees : safeCoaches;
@@ -382,12 +379,12 @@
                     sortedDates.forEach(date => { if (presentDates.has(date)) count++; });
                     const totalDays = sortedDates.length || 1;
                     const percentage = Math.round((count / totalDays) * 100);
-                    return { name: item.name, team: item.team, count, percentage, id: item.id };
+                    // 🔥 修复：必须把 attendanceHistory 传出去，否则格子全是空的！
+                    return { name: item.name, team: item.team, count, percentage, id: item.id, attendanceHistory: item.attendanceHistory };
                 });
 
                 rows.sort((a, b) => b.percentage - a.percentage);
 
-                // 🔥 修复：这里返回的对象属性名必须和JSX中使用的一致
                 return { dates: sortedDates, list: rows, targetSchool }; 
             }, [reportMonth, reportSchool, safeTrainees]);
 
@@ -897,6 +894,40 @@
                 link.click();
             };
 
+            const handleExportMonthlyReport = () => {
+                const month = attendanceDate.slice(0, 7); 
+                const targetSchool = selectedTeam === '全部' || selectedTeam === 'All' || selectedTeam === 'Semua' ? 'All_Schools' : selectedTeam;
+                const list = attTab === 'trainees' ? filteredTrainees : safeCoaches;
+                const allDates = new Set();
+                list.forEach(item => {
+                    const history = item.attendanceHistory || [];
+                    history.forEach(h => {
+                        const d = (typeof h === 'string' ? h : h.date);
+                        if (d && d.startsWith(month)) allDates.add(d);
+                    });
+                });
+                const sortedDates = Array.from(allDates).sort();
+                if (sortedDates.length === 0) { alert(`${t('noData')} (${month})`); return; }
+                let csvContent = `\uFEFF${targetSchool} - ${month} Report\n`;
+                csvContent += `Name,Team,${sortedDates.join(',')},Total\n`;
+                list.forEach(item => {
+                    const history = item.attendanceHistory || [];
+                    const presentDates = new Set(history.map(h => (typeof h === 'string' ? h : h.date)));
+                    let row = `${item.name.toUpperCase()},${item.team || item.role}`;
+                    let count = 0;
+                    sortedDates.forEach(date => {
+                        if (presentDates.has(date)) { row += `,1`; count++; } else { row += `,0`; }
+                    });
+                    row += `,${count}\n`;
+                    csvContent += row;
+                });
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a"); 
+                link.href = URL.createObjectURL(blob); 
+                link.download = `CFC_Report_${targetSchool}_${month}.csv`; 
+                link.click();
+            };
+
             const handleDownloadReport = () => {
                 if (reportData.list.length === 0) return alert("No data to export");
                 let csvContent = `\uFEFF${reportData.targetSchool} - ${reportMonth} Report\n`;
@@ -914,7 +945,7 @@
                 const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                 const link = document.createElement("a"); 
                 link.href = URL.createObjectURL(blob); 
-                link.download = `CFC_Report_${reportData.targetSchool}_${reportMonth}.csv`; 
+                link.download = `CFC_MonthlyReport_${targetSchool}_${reportMonth}.csv`; 
                 link.click();
             };
 
@@ -972,24 +1003,16 @@
             const testCloudinary = async () => { const testPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="; const url = await uploadToCloudinary(testPixel); if (url) alert("Connected!"); };
 
             useEffect(() => {
-                try {
-                    const local = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
-                    
-                    setTrainees(Array.isArray(local.trainees) ? local.trainees : INITIAL_TRAINEES);
-                    setCoaches(Array.isArray(local.coaches) ? local.coaches : INITIAL_COACHES);
-                    setLeagueName(local.leagueName || 'CFC YOUTH ACADEMY');
-                    setAppLogo(local.appLogo || null);
-                    
-                    if (Array.isArray(local.teams)) setTeams(local.teams);
-                    
-                    const savedCloud = JSON.parse(localStorage.getItem('cfc_jsonbin_config') || '{}');
-                    if (savedCloud.binId) { setCloudConfig(savedCloud); syncFromCloud(savedCloud.key, savedCloud.binId); }
-                    
-                    const savedImgCloud = JSON.parse(localStorage.getItem('cfc_cloudinary_config') || '{}');
-                    if (savedImgCloud.cloudName) { setImgConfig(savedImgCloud); setIsImgCloudReady(true); }
-                } catch (e) {
-                    console.error("Init failed:", e);
-                }
+                const local = JSON.parse(localStorage.getItem('cfc_local_db') || '{}');
+                setTrainees(local.trainees || INITIAL_TRAINEES);
+                setCoaches(local.coaches || INITIAL_COACHES);
+                setLeagueName(local.leagueName || 'CFC YOUTH ACADEMY');
+                setAppLogo(local.appLogo || null);
+                if (local.teams) setTeams(local.teams);
+                const savedCloud = JSON.parse(localStorage.getItem('cfc_jsonbin_config') || '{}');
+                if (savedCloud.binId) { setCloudConfig(savedCloud); syncFromCloud(savedCloud.key, savedCloud.binId); }
+                const savedImgCloud = JSON.parse(localStorage.getItem('cfc_cloudinary_config') || '{}');
+                if (savedImgCloud.cloudName) { setImgConfig(savedImgCloud); setIsImgCloudReady(true); }
                 setTimeout(() => document.getElementById('static-loading').classList.add('hidden'), 500);
             }, []);
 
@@ -1170,7 +1193,7 @@
                                 </div>
                                 <div className="flex gap-2 overflow-x-auto no-scrollbar mb-4 pb-2">
                                     <button onClick={() => setReportSchool('全部')} className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all whitespace-nowrap ${reportSchool === '全部' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-800 border-zinc-700 text-zinc-400'}`}>{t('common', 'all')}</button>
-                                    {teams.map(team => (
+                                    {(teams || []).map(team => (
                                         <button key={team} onClick={() => setReportSchool(team)} className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all whitespace-nowrap ${reportSchool === team ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-800 border-zinc-700 text-zinc-400'}`}>{team}</button>
                                     ))}
                                 </div>
@@ -1191,7 +1214,7 @@
                                         </thead>
                                         <tbody className="divide-y divide-zinc-800">
                                             {reportData.list.map(p => {
-                                                const history = p.attendanceHistory || [];
+                                                const history = p.attendanceHistory || []; // 🔥 Ensure history is read from passed prop
                                                 const presentDates = new Set(history.map(h => (typeof h === 'string' ? h : h.date)));
                                                 let count = 0;
                                                 return (
@@ -1217,7 +1240,7 @@
                                                 );
                                             })}
                                             {reportData.list.length === 0 && (
-                                                <tr><td colSpan={reportData.dates.length + 2} className="p-8 text-center text-zinc-500 italic text-sm">{t('noData')}</td></tr>
+                                                <tr><td colSpan={(reportData.dates?.length || 0) + 2} className="p-8 text-center text-zinc-500 italic text-sm">{t('noData')}</td></tr>
                                             )}
                                         </tbody>
                                     </table>
