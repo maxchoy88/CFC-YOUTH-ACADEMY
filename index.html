@@ -923,7 +923,26 @@
             const toggleAllFeeStatus = () => { const allPaid = financeFiltered.every(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]); const targetStatus = !allPaid; if (!confirm(`Mark all as ${targetStatus?'Paid':'Unpaid'}?`)) return; const newTrainees = trainees.map(trainee => { if (financeFiltered.some(rt => rt.id === trainee.id)) { const history = trainee.feeHistory || {}; return { ...trainee, feeHistory: { ...history, [financeMonth]: targetStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
             const toggleAllAttendanceStatus = () => { const currentIds = attTab === 'trainees' ? attendanceList : coachAttendanceList; const filteredIds = attendanceFiltered.map(i => i.id); const allSelected = filteredIds.every(id => currentIds.includes(id)); if (allSelected) { if (attTab === 'trainees') setAttendanceList(attendanceList.filter(id => !filteredIds.includes(id))); else setCoachAttendanceList(coachAttendanceList.filter(id => !filteredIds.includes(id))); } else { if (attTab === 'trainees') setAttendanceList([...new Set([...attendanceList, ...filteredIds])]); else setCoachAttendanceList([...new Set([...coachAttendanceList, ...filteredIds])]); } };
             
-            const handleWhatsappShare = () => { const names = attendanceFiltered.filter(i => attTab === 'trainees' ? attendanceList.includes(i.id) : coachAttendanceList.includes(i.id)).map(i => i.name.toUpperCase()); window.open(`https://wa.me/?text=${encodeURIComponent(`📅 ${attendanceDate} Attendance:\n${names.join('\n')}`)}`, '_blank'); };
+            // 🔥 修复：WhatsApp 分享加入学校名字
+            const handleWhatsappShare = () => { 
+                const names = attendanceFiltered
+                    .filter(i => attTab === 'trainees' ? attendanceList.includes(i.id) : coachAttendanceList.includes(i.id))
+                    .map(i => i.name.toUpperCase());
+                
+                // 判断当前显示的标题
+                let header = "";
+                if (attTab === 'trainees') {
+                    const schoolName = (selectedTeam === '全部' || selectedTeam === 'All' || selectedTeam === 'Semua') ? 'All Schools' : selectedTeam;
+                    header = `🏫 ${schoolName}`;
+                } else {
+                    header = `⚽ Coaches`;
+                }
+
+                const text = `📅 ${attendanceDate} Attendance\n${header}\n\n${names.join('\n')}`;
+                
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); 
+            };
+
             const handleExportAttendanceExcel = () => { 
                 let csvContent = "\uFEFFName,Team,Status\n";
                 const list = attTab === 'trainees' ? filteredTrainees : safeCoaches;
