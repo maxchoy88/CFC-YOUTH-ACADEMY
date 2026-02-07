@@ -1625,10 +1625,12 @@
                                 </div>
                                 <div className="flex gap-2">
                                     <button onClick={submitAttendance} className="flex-[2] py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg">{t('attConfirm')}</button>
-                                    <button onClick={handleExportAttendanceExcel} className="flex-1 py-3 bg-zinc-800 text-white font-bold rounded-xl border border-zinc-700 uppercase text-[10px]" title={t('attExcel')}><i className="fa-solid fa-file-csv mr-1"></i> Day</button>
-                                    <button onClick={handleExportFullHistory} className="flex-1 py-3 bg-blue-900/40 text-blue-400 font-bold rounded-xl border border-blue-900/50 uppercase text-[10px]" title={t('attHistoryFull')}><i className="fa-solid fa-history mr-1"></i> Full</button>
+                                    {/* 🔥 修复：加回 WhatsApp 分享按钮 */}
+                                    <button onClick={handleWhatsappShare} className="flex-1 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-bold rounded-xl shadow-lg flex items-center justify-center" title={t('attWhatsapp')}><i className="fa-brands fa-whatsapp text-xl"></i></button>
+                                    <button onClick={handleExportAttendanceExcel} className="flex-1 py-3 bg-zinc-800 text-white font-bold rounded-xl border border-zinc-700 flex items-center justify-center" title={t('attExcel')}><i className="fa-solid fa-file-csv"></i></button>
+                                    <button onClick={handleExportFullHistory} className="flex-1 py-3 bg-blue-900/40 text-blue-400 font-bold rounded-xl border border-blue-900/50 flex items-center justify-center" title={t('attHistoryFull')}><i className="fa-solid fa-history"></i></button>
                                     {/* 🔥 点击打开月报弹窗 */}
-                                    <button onClick={() => { setIsMonthlyReportOpen(true); setReportSchool(selectedTeam); }} className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 uppercase text-[10px]" title={t('attMonthly')}><i className="fa-solid fa-table"></i> Month</button>
+                                    <button onClick={() => { setIsMonthlyReportOpen(true); setReportSchool(selectedTeam); }} className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg flex items-center justify-center" title={t('attMonthly')}><i className="fa-solid fa-table"></i></button>
                                 </div>
                             </div>
                         </div>
