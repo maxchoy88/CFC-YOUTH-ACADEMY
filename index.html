@@ -379,12 +379,13 @@
                     sortedDates.forEach(date => { if (presentDates.has(date)) count++; });
                     const totalDays = sortedDates.length || 1;
                     const percentage = Math.round((count / totalDays) * 100);
-                    // 🔥 修复：必须把 attendanceHistory 传出去，否则格子全是空的！
+                    // 🔥 确保 attendanceHistory 被传递给渲染层
                     return { name: item.name, team: item.team, count, percentage, id: item.id, attendanceHistory: item.attendanceHistory };
                 });
 
                 rows.sort((a, b) => b.percentage - a.percentage);
 
+                // 🔥 统一返回结构为 list 和 dates
                 return { dates: sortedDates, list: rows, targetSchool }; 
             }, [reportMonth, reportSchool, safeTrainees]);
 
@@ -977,6 +978,7 @@
                 link.click();
             };
 
+            // 这个是出席库里的月报导出按钮 (不依赖 reportData)
             const handleExportMonthlyReport = () => {
                 const month = attendanceDate.slice(0, 7); 
                 const targetSchool = selectedTeam === '全部' || selectedTeam === 'All' || selectedTeam === 'Semua' ? 'All_Schools' : selectedTeam;
@@ -1011,24 +1013,31 @@
                 link.click();
             };
 
+            // 🔥 修复：这是月度报告弹窗里的导出按钮
             const handleDownloadReport = () => {
-                if (reportData.list.length === 0) return alert("No data to export");
+                // 使用正确的属性名 .list 和 .dates
+                if (!reportData.list || reportData.list.length === 0) return alert("No data to export");
+                
                 let csvContent = `\uFEFF${reportData.targetSchool} - ${reportMonth} Report\n`;
                 csvContent += `Name,Team,${reportData.dates.join(',')},Total\n`;
+                
                 reportData.list.forEach(row => {
                     let csvRow = `${row.name.toUpperCase()},${row.team}`;
+                    // 使用 row 自带的 attendanceHistory，无需再次查找
+                    const history = row.attendanceHistory || [];
+                    const presentDates = new Set(history.map(h => (typeof h === 'string' ? h : h.date)));
+                    
                     reportData.dates.forEach(date => {
-                        const history = trainees.find(t => t.id === row.id)?.attendanceHistory || [];
-                        const presentDates = new Set(history.map(h => (typeof h === 'string' ? h : h.date)));
-                        csvRow += presentDates.has(date) ? ',1' : ',0';
+                        csvRow += presentDates.has(date) ? `,1` : `,0`;
                     });
                     csvRow += `,${row.count}\n`;
                     csvContent += csvRow;
                 });
+
                 const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                 const link = document.createElement("a"); 
                 link.href = URL.createObjectURL(blob); 
-                link.download = `CFC_MonthlyReport_${targetSchool}_${reportMonth}.csv`; 
+                link.download = `CFC_MonthlyReport_${reportData.targetSchool}_${reportMonth}.csv`; 
                 link.click();
             };
 
