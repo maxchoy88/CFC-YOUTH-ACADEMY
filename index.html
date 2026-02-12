@@ -827,7 +827,7 @@
                 setCloudStatus("");
             };
 
-            // 🔥 新增：手动上传数据（覆盖云端）
+            // 🔥 修复：手动上传数据（覆盖云端） - 修复了 map 语法错误
             const handleManualPush = async () => {
                 if (!cloudConfig.key || !cloudConfig.binId) return alert("Key & Bin ID required");
                 
@@ -841,14 +841,15 @@
                     const currentData = { 
                         trainees: safeTrainees, 
                         coaches: safeCoaches, 
-                        teams: teams, 
+                        teams: safeTeams,  // 统一使用安全数据
                         leagueName: leagueName, 
                         appLogo: appLogo 
                     };
-                    // 过滤大图片
+                    
+                    // 🔥 核心修复：这里的括号之前写错了，导致无法上传
                     const stripped = { 
                         ...currentData, 
-                        trainees: currentData.trainees.map(t => t.image && t.image.startsWith('data:') ? { ...t, image: DEFAULT_IMAGE } : t) 
+                        trainees: currentData.trainees.map(t => (t.image && t.image.length > 1000) ? { ...t, image: DEFAULT_IMAGE } : t) 
                     };
                     
                     const res = await fetch(`${JSONBIN_URL}/${cloudConfig.binId}`, {
@@ -860,13 +861,17 @@
                     if (res.ok) {
                         setIsCloudConnected(true);
                         setCloudStatus("✅");
-                        alert("✅ Push Successful!");
+                        alert("✅ Push Successful! Data saved to cloud.");
                         setIsCloudModalOpen(false);
+                        setTimeout(() => setCloudStatus("☁️"), 3000);
                     } else {
-                        throw new Error("API Error");
+                        // 尝试读取错误信息
+                        const errorText = await res.text();
+                        throw new Error(`API Error (${res.status}): ${errorText}`);
                     }
                 } catch (e) {
                     setCloudStatus("❌");
+                    console.error("Push Error:", e);
                     alert("Push Failed: " + e.message);
                 }
             };
