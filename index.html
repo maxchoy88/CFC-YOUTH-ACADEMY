@@ -897,6 +897,38 @@
                 setReportDateInput('');
             };
             
+            // 🔥 修复：手动备份功能增强版
+            const handleBackupToDrive = () => { 
+                try {
+                    // 使用安全数据源，并确保格式正确
+                    const backupData = {
+                        trainees: Array.isArray(trainees) ? trainees : [],
+                        coaches: Array.isArray(coaches) ? coaches : [],
+                        teams: Array.isArray(teams) ? teams : [],
+                        leagueName: leagueName || "CFC YOUTH ACADEMY",
+                        appLogo: appLogo || "",
+                        exportedAt: new Date().toISOString()
+                    };
+
+                    const jsonString = JSON.stringify(backupData, null, 2);
+                    const blob = new Blob([jsonString], {type: "application/json"});
+                    const url = URL.createObjectURL(blob);
+                    
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `CFC_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+                    document.body.appendChild(link); // 兼容 Firefox
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // 稍微延迟释放 URL，确保下载触发
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                } catch (e) {
+                    alert("❌ Backup Failed: " + e.message);
+                    console.error("Backup error:", e);
+                }
+            };
+            
             // 🔥 新增：断开连接
             const handleDisconnect = () => {
                 if(!confirm("Disconnect from cloud?")) return;
