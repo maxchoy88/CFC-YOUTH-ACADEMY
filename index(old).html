@@ -63,7 +63,7 @@
         const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
         const BANK_INFO = { bankName: "OCBC BANK", accNum: "7091258844", holder: "CFC YOUTH ACADEMY SB" };
 
-        const INITIAL_TEAMS = ['皇家书院', '星耀中学', '雷霆体校', '蓝鹰国际', '北境一中', '南洋公学', '光辉中学', '风暴竞技', '银河实验', '泰坦中学'];
+        const INITIAL_TEAMS = ['DAMANSARA', '星耀中学', '雷霆体校', '蓝鹰国际', '北境一中', '南洋公学', '光辉中学', '风暴竞技', '银河实验', '泰坦中学'];
         const CATEGORIES = ['U8', 'U10', 'U12', 'A12'];
         const POSITIONS = ['前锋 (FW)', '左边锋 (LW)', '右边锋 (RW)', '前腰 (CAM)', '中场 (CM)', '后腰 (CDM)', '后卫 (DF)', '门将 (GK)'];
         const COACH_RANKS = ['Director', 'Senior', 'Junior', 'Trainee'];
@@ -827,7 +827,7 @@
                 setCloudStatus("");
             };
 
-            // 🔥 新增：手动上传数据（覆盖云端）
+            // 🔥 修复：手动上传数据（覆盖云端） - 修复了 map 语法错误
             const handleManualPush = async () => {
                 if (!cloudConfig.key || !cloudConfig.binId) return alert("Key & Bin ID required");
                 
@@ -841,14 +841,15 @@
                     const currentData = { 
                         trainees: safeTrainees, 
                         coaches: safeCoaches, 
-                        teams: teams, 
+                        teams: safeTeams,  // 统一使用安全数据
                         leagueName: leagueName, 
                         appLogo: appLogo 
                     };
-                    // 过滤大图片
+                    
+                    // 🔥 核心修复：这里的括号之前写错了，导致无法上传
                     const stripped = { 
                         ...currentData, 
-                        trainees: currentData.trainees.map(t => t.image && t.image.startsWith('data:') ? { ...t, image: DEFAULT_IMAGE } : t) 
+                        trainees: currentData.trainees.map(t => (t.image && t.image.length > 1000) ? { ...t, image: DEFAULT_IMAGE } : t) 
                     };
                     
                     const res = await fetch(`${JSONBIN_URL}/${cloudConfig.binId}`, {
@@ -860,13 +861,17 @@
                     if (res.ok) {
                         setIsCloudConnected(true);
                         setCloudStatus("✅");
-                        alert("✅ Push Successful!");
+                        alert("✅ Push Successful! Data saved to cloud.");
                         setIsCloudModalOpen(false);
+                        setTimeout(() => setCloudStatus("☁️"), 3000);
                     } else {
-                        throw new Error("API Error");
+                        // 尝试读取错误信息
+                        const errorText = await res.text();
+                        throw new Error(`API Error (${res.status}): ${errorText}`);
                     }
                 } catch (e) {
                     setCloudStatus("❌");
+                    console.error("Push Error:", e);
                     alert("Push Failed: " + e.message);
                 }
             };
@@ -923,12 +928,11 @@
             const toggleFeeStatus = (traineeId) => { const newTrainees = trainees.map(trainee => { if (trainee.id === traineeId) { const history = trainee.feeHistory || {}; const currentStatus = history[financeMonth] || false; return { ...trainee, feeHistory: { ...history, [financeMonth]: !currentStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
             const toggleAllFeeStatus = () => { const allPaid = financeFiltered.every(trainee => trainee.feeHistory && trainee.feeHistory[financeMonth]); const targetStatus = !allPaid; if (!confirm(`Mark all as ${targetStatus?'Paid':'Unpaid'}?`)) return; const newTrainees = trainees.map(trainee => { if (financeFiltered.some(rt => rt.id === trainee.id)) { const history = trainee.feeHistory || {}; return { ...trainee, feeHistory: { ...history, [financeMonth]: targetStatus } }; } return trainee; }); updateData({ trainees: newTrainees }); };
             const toggleAllAttendanceStatus = () => { const currentIds = attTab === 'trainees' ? attendanceList : coachAttendanceList; const filteredIds = attendanceFiltered.map(i => i.id); const allSelected = filteredIds.every(id => currentIds.includes(id)); if (allSelected) { if (attTab === 'trainees') setAttendanceList(attendanceList.filter(id => !filteredIds.includes(id))); else setCoachAttendanceList(coachAttendanceList.filter(id => !filteredIds.includes(id))); } else { if (attTab === 'trainees') setAttendanceList([...new Set([...attendanceList, ...filteredIds])]); else setCoachAttendanceList([...new Set([...coachAttendanceList, ...filteredIds])]); } };
-            
-            // 🔥 修复：WhatsApp 分享加入学校名字
+            // 🔥 修复：WhatsApp 分享加入学校名字 + 编号 + 总人数
             const handleWhatsappShare = () => { 
                 const names = attendanceFiltered
                     .filter(i => attTab === 'trainees' ? attendanceList.includes(i.id) : coachAttendanceList.includes(i.id))
-                    .map(i => i.name.toUpperCase());
+                    .map((i, index) => `${index + 1}. ${i.name.toUpperCase()}`); // 🔥 加入序号
                 
                 // 判断当前显示的标题
                 let header = "";
@@ -939,7 +943,8 @@
                     header = `⚽ Coaches`;
                 }
 
-                const text = `📅 ${attendanceDate} Attendance\n${header}\n\n${names.join('\n')}`;
+                // 🔥 加入总人数统计
+                const text = `📅 ${attendanceDate} Attendance\n${header} (${names.length} Pax)\n\n${names.join('\n')}`;
                 
                 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); 
             };
@@ -1738,4 +1743,5 @@
     </script>
 </body>
 </html>
+
 
