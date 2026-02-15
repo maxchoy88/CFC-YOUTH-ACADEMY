@@ -59,11 +59,9 @@
         const ADMIN_PIN = "1413"; 
         const PRESET_YEARLY_TOTAL = 52;
         const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=400&h=400&fit=crop';
-        const CFC_LOGO = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRWFCMzA4Ij48cGF0aCBkPSJNMjU2IDBcNTAuOCA3Ni41QzUwLjggNzYuNSAyMy40IDI0OS4yIDI1NiA1MTJjMjIyLjYtMjYyLjggMTk1LjItNDM1LjUgMTk1LjItNDM1LjVMMjU2IDB6Ii8+PC9zdmc+";
-        const DRIVE_LINK = "https://drive.google.com/drive/folders/1-wJnHTYGLyYLRZ9diEv1yt-eX92099ct";
         const BANK_INFO = { bankName: "OCBC BANK", accNum: "7091258844", holder: "CFC YOUTH ACADEMY SB" };
 
-        const INITIAL_TEAMS = ['皇家书院', '星耀中学', '雷霆体校', '蓝鹰国际', '北境一中', '南洋公学', '光辉中学', '风暴竞技', '银河实验', '泰坦中学'];
+        const INITIAL_TEAMS = ['DAMANSARA', 'SAN YUK', 'KHEOW BIN', 'DESAJAYA', 'ELMINA', '南洋公学', '光辉中学', '风暴竞技', '银河实验', '泰坦中学'];
         const CATEGORIES = ['U8', 'U10', 'U12', 'A12'];
         const POSITIONS = ['前锋 (FW)', '左边锋 (LW)', '右边锋 (RW)', '前腰 (CAM)', '中场 (CM)', '后腰 (CDM)', '后卫 (DF)', '门将 (GK)'];
         const COACH_RANKS = ['Director', 'Senior', 'Junior', 'Trainee'];
@@ -71,7 +69,8 @@
 
         const INITIAL_TRAINEES = [
             { 
-                id: '1', name: 'ARTHUR', category: 'U12', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', team: '皇家书院', 
+                // 🔥 修改：示例球员的学校也同步更新为 DAMANSARA
+                id: '1', name: 'ARTHUR', category: 'U12', primaryPosition: '前腰 (CAM)', secondaryPosition: '中场 (CM)', team: 'DAMANSARA', 
                 parentName: 'Uther Pendragon', phone: '0123456789', email: 'uther@camelot.com', tin: 'TIN-001',
                 stats: { pace: 75, shooting: 82, passing: 95, dribbling: 85, defending: 60, physical: 70 }, 
                 image: DEFAULT_IMAGE, attendance: 0, attendanceHistory: [], feeHistory: {},
@@ -267,7 +266,8 @@
             const [coachAttSchool, setCoachAttSchool] = useState(INITIAL_TEAMS[0]);
             const [financeMonth, setFinanceMonth] = useState(new Date().toISOString().slice(0, 7));
             const [financeSearchTerm, setFinanceSearchTerm] = useState('');
-            const [monthlyFee, setMonthlyFee] = useState(150);
+            // 🔥 修改：预设月费调整为 60
+            const [monthlyFee, setMonthlyFee] = useState(60);
             const [msgTemplate, setMsgTemplate] = useState('gentle'); 
 
             const [shareTarget, setShareTarget] = useState(null);
